@@ -42,42 +42,45 @@ library(colorRamps)
 library(rgeos)
 library(rgdal)
 library(foreign)
+require(data.table)
 
 
-# rm(list=ls())
+rm(list=ls())
 
 #===============================================================================
 # Set analysis Parameters
 #===============================================================================
 
-setwd("C:/GitHub/2019_CCISS/")
-
 grid <- "BC2kmGrid"
 
-GCMs <-  c("ACCESS1-0","CanESM2","CCSM4","CESM1-CAM5","CNRM-CM5","CSIRO-Mk3-6-0", "GFDL-CM3","GISS-E2R", "HadGEM2-ES", "INM-CM4", "IPSL-CM5A-MR", "MIROC-ESM", "MIROC5", "MPI-ESM-LR","MRI-CGCM3")    
+GCMs <- c("ACCESS1-0", "CanESM2", "CCSM4", "CESM1-CAM5", "CNRM-CM5", "CSIRO-Mk3-6-0", 
+          "GFDL-CM3", "GISS-E2R", "HadGEM2-ES", "INM-CM4", "IPSL-CM5A-MR", "MIROC-ESM", 
+          "MIROC5", "MPI-ESM-LR", "MRI-CGCM3")
 
-###Load random forest model
-model = "5.1"
-fname="InputData\\BGCv11_AB_USA_16VAR_SubZone_RFmodel.Rdata"
+### Load random forest model
+model <- "5.1"
+fname <- "inputs/BGCv11_AB_USA_16VAR_SubZone_RFmodel.Rdata"
 load(fname)
 # rownames(importance(BGCmodel))
 
 
-GCMs <-  c("ACCESS1-0","CanESM2","CCSM4","CESM1-CAM5","CNRM-CM5","CSIRO-Mk3-6-0", "GFDL-CM3","GISS-E2R", "HadGEM2-ES", "INM-CM4", "IPSL-CM5A-MR", "MIROC-ESM", "MIROC5", "MPI-ESM-LR","MRI-CGCM3")
+GCMs <- c("ACCESS1-0", "CanESM2", "CCSM4", "CESM1-CAM5", "CNRM-CM5", "CSIRO-Mk3-6-0", 
+          "GFDL-CM3", "GISS-E2R", "HadGEM2-ES", "INM-CM4", "IPSL-CM5A-MR", "MIROC-ESM", 
+          "MIROC5", "MPI-ESM-LR", "MRI-CGCM3")
 rcps <- c("rcp45", "rcp85")
 proj.years <- c(2025, 2055, 2085)
 hist.years <- c(1995, 2004, 2005, 2009, 2014, 2017)
-edatopes<- c("B2", "C4", "D6")
-spps.lookup <- read.csv("InputData\\Tree speciesand codes_2.0_2May2019.csv")
+edatopes <- c("B2", "C4", "D6")
+spps.lookup <- fread("inputs/Tree speciesand codes_2.0_2May2019.csv")
 edatope.name <- c("Subxeric-poor", "Mesic-medium", "Hygric-rich")
-BGCcolors <- read.csv("C:\\Colin\\Projects\\2019_CCISS\\InputData\\BGCzone_Colorscheme.csv")
+BGCcolors <- fread("inputs/BGCzone_Colorscheme.csv")
 
 
 #===============================================================================
 # generate the vector of mapped BGCs
 #===============================================================================
 
-points <- read.csv(paste("InputData\\",grid,".csv", sep=""))
+points <- fread(paste("inputs/",grid,".csv", sep=""))
 BGC <- points$ID2
 table(BGC)
 
@@ -92,7 +95,7 @@ sort(table(BGC))
 # BGC[which(BGC=="ESSFdcp")] <- "ESSFdcw"
 
 #BGC zones
-BGCcolors <- read.csv("C:\\Colin\\Projects\\2019_CCISS\\InputData\\BGCzone_Colorscheme.csv")
+
 zone <- rep(NA, length(BGC))
 for(i in BGCcolors$zone){ zone[grep(i,BGC)] <- i }
 table(zone)
@@ -107,22 +110,22 @@ table(zone)
 # Columns <- unique(c("PPT05", "PPT06", "PPT07", "PPT08", "PPT09", "PPT_at", "PPT_wt", "CMD07", "CMD", "MAT", "PPT_sm", "Tmin_wt", "Tmax_sm",  rownames(importance(BGCmodel))[-which(rownames(importance(BGCmodel))%in%c("PPT_MJ", "PPT_JAS", "PPT.dormant", "CMD.def", "CMDMax", "CMD.total"))]))
 # 
 # #first batch of 8 models
-# fplot=paste("InputData\\", grid, "_48GCMs_MSYT.csv", sep="")
+# fplot=paste("inputs/", grid, "_48GCMs_MSYT.csv", sep="")
 # Y1 <- fread(fplot, select = c("GCM", Columns), stringsAsFactors = FALSE, data.table = FALSE) #fread is faster than read.csv
 # models <-  c("ACCESS1-0","CanESM2","CCSM4","CESM1-CAM5","CNRM-CM5","CSIRO-Mk3-6-0", "GFDL-CM3","GISS-E2R")
 # for(model in models){
 #   temp <- Y1[grep(model,Y1$GCM),]
-#   write.csv(temp, paste("InputData\\", grid, "_", model, "_BioVars.csv", sep=""), row.names = F)
+#   write.csv(temp, paste("inputs/", grid, "_", model, "_BioVars.csv", sep=""), row.names = F)
 #   print(which(models==model))
 # }
 # 
 # #second batch of 7 models
-# fplot=paste("InputData\\", grid, "_42GCMs_MSYT.csv", sep="")
+# fplot=paste("inputs/", grid, "_42GCMs_MSYT.csv", sep="")
 # Y1 <- fread(fplot, select = c("GCM", Columns), stringsAsFactors = FALSE, data.table = FALSE) #fread is faster than read.csv
 # models <-  c("HadGEM2-ES", "INM-CM4", "IPSL-CM5A-MR", "MIROC-ESM", "MIROC5", "MPI-ESM-LR","MRI-CGCM3")
 # for(model in models){
 #   temp <- Y1[grep(model,Y1$GCM),]
-#   write.csv(temp, paste("InputData\\", grid, "_", model, "_BioVars.csv", sep=""), row.names = F)
+#   write.csv(temp, paste("inputs/", grid, "_", model, "_BioVars.csv", sep=""), row.names = F)
 #   print(which(models==model))
 # }
 
@@ -131,10 +134,10 @@ table(zone)
 # BGC Projections for reference period
 #===============================================================================
 
-setwd("C:/GitHub/2019_CCISS")
+#setwd("C:/GitHub/2019_CCISS")
 Columns <- unique(c("PPT05", "PPT06", "PPT07", "PPT08", "PPT09", "PPT_at", "PPT_wt", "CMD07", "CMD", "MAT", "PPT_sm", "Tmin_wt", "Tmax_sm",  rownames(importance(BGCmodel))[-which(rownames(importance(BGCmodel))%in%c("PPT_MJ", "PPT_JAS", "PPT.dormant", "CMD.def", "CMDMax", "CMD.total"))]))
 
-fplot=paste("InputData\\", grid, "_Normal_1961_1990MSY.csv", sep="")
+fplot=paste("inputs/", grid, "_Normal_1961_1990MSY.csv", sep="")
 
 Y0 <- fread(fplot, select=Columns, stringsAsFactors = FALSE, data.table = FALSE) #fread is faster than read.csv
 
@@ -151,22 +154,22 @@ Y0$CMD.total <- Y0$CMD.def + Y0$CMD
 
 ##Predict future subzones######
 BGC.pred.ref <- predict(BGCmodel, Y0)
-write.csv(BGC.pred.ref, paste("OutputData\\BGC.pred.ref", grid, "csv", sep="."), row.names = F)
+write.csv(BGC.pred.ref, paste("outputs/BGC.pred.ref", grid, "csv", sep="."), row.names = F)
 
 ## Write Climate file ######
-write.csv(Y0, paste("InputData\\", grid, "_1961_1990_BioVars.csv", sep=""), row.names = F)
+write.csv(Y0, paste("inputs/", grid, "_1961_1990_BioVars.csv", sep=""), row.names = F)
 
 #===============================================================================
 # BGC Projections for historical decades
 #===============================================================================
 
-setwd("C:\\Colin\\Projects\\2019_CCISS")
+#setwd("C:\\Colin\\Projects\\2019_CCISS")
 hist.years <- c(1995, 2005)
 hist.periods <- c("1991_2000", "2001_2010")
 
 for(hist.year in hist.years){
   hist.period <- hist.periods[which(hist.years==hist.year)]
-  fplot=paste("InputData\\", grid, "_Decade_", hist.period, "MSY.csv", sep="")
+  fplot=paste("inputs/", grid, "_Decade_", hist.period, "MSY.csv", sep="")
 
   Y0 <- fread(fplot, select=Columns, stringsAsFactors = FALSE, data.table = FALSE) #fread is faster than read.csv
   Y0 <- Y0[!is.na(Y0[,2]),]
@@ -183,10 +186,10 @@ for(hist.year in hist.years){
 
   ##Predict future subzones######
   assign(paste("BGC.pred",hist.year,sep="."), predict(BGCmodel, Y0))
-  write.csv(get(paste("BGC.pred",hist.year,sep=".")), paste("OutputData\\BGC.pred", grid,hist.year,"csv", sep="."), row.names = F)
+  write.csv(get(paste("BGC.pred",hist.year,sep=".")), paste("outputs/BGC.pred", grid,hist.year,"csv", sep="."), row.names = F)
 
   ## Write Climate file ######
-  write.csv(Y0, paste("InputData\\", grid, "_",hist.year,"_BioVars.csv", sep=""), row.names = F)
+  write.csv(Y0, paste("inputs/", grid, "_",hist.year,"_BioVars.csv", sep=""), row.names = F)
 
   print(hist.year)
 }
@@ -195,8 +198,8 @@ for(hist.year in hist.years){
 # BGC Projections for last decade
 #===============================================================================
 
-setwd("C:\\Colin\\Projects\\2019_CCISS")
-  fplot=paste("InputData\\", grid, "_2011-2017MSYT.csv", sep="")
+#setwd("C:\\Colin\\Projects\\2019_CCISS")
+  fplot=paste("inputs/", grid, "_2011-2017MSYT.csv", sep="")
 
   Y0 <- fread(fplot, select=c("ID1", "Year", Columns), stringsAsFactors = FALSE, data.table = FALSE) #fread is faster than read.csv
   # Y0 <- Y0[!is.na(Y0[,2]),]
@@ -222,18 +225,18 @@ str(Y2017)
   ##Predict BGC units######
   BGC.pred.2017 <- predict(BGCmodel, Y2017)
   BGC.pred.2014 <- predict(BGCmodel, Y1)
-  write.csv(BGC.pred.2017, paste("OutputData\\BGC.pred", grid,"2017.csv", sep="."), row.names = F)
-  write.csv(BGC.pred.2014, paste("OutputData\\BGC.pred", grid,"2014.csv", sep="."), row.names = F)
+  write.csv(BGC.pred.2017, paste("outputs/BGC.pred", grid,"2017.csv", sep="."), row.names = F)
+  write.csv(BGC.pred.2014, paste("outputs/BGC.pred", grid,"2014.csv", sep="."), row.names = F)
 
   ## Write Climate file ######
-  write.csv(Y2017, paste("InputData\\", grid, "_2017_BioVars.csv", sep=""), row.names = F)
-  write.csv(Y1, paste("InputData\\", grid, "_2014_BioVars.csv", sep=""), row.names = F)
+  write.csv(Y2017, paste("inputs/", grid, "_2017_BioVars.csv", sep=""), row.names = F)
+  write.csv(Y1, paste("inputs/", grid, "_2014_BioVars.csv", sep=""), row.names = F)
 
 #===============================================================================
 # BGC Projections for other historical normals
 #===============================================================================
 
-setwd("C:\\Colin\\Projects\\2019_CCISS")
+#setwd("C:\\Colin\\Projects\\2019_CCISS")
 hist.years <- c(1995, 2005)
 hist.periods <- c("1991_2000", "2001_2010")
 
@@ -243,7 +246,7 @@ mean(c(2001,2017))
 # read in the data for the 1990s and 2000s
 for(hist.year in hist.years){
   hist.period <- hist.periods[which(hist.years==hist.year)]
-  fplot=paste("InputData\\", grid, "_Decade_", hist.period, "MSY.csv", sep="")
+  fplot=paste("inputs/", grid, "_Decade_", hist.period, "MSY.csv", sep="")
 
   Y0 <- fread(fplot, select=Columns, stringsAsFactors = FALSE, data.table = FALSE) #fread is faster than read.csv
   Y0 <- Y0[!is.na(Y0[,2]),]
@@ -261,7 +264,7 @@ for(hist.year in hist.years){
 }
 
 # 2011-2017 period already exported in previous phase, so read that in
-Y.2014 <- read.csv(paste("InputData\\", grid, "_2014_BioVars.csv", sep=""))
+Y.2014 <- read.csv(paste("inputs/", grid, "_2014_BioVars.csv", sep=""))
 Y.2014 <- Y.2014[,-which(names(Y.2014)%in%c("ID1", "Year"))]
 str(Y.2014)
 
@@ -275,10 +278,10 @@ for(hist.year in hist.years){
 
   ##Predict future subzones######
   assign(paste("BGC.pred",hist.year,sep="."), predict(BGCmodel, get(paste("Y",hist.year,sep="."))))
-  write.csv(get(paste("BGC.pred",hist.year,sep=".")), paste("OutputData\\BGC.pred", grid,hist.year,"csv", sep="."), row.names = F)
+  write.csv(get(paste("BGC.pred",hist.year,sep=".")), paste("outputs/BGC.pred", grid,hist.year,"csv", sep="."), row.names = F)
 
   ## Write Climate file ######
-  write.csv(get(paste("Y",hist.year,sep=".")), paste("InputData\\", grid, "_",hist.year,"_BioVars.csv", sep=""), row.names = F)
+  write.csv(get(paste("Y",hist.year,sep=".")), paste("inputs/", grid, "_",hist.year,"_BioVars.csv", sep=""), row.names = F)
 
   print(hist.year)
 }
@@ -289,7 +292,7 @@ for(hist.year in hist.years){
 rcp="rcp45"
 
 for(GCM in GCMs){
-  Y1 <- fread(paste("InputData\\", grid, "_", GCM, "_BioVars.csv", sep=""), stringsAsFactors = FALSE, data.table = FALSE)
+  Y1 <- fread(paste("inputs/", grid, "_", GCM, "_BioVars.csv", sep=""), stringsAsFactors = FALSE, data.table = FALSE)
   # Y1 <- Y1[!is.na(Y1[,2]),]
 
   #####generate some additional variables
@@ -311,7 +314,7 @@ for(GCM in GCMs){
     for(proj.year in proj.years){
       temp <- Y1[which(Y4[,2]==rcp & Y4[,3]==proj.year),]
       assign(paste("BGC.pred", GCM, rcp, proj.year, sep="."), predict(BGCmodel, temp))
-      write.csv(get(paste("BGC.pred", GCM, rcp, proj.year, sep=".")), paste("OutputData\\BGC.pred",grid, GCM, rcp, proj.year,".csv", sep=""), row.names = F)
+      write.csv(get(paste("BGC.pred", GCM, rcp, proj.year, sep=".")), paste("outputs/BGC.pred",grid, GCM, rcp, proj.year,".csv", sep=""), row.names = F)
       print(proj.year)
     }
     print(rcp)
