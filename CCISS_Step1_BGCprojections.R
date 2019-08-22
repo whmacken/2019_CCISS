@@ -57,7 +57,7 @@ GCMs <- c("ACCESS1-0", "CanESM2", "CCSM4", "CESM1-CAM5", "CNRM-CM5", "CSIRO-Mk3-
 model <- "5.1"
 fname <- "inputs/BGCv11_AB_USA_16VAR_SubZone_RFmodel.Rdata"
 load(fname)
-# rownames(importance(BGCmodel))
+#rownames(importance(BGCmodel)) ### shows the variable used in the RFmodel
 
 
 GCMs <- c("ACCESS1-0", "CanESM2", "CCSM4", "CESM1-CAM5", "CNRM-CM5", "CSIRO-Mk3-6-0", 
@@ -133,7 +133,7 @@ table(zone)
 
 # setwd('C:/GitHub/2019_CCISS')
 Columns <- unique(c("PPT05", "PPT06", "PPT07", "PPT08", "PPT09", "PPT_at", 
-                    "PPT_wt", "CMD07", "CMD", "MAT", "PPT_sm", "Tmin_wt", "Tmax_sm", 
+                    "PPT_wt", "CMD07", "CMD", "MAT", "PPT_sm", "Tmin_wt", "Tmax_sm",
                     rownames(importance(BGCmodel))[-which(rownames(importance(BGCmodel)) %in%
                     c("PPT_MJ", "PPT_JAS", "PPT.dormant", "CMD.def", "CMDMax", "CMD.total"))]))
 
