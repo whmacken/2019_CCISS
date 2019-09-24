@@ -53,6 +53,18 @@ GCMs <- c("ACCESS1-0", "CanESM2", "CCSM4", "CESM1-CAM5", "CNRM-CM5", "CSIRO-Mk3-
           "GFDL-CM3", "GISS-E2R", "HadGEM2-ES", "INM-CM4", "IPSL-CM5A-MR", "MIROC-ESM", 
           "MIROC5", "MPI-ESM-LR", "MRI-CGCM3")
 
+addVars <- function(dat){
+  dat$PPT_MJ <- dat$PPT05 + dat$PPT06  # MaY/June precip
+  dat$PPT_JAS <- dat$PPT07 + dat$PPT08 + dat$PPT09  # July/Aug/Sept precip
+  dat$PPT.dormant <- dat$PPT_at + dat$PPT_wt  # for calculating spring deficit
+  dat$CMD.def <- 500 - (dat$PPT.dormant)  # start of growing season deficit original value was 400 but 500 seems better
+  dat$CMD.def[dat$CMD.def < 0] <- 0  #negative values set to zero = no deficit
+  dat$CMDMax <- dat$CMD07
+  dat$CMD.total <- dat$CMD.def + dat$CMD
+  return(dat)
+}
+
+
 ### Load random forest model
 model <- "5.1"
 fname <- "inputs/BGCv11_AB_USA_16VAR_SubZone_RFmodel.Rdata"
@@ -91,8 +103,7 @@ sort(table(BGC))
 # BGC zones
 
 zone <- rep(NA, length(BGC))
-for (i in BGCcolors$zone)
-{
+for (i in BGCcolors$zone){
   zone[grep(i, BGC)] <- i
 }
 table(zone)
@@ -103,11 +114,11 @@ table(zone)
 # commented out because you only need to do this once: it just reduces
 # ram needed to load in the ClimateBC data
 # #===============================================================================
-# setwd('C:\\Colin\\Projects\\2019_CCISS') Columns <-
-# unique(c('PPT05', 'PPT06', 'PPT07', 'PPT08', 'PPT09', 'PPT_at',
+# Columns <- unique(c('PPT05', 'PPT06', 'PPT07', 'PPT08', 'PPT09', 'PPT_at',
 # 'PPT_wt', 'CMD07', 'CMD', 'MAT', 'PPT_sm', 'Tmin_wt', 'Tmax_sm',
 # rownames(importance(BGCmodel))[-which(rownames(importance(BGCmodel))%in%c('PPT_MJ',
 # 'PPT_JAS', 'PPT.dormant', 'CMD.def', 'CMDMax', 'CMD.total'))]))
+# 
 # #first batch of 8 models fplot=paste('inputs/', grid,
 # '_48GCMs_MSYT.csv', sep='') Y1 <- fread(fplot, select = c('GCM',
 # Columns), stringsAsFactors = FALSE, data.table = FALSE) #fread is
@@ -135,7 +146,7 @@ table(zone)
 Columns <- unique(c("PPT05", "PPT06", "PPT07", "PPT08", "PPT09", "PPT_at", 
                     "PPT_wt", "CMD07", "CMD", "MAT", "PPT_sm", "Tmin_wt", "Tmax_sm",
                     rownames(importance(BGCmodel))[-which(rownames(importance(BGCmodel)) %in%
-                    c("PPT_MJ", "PPT_JAS", "PPT.dormant", "CMD.def", "CMDMax", "CMD.total"))]))
+                                                            c("PPT_MJ", "PPT_JAS", "PPT.dormant", "CMD.def", "CMDMax", "CMD.total"))]))
 
 fplot <- paste("inputs/", grid, "_Normal_1961_1990MSY.csv", sep = "")
 
@@ -143,23 +154,16 @@ Y0 <- fread(fplot, select = Columns, stringsAsFactors = FALSE, data.table = FALS
 
 Y0 <- Y0[!is.na(Y0[, 2]), ]
 
-##### generate some additional variables
-Y0$PPT_MJ <- Y0$PPT05 + Y0$PPT06  # MaY/June precip
-Y0$PPT_JAS <- Y0$PPT07 + Y0$PPT08 + Y0$PPT09  # July/Aug/Sept precip
-Y0$PPT.dormant <- Y0$PPT_at + Y0$PPT_wt  # for calculating spring deficit
-Y0$CMD.def <- 500 - (Y0$PPT.dormant)  # start of growing season deficit original value was 400 but 500 seems better
-Y0$CMD.def[Y0$CMD.def < 0] <- 0  #negative values set to zero = no deficit
-Y0$CMDMax <- Y0$CMD07
-Y0$CMD.total <- Y0$CMD.def + Y0$CMD
+Y0 <- addVars(Y0)
 
 ## Predict future subzones######
 BGC.pred.ref <- predict(BGCmodel, Y0)
+dir.create("./outputs")
 write.csv(BGC.pred.ref, paste("outputs/BGC.pred.ref", grid, "csv", sep = "."), 
           row.names = F)
 
 ## Write Climate file ######
-write.csv(Y0, paste("inputs/", grid, "_1961_1990_BioVars.csv", sep = ""), 
-          row.names = F)
+fwrite(Y0, paste("inputs/", grid, "_1961_1990_BioVars.csv", sep = ""))
 
 # ===============================================================================
 # BGC Projections for historical decades
@@ -169,8 +173,7 @@ write.csv(Y0, paste("inputs/", grid, "_1961_1990_BioVars.csv", sep = ""),
 hist.years <- c(1995, 2005)
 hist.periods <- c("1991_2000", "2001_2010")
 
-for (hist.year in hist.years)
-{
+for (hist.year in hist.years){
   hist.period <- hist.periods[which(hist.years == hist.year)]
   fplot <- paste("inputs/", grid, "_Decade_", hist.period, "MSY.csv", 
                  sep = "")
@@ -178,15 +181,7 @@ for (hist.year in hist.years)
   Y0 <- fread(fplot, select = Columns, stringsAsFactors = FALSE, data.table = FALSE)  #fread is faster than read.csv
   Y0 <- Y0[!is.na(Y0[, 2]), ]
   # str(Y0)
-  
-  ##### generate some additional variables
-  Y0$PPT_MJ <- Y0$PPT05 + Y0$PPT06  # MaY/June precip
-  Y0$PPT_JAS <- Y0$PPT07 + Y0$PPT08 + Y0$PPT09  # July/Aug/Sept precip
-  Y0$PPT.dormant <- Y0$PPT_at + Y0$PPT_wt  # for calculating spring deficit
-  Y0$CMD.def <- 500 - (Y0$PPT.dormant)  # start of growing season deficit original value was 400 but 500 seems better
-  Y0$CMD.def[Y0$CMD.def < 0] <- 0  #negative values set to zero = no deficit
-  Y0$CMDMax <- Y0$CMD07
-  Y0$CMD.total <- Y0$CMD.def + Y0$CMD
+  Y0 <- addVars(Y0)
   
   ## Predict future subzones######
   assign(paste("BGC.pred", hist.year, sep = "."), predict(BGCmodel, Y0))
@@ -205,29 +200,27 @@ for (hist.year in hist.years)
 # ===============================================================================
 
 # setwd('C:\\Colin\\Projects\\2019_CCISS')
-fplot <- paste("inputs/", grid, "_2011-2017MSYT.csv", sep = "")
+fplot <- paste("inputs/", grid, "_2011-2018MSY.csv", sep = "")
 
 Y0 <- fread(fplot, select = c("ID1", "Year", Columns), stringsAsFactors = FALSE, 
             data.table = FALSE)  #fread is faster than read.csv
 # Y0 <- Y0[!is.na(Y0[,2]),]
 str(Y0)
 
-##### generate some additional variables
-Y0$PPT_MJ <- Y0$PPT05 + Y0$PPT06  # MaY/June precip
-Y0$PPT_JAS <- Y0$PPT07 + Y0$PPT08 + Y0$PPT09  # July/Aug/Sept precip
-Y0$PPT.dormant <- Y0$PPT_at + Y0$PPT_wt  # for calculating spring deficit
-Y0$CMD.def <- 500 - (Y0$PPT.dormant)  # start of growing season deficit original value was 400 but 500 seems better
-Y0$CMD.def[Y0$CMD.def < 0] <- 0  #negative values set to zero = no deficit
-Y0$CMDMax <- Y0$CMD07
-Y0$CMD.total <- Y0$CMD.def + Y0$CMD
+Y0 <- addVars(Y0)
 
 # Extract the year 2017
 Y2017 <- Y0[which(Y0$Year == 2017), ]
 str(Y2017)
 
 # Calculate mean of 2011-2017 period
-Y1 <- aggregate(Y0, by = list(Y0$ID1), FUN = mean, na.rm = T)[, -1]
+Y1 <- Y0 %>%
+  group_by(ID1) %>%
+  summarise_all(list(mean)) %>%
+  ungroup()
+##Y1 <- aggregate(Y0, by = list(Y0$ID1), FUN = mean, na.rm = T)[, -1]
 Y1 <- Y1[match(Y2017$ID1, Y1$ID1), ]
+Y1 <- Y1[,-2]
 
 ## Predict BGC units######
 BGC.pred.2017 <- predict(BGCmodel, Y2017)
@@ -238,9 +231,8 @@ write.csv(BGC.pred.2014, paste("outputs/BGC.pred", grid, "2014.csv", sep = "."),
           row.names = F)
 
 ## Write Climate file ######
-write.csv(Y2017, paste("inputs/", grid, "_2017_BioVars.csv", sep = ""), 
-          row.names = F)
-write.csv(Y1, paste("inputs/", grid, "_2014_BioVars.csv", sep = ""), row.names = F)
+fwrite(Y2017, paste("inputs/", grid, "_2017_BioVars.csv", sep = ""))
+fwrite(Y1, paste("inputs/", grid, "_2014_BioVars.csv", sep = ""))
 
 # ===============================================================================
 # BGC Projections for other historical normals
@@ -254,8 +246,7 @@ mean(c(1991, 2017))
 mean(c(2001, 2017))
 
 # read in the data for the 1990s and 2000s
-for (hist.year in hist.years)
-{
+for (hist.year in hist.years){
   hist.period <- hist.periods[which(hist.years == hist.year)]
   fplot <- paste("inputs/", grid, "_Decade_", hist.period, "MSY.csv", 
                  sep = "")
@@ -263,14 +254,7 @@ for (hist.year in hist.years)
   Y0 <- fread(fplot, select = Columns, stringsAsFactors = FALSE, data.table = FALSE)  #fread is faster than read.csv
   Y0 <- Y0[!is.na(Y0[, 2]), ]
   
-  ##### generate some additional variables
-  Y0$PPT_MJ <- Y0$PPT05 + Y0$PPT06  # MaY/June precip
-  Y0$PPT_JAS <- Y0$PPT07 + Y0$PPT08 + Y0$PPT09  # July/Aug/Sept precip
-  Y0$PPT.dormant <- Y0$PPT_at + Y0$PPT_wt  # for calculating spring deficit
-  Y0$CMD.def <- 500 - (Y0$PPT.dormant)  # start of growing season deficit original value was 400 but 500 seems better
-  Y0$CMD.def[Y0$CMD.def < 0] <- 0  #negative values set to zero = no deficit
-  Y0$CMDMax <- Y0$CMD07
-  Y0$CMD.total <- Y0$CMD.def + Y0$CMD
+  Y0 <- addVars(Y0)
   assign(paste("Y", hist.year, sep = "."), Y0)
   print(hist.year)
 }
@@ -286,8 +270,7 @@ str(Y.2009)
 str(Y.2004)
 
 hist.years <- c(2004, 2009)
-for (hist.year in hist.years)
-{
+for (hist.year in hist.years){
   
   ## Predict future subzones######
   assign(paste("BGC.pred", hist.year, sep = "."), predict(BGCmodel, get(paste("Y", 
@@ -305,44 +288,30 @@ for (hist.year in hist.years)
 # ===============================================================================
 # BGC Projections for future periods
 # ===============================================================================
-rcp <- "rcp45"
 
-for (GCM in GCMs)
-{
-  Y1 <- fread(paste("inputs/", grid, "_", GCM, "_BioVars.csv", sep = ""), 
-              stringsAsFactors = FALSE, data.table = FALSE)
-  # Y1 <- Y1[!is.na(Y1[,2]),]
-  
-  ##### generate some additional variables
-  Y1$PPT_MJ <- Y1$PPT05 + Y1$PPT06  # MaY/June precip
-  Y1$PPT_JAS <- Y1$PPT07 + Y1$PPT08 + Y1$PPT09  # July/Aug/Sept precip
-  Y1$PPT.dormant <- Y1$PPT_at + Y1$PPT_wt  # for calculating spring deficit
-  Y1$CMD.def <- 500 - (Y1$PPT.dormant)  # start of growing season deficit original value was 400 but 500 seems better
-  Y1$CMD.def[Y1$CMD.def < 0] <- 0  #negative values set to zero = no deficit
-  Y1$CMDMax <- Y1$CMD07
-  Y1$CMD.total <- Y1$CMD.def + Y1$CMD
-  
-  ## assign single vectors to RCPs and proj.years
-  Ystr <- strsplit(Y1[, 1], "_")
-  Y4 <- matrix(unlist(Ystr), ncol = 3, byrow = TRUE)
-  
-  proj.years <- unique(Y4[, 3])
-  rcps <- unique(Y4[, 2])
-  for (rcp in rcps)
-  {
-    for (proj.year in proj.years)
-    {
-      temp <- Y1[which(Y4[, 2] == rcp & Y4[, 3] == proj.year), ]
-      assign(paste("BGC.pred", GCM, rcp, proj.year, sep = "."), predict(BGCmodel, 
-                                                                        temp))
-      write.csv(get(paste("BGC.pred", GCM, rcp, proj.year, sep = ".")), 
-                paste("outputs/BGC.pred", grid, GCM, rcp, proj.year, ".csv", 
-                      sep = ""), row.names = F)
-      print(proj.year)
-    }
-    print(rcp)
+library(tidyr)
+Y0 <- fread(paste("inputs/",grid,"_90 GCMsMSY.csv", sep = ""),select = c("Year", "ID1","ID2", Columns))   ##
+Y0 <- separate(Y0, Year, into = c("Model","Scenario","FuturePeriod"), sep = "_", remove = T)
+Y0$FuturePeriod <- gsub(".gcm","",Y0$FuturePeriod)
+
+require(doParallel)
+set.seed(123321)
+coreNum <- as.numeric(detectCores()-2)
+cl <- makeCluster(coreNum)
+registerDoParallel(cl, cores = coreNum)
+
+out <- foreach(GCM = GCMs, .combine = rbind) %:%
+  foreach(rcp = rcps, .combine = rbind) %:%
+  foreach(proj.year = proj.years, .combine = rbind, .packages = c("data.table","randomForest", "dplyr")) %do% {
+    sub <- Y0[Y0$Model == GCM & Y0$Scenario == rcp & Y0$FuturePeriod == proj.year,]
+    sub <- addVars(sub)
+    subPred <- data.frame(ID = sub$ID1)
+    subPred$BGC.pred <- predict(BGCmodel, sub)
+    fwrite(subPred, paste("outputs/BGC.pred", grid, GCM, rcp, proj.year, ".csv", sep = ""))
+    temp <- aggregate(ID ~ BGC.pred, data = subPred, FUN = length) %>% 
+      mutate(Model = GCM, Scn = rcp, FuturePeriod = proj.year)
+    temp
   }
-  print(GCM)
-}
+
 
 
