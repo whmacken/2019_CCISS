@@ -142,8 +142,8 @@ S1 <- read.csv(paste("inputs/",treesuit,".csv",sep=""),stringsAsFactors=F,na.str
 S1 <- unique(S1)
 
 ## EDA: are there suitabilities for all projected units? 
-NoSuit <- PredSum[-which(PredSum$BGC%in%S1$BGC),]
-NoSuit[rev(order(NoSuit$count)),]
+# NoSuit <- PredSum[-which(PredSum$BGC%in%S1$BGC),]
+# NoSuit[rev(order(NoSuit$count)),]
 
 ## EDA: Which site series are missing suitabilities? 
 for(edatope in edatopes) assign(paste("NoSuit", edatope, sep="."), SiteLookup[-which(SiteLookup[,which(names(SiteLookup)==edatope)]%in%S1$Unit),which(names(SiteLookup)==edatope)])
@@ -160,6 +160,7 @@ spps.candidate <- spps.lookup$TreeCode[-which(spps.lookup$Exclude=="x")]
 spps <- spps[which(spps%in%spps.candidate)] 
 
 require(doParallel)
+library(iterators)
 set.seed(123321)
 coreNum <- as.numeric(detectCores()-2)
 cl <- makeCluster(coreNum)
@@ -193,28 +194,27 @@ outAll <- foreach(spp = spps,.combine = rbind) %do% {
     }
     
     cat("starting",spp,edatope, "\n")
+
     # get the suitability for future periods, for each projection/edatope/species combination
-    suit <- foreach(GCM = GCMs, .combine = rbind) %:%
-      foreach(rcp = rcps, .combine = rbind) %:%
-      foreach(proj.year = proj.years, .combine = rbind, .packages = c("randomForest","dplyr")) %do% {
-        # get the BGC projection and sub in the crosswalk between the modeled units and the table units
-        BGC.pred <- predDat$BGC.pred[predDat$Scn == rcp & predDat$FuturePeriod == proj.year & predDat$GCM == GCM]
-        # BGC.pred[which(BGC.pred%in%Crosswalk$Modeled)] <- as.character(Crosswalk$Tables[match(BGC.pred[which(BGC.pred%in%Crosswalk$Modeled)], Crosswalk$Modeled)]) # XXX THIS IS NOT CORRECT. NEED TO FIGURE OUT HOW TO INCORPORATE THE CROSSWALK TABLE PROPERLY. sub in the crosswalk between the modeled units and the table units
-        
-        ## identify cells with no suitability interpretations
-        bgc.exotic <- (1:length(BGC.pred))[-which(BGC.pred%in%unique(BGC))]
-        bgc.exotic.noSuit <- bgc.exotic[-which(BGC.pred[bgc.exotic]%in%unique(S1$BGC))]
-        
-        # get the suitability for the selected species associated with each site series
-        suit <- S1$ESuit[which(S1$Spp==spp)][match(as.vector(unlist(SiteLookup[which(names(SiteLookup)==edatope)])), S1$Unit[which(S1$Spp==spp)])]
-        temp <- suit[match(BGC.pred, SiteLookup$MergedBGC)]
-        temp[is.na(temp)] <- 5 #set the NA values to suitability 5 (weights unsuitable a bit more heavily than suitable classes during averaging)
-        temp[temp==4] <- 5 #set 4 to suitability 5
-        temp[bgc.exotic.noSuit] <- NA # set cells with no suitabilty interpretatoin to NA
-        out <- data.frame(Suit = temp) %>% mutate(GCM = GCM, Scn = rcp, FuturePeriod = proj.year, Edatope = edatope, Spp = spp)
-        cat(GCM,rcp,proj.year,"\n")
-        out
-      }
+    suit <- foreach(dat = isplit(predDat$BGC.pred, list(predDat$GCM,predDat$Scn,predDat$FuturePeriod)), .combine = rbind,.packages = c("randomForest","dplyr", "foreach","iterators")) %dopar% {
+          # get the BGC projection and sub in the crosswalk between the modeled units and the table units
+          BGC.pred <- dat$value
+          # BGC.pred[which(BGC.pred%in%Crosswalk$Modeled)] <- as.character(Crosswalk$Tables[match(BGC.pred[which(BGC.pred%in%Crosswalk$Modeled)], Crosswalk$Modeled)]) # XXX THIS IS NOT CORRECT. NEED TO FIGURE OUT HOW TO INCORPORATE THE CROSSWALK TABLE PROPERLY. sub in the crosswalk between the modeled units and the table units
+          
+          ## identify cells with no suitability interpretations
+          bgc.exotic <- (1:length(BGC.pred))[-which(BGC.pred%in%unique(BGC))]
+          bgc.exotic.noSuit <- bgc.exotic[-which(BGC.pred[bgc.exotic] %in% unique(S1$BGC))]
+          
+          # get the suitability for the selected species associated with each site series
+          suit <- S1$ESuit[which(S1$Spp==spp)][match(as.vector(unlist(SiteLookup[which(names(SiteLookup)==edatope)])), S1$Unit[which(S1$Spp==spp)])]
+          temp <- suit[match(BGC.pred, SiteLookup$MergedBGC)]
+          temp[is.na(temp)] <- 5 #set the NA values to suitability 5 (weights unsuitable a bit more heavily than suitable classes during averaging)
+          temp[temp==4] <- 5 #set 4 to suitability 5
+          temp[bgc.exotic.noSuit] <- NA # set cells with no suitabilty interpretatoin to NA
+          out <- data.frame(Suit = temp) %>% mutate(GCM = dat[["key"]][[1]], Scn = dat[["key"]][[2]], FuturePeriod = dat[["key"]][[3]], Edatope = edatope, Spp = spp)
+          ##cat(unlist(dat$key), "\n")
+          out
+    }
   }
 }
 
