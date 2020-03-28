@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+source("./_CCISS_Packages.R")
 ```
 
 ## R Markdown
@@ -16,51 +17,6 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
 ```{r cars}
-
-##======================================================================================
-## CCISS Publication Scripts
-## Step 2b - Suitability maps for quality control of the suitability ratings
-##======================================================================================
-
-# Colin Mahony
-# c_mahony@alumni.ubc.ca
-# 778-288-4008
-# July 21, 2019
-
-require (RGtk2)
-require(plyr)
-require (rChoiceDialogs)
-require (data.table)
-require(doBy)
-require (utils)
-require(labdsv)
-require(tools )
-require(svDialogs)
-require(tcltk)
-require(randomForest)
-require(foreach)
-require(dplyr)
-require(reshape2)
-require(reshape)
-library(doParallel)
-require(data.table)
-library(MASS)   
-library(scales)
-library(stats)
-library(rgl)
-library(RColorBrewer)
-library(FNN)
-library(igraph)
-library(raster)
-library(maps)
-library(mapdata)
-library(maptools)
-library(sp)
-library(colorRamps)
-library(rgeos)
-library(rgdal)
-library(foreign)
-
 
 # Knowledge Tables
 treesuit="TreeSpp_ESuit_v11_18"
@@ -263,9 +219,15 @@ for(spp in spps){
 }
 
 
-#===============================================================================
+
+```
+
+
 # map the suitability for each species
-#===============================================================================
+
+
+```{r pressure, echo=FALSE}
+
 edatope.name <- c("Subxeric-poor", "Mesic-medium", "Hygric-rich")
 
 breakseq <- c(0.5,1.5,2.5,3.5,5)
@@ -308,14 +270,6 @@ for(spp in spps){
 }
 
 
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
