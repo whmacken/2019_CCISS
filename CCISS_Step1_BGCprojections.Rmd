@@ -1,10 +1,12 @@
+---
+title: "Predict BGC"
+author: "Will MacKenzie"
+date: "04/04/2020"
+output: html_document
+---
 
-## ======================================================================================
-## CCISS Publication Scripts Step 1 - BGC projections for BC study area
-## ======================================================================================
-
-# Colin Mahony c_mahony@alumni.ubc.ca 778-288-4008 July 21, 2019
-
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 require(RGtk2)
 require(plyr)
 require(rChoiceDialogs)
@@ -42,8 +44,17 @@ require(data.table)
 require(ranger)
 require(tidyverse)
 
+```
 
-rm(list = ls())
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+
+
 
 # ===============================================================================
 # Set analysis Parameters
@@ -327,3 +338,14 @@ out <- foreach(GCM = GCMs, .combine = rbind) %:%
 
 
 
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
