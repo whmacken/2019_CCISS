@@ -85,65 +85,11 @@ GCMs <- c("ACCESS1-0", "CanESM2", "CCSM4", "CESM1-CAM5", "CNRM-CM5", "CSIRO-Mk3-
           "MIROC5", "MPI-ESM-LR", "MRI-CGCM3")
 rcps <- c("rcp45", "rcp85")
 proj.years <- c(2025, 2055, 2085)
-hist.years <- c(1995, 2004, 2005, 2009, 2014, 2017)
+hist.years <- c(1995, 2004, 2005, 2009, 2014, 2018)
 edatopes <- c("B2", "C4", "D6")
 spps.lookup <- fread("inputs/Tree speciesand codes_2.0_2May2019.csv")
 edatope.name <- c("Subxeric-poor", "Mesic-medium", "Hygric-rich")
 BGCcolors <- fread("inputs/BGCzone_Colorscheme.csv")
-
-
-# ===============================================================================
-# generate the vector of mapped BGCs
-# ===============================================================================
-
-points <- fread(paste("inputs/", grid, ".csv", sep = ""))
-BGC <- points$ID2
-table(BGC)
-
-BGC <- gsub(" ", "", BGC)
-table(BGC)
-sort(table(BGC))
-
-# # merge small units BGC[which(BGC=='CMAwh')] <- 'CMAun'
-# BGC[which(BGC=='MHun')] <- 'MHunp' BGC[which(BGC=='ESSFxvw')] <-
-# 'ESSFxvp' BGC[which(BGC=='ESSFdcp')] <- 'ESSFdcw'
-
-# BGC zones
-
-zone <- rep(NA, length(BGC))
-for (i in BGCcolors$zone){
-  zone[grep(i, BGC)] <- i
-}
-table(zone)
-
-
-# #===============================================================================
-# # select variables from ClimateWNA file and subset by GCM # NB: is
-# commented out because you only need to do this once: it just reduces
-# ram needed to load in the ClimateBC data
-# #===============================================================================
-# Columns <- unique(c('PPT05', 'PPT06', 'PPT07', 'PPT08', 'PPT09', 'PPT_at',
-# 'PPT_wt', 'CMD07', 'CMD', 'MAT', 'PPT_sm', 'Tmin_wt', 'Tmax_sm',
-# rownames(importance(BGCmodel))[-which(rownames(importance(BGCmodel))%in%c('PPT_MJ',
-# 'PPT_JAS', 'PPT.dormant', 'CMD.def', 'CMDMax', 'CMD.total'))]))
-# 
-# #first batch of 8 models fplot=paste('inputs/', grid,
-# '_48GCMs_MSYT.csv', sep='') Y1 <- fread(fplot, select = c('GCM',
-# Columns), stringsAsFactors = FALSE, data.table = FALSE) #fread is
-# faster than read.csv models <-
-# c('ACCESS1-0','CanESM2','CCSM4','CESM1-CAM5','CNRM-CM5','CSIRO-Mk3-6-0',
-# 'GFDL-CM3','GISS-E2R') for(model in models){ temp <-
-# Y1[grep(model,Y1$GCM),] write.csv(temp, paste('inputs/', grid, '_',
-# model, '_BioVars.csv', sep=''), row.names = F)
-# print(which(models==model)) } #second batch of 7 models
-# fplot=paste('inputs/', grid, '_42GCMs_MSYT.csv', sep='') Y1 <-
-# fread(fplot, select = c('GCM', Columns), stringsAsFactors = FALSE,
-# data.table = FALSE) #fread is faster than read.csv models <-
-# c('HadGEM2-ES', 'INM-CM4', 'IPSL-CM5A-MR', 'MIROC-ESM', 'MIROC5',
-# 'MPI-ESM-LR','MRI-CGCM3') for(model in models){ temp <-
-# Y1[grep(model,Y1$GCM),] write.csv(temp, paste('inputs/', grid, '_',
-# model, '_BioVars.csv', sep=''), row.names = F)
-# print(which(models==model)) }
 
 
 # ===============================================================================
@@ -169,7 +115,7 @@ Y0 <- Y0 %>% dplyr::select(vars)
 ## Predict future subzones######
 BGC.pred.ref <- predict(BGCmodel, Y0)
 #dir.create("./outputs")
-write.csv(BGC.pred.ref$predictions, paste("outputs/BGC.pred.ref", grid, "csv", sep = "."), 
+fwrite(BGC.pred.ref$predictions, paste("outputs/BGC.pred.ref", grid, "csv", sep = "."), 
           row.names = F)
 
 ## Write Climate file ######
@@ -180,8 +126,8 @@ fwrite(Y0, paste("inputs/", grid, "_1961_1990_", model,".csv", sep = ""))
 # ===============================================================================
 
 # setwd('C:\\Colin\\Projects\\2019_CCISS')
-hist.years <- c(1995, 2005)
-hist.periods <- c("1991_2000", "2001_2010")
+hist.years <- c(1985, 1995, 2005, 2014)
+hist.periods <- c("1981_1990", "1991_2000", "2001_2010", "2011_2018")
 #hist.year="1995"
 
 for (hist.year in hist.years){
@@ -199,20 +145,19 @@ for (hist.year in hist.years){
 BGC.pred <- predict(BGCmodel, Y0)
   
 #assign(paste("BGC.pred", hist.year, sep = "."), 
-  write.csv(BGC.pred$predictions, paste0("./outputs/BGC.pred", grid, hist.year, ".csv", sep = "."), row.names = F)
+  fwrite(BGC.pred$predictions, paste0("./outputs/BGC.pred", grid, hist.year, ".csv", sep = "."), row.names = F)
   
   ## Write Climate file ######
-  write.csv(Y0, paste("inputs/", grid, "_", hist.year, "_", model, ".csv",  sep = ""), row.names = F)
+  fwrite(Y0, paste("inputs/", grid, "_", hist.year, "_", model, ".csv",  sep = ""), row.names = F)
   
   print(hist.year)
 }
 
 # ===============================================================================
-# BGC Projections for last decade
+# BGC Projections for last year available
 # ===============================================================================
 
-# setwd('C:\\Colin\\Projects\\2019_CCISS')
-fplot <- paste("inputs/", grid, "_2011-2017MSYT.csv", sep = "")
+fplot <- paste("inputs/", grid, "_2011-2018MSY.csv", sep = "")
 
 Y0 <- fread(fplot, select = c("ID1", "Year", Columns), stringsAsFactors = FALSE, 
             data.table = FALSE)  #fread is faster than read.csv
@@ -220,31 +165,17 @@ Y0 <- fread(fplot, select = c("ID1", "Year", Columns), stringsAsFactors = FALSE,
 str(Y0)
 
 Y0 <- addVars(Y0)
-Y0 <- Y0 %>% dplyr::select(ID1, Year, vars)
-# Extract the year 2017
-Y2017 <- Y0[which(Y0$Year == 2017), ]
-str(Y2017)
-
-# Calculate mean of 2011-2017 period
-Y1 <- Y0 %>%
-  group_by(ID1) %>%
-  summarise_all(list(mean)) %>%
-  ungroup()
-##Y1 <- aggregate(Y0, by = list(Y0$ID1), FUN = mean, na.rm = T)[, -1]
-Y1 <- Y1[match(Y2017$ID1, Y1$ID1), ]
-Y1 <- Y1[,-2]
+Y0 <- Y0 %>% dplyr::select(vars)
+# Extract the year 2018
+Y0 <- Y0[which(Y0$Year == 2018), ]
 
 ## Predict BGC units######
-BGC.pred.2017 <- predict(BGCmodel, Y2017)
-BGC.pred.2014 <- predict(BGCmodel, Y1)
-write.csv(BGC.pred.2017$predictions, paste("outputs/BGC.pred", grid, "2017.csv", sep = "."), 
-          row.names = F)
-write.csv(BGC.pred.2014$predictions, paste("outputs/BGC.pred", grid, "2014.csv", sep = "."), 
+BGC.pred.2018 <- predict(BGCmodel, Y0)
+fwrite(BGC.pred.2018$predictions, paste("outputs/BGC.pred", grid, "2018.csv", sep = "."), 
           row.names = F)
 
 ## Write Climate file ######
-fwrite(Y2017, paste("inputs/", grid, "_2017_BioVars.csv", sep = ""))
-fwrite(Y1, paste("inputs/", grid, "_2014_BioVars.csv", sep = ""))
+fwrite(Y0, paste("inputs/", grid, "_2018_BioVars.csv", sep = ""))
 
 # ===============================================================================
 # BGC Projections for other historical normals
@@ -254,8 +185,8 @@ fwrite(Y1, paste("inputs/", grid, "_2014_BioVars.csv", sep = ""))
 hist.years <- c(1995, 2005)
 hist.periods <- c("1991_2000", "2001_2010")
 
-mean(c(1991, 2017))
-mean(c(2001, 2017))
+mean(c(1991, 2018))
+mean(c(2001, 2018))
 
 # read in the data for the 1990s and 2000s
 for (hist.year in hist.years){
@@ -271,7 +202,7 @@ for (hist.year in hist.years){
   print(hist.year)
 }
 
-# 2011-2017 period already exported in previous phase, so read that in
+# 2011-2018 period already exported in previous phase, so read that in
 Y.2014 <- fread(paste("inputs/", grid, "_2014_BioVars.csv", sep = ""))
 Y.2014 <- Y.2014[, -which(names(Y.2014) %in% c("ID1", "Year"))]
 str(Y.2014)
@@ -286,10 +217,10 @@ for (hist.year in hist.years){
   
   ## Predict future subzones######
   BGC.pred <- predict(BGCmodel, get(paste("Y", hist.year, sep = ".")))
-  write.csv(BGC.pred$predictions, paste("outputs/BGC.pred", grid, hist.year, "csv", sep = "."), row.names = F)
+  fwrite(BGC.pred$predictions, paste("outputs/BGC.pred", grid, hist.year, "csv", sep = "."), row.names = F)
   
   ## Write Climate file ######
-  write.csv(get(paste("Y", hist.year, sep = ".")), paste("inputs/", grid, 
+  fwrite(get(paste("Y", hist.year, sep = ".")), paste("inputs/", grid, 
                                                          "_", hist.year, "_BioVars.csv", sep = ""), row.names = F)
   
   print(hist.year)
