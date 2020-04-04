@@ -39,6 +39,8 @@ library(rgeos)
 library(rgdal)
 library(foreign)
 require(data.table)
+require(ranger)
+require(tidyverse)
 
 
 rm(list = ls())
@@ -66,8 +68,8 @@ addVars <- function(dat){
 
 
 ### Load random forest model
-model <- "5.1"
-fname <- "inputs/BGCv11_AB_USA_16VAR_SubZone_RFmodel.Rdata"
+model <- "16Var_6_2"
+fname <- "inputs/models/WNAv11_16_VAR_SubZone_ranger.Rdata"
 load(fname)
 #rownames(importance(BGCmodel)) ### shows the variable used in the RFmodel
 
@@ -141,12 +143,12 @@ table(zone)
 # ===============================================================================
 # BGC Projections for reference period
 # ===============================================================================
-
+vars <- as.data.frame(BGCmodel$variable.importance)
+vars <- row.names(vars)
 # setwd('C:/GitHub/2019_CCISS')
 Columns <- unique(c("PPT05", "PPT06", "PPT07", "PPT08", "PPT09", "PPT_at", 
                     "PPT_wt", "CMD07", "CMD", "MAT", "PPT_sm", "Tmin_wt", "Tmax_sm",
-                    rownames(importance(BGCmodel))[-which(rownames(importance(BGCmodel)) %in%
-                                                            c("PPT_MJ", "PPT_JAS", "PPT.dormant", "CMD.def", "CMDMax", "CMD.total"))]))
+                    vars[!vars %in% c("PPT_MJ", "PPT_JAS", "PPT.dormant", "CMD.def", "CMDMax", "CMD.total")]))
 
 fplot <- paste("inputs/", grid, "_Normal_1961_1990MSY.csv", sep = "")
 
@@ -156,14 +158,16 @@ Y0 <- Y0[!is.na(Y0[, 2]), ]
 
 Y0 <- addVars(Y0)
 
+Y0 <- Y0 %>% dplyr::select(vars)
+
 ## Predict future subzones######
 BGC.pred.ref <- predict(BGCmodel, Y0)
-dir.create("./outputs")
-write.csv(BGC.pred.ref, paste("outputs/BGC.pred.ref", grid, "csv", sep = "."), 
+#dir.create("./outputs")
+write.csv(BGC.pred.ref$predictions, paste("outputs/BGC.pred.ref", grid, "csv", sep = "."), 
           row.names = F)
 
 ## Write Climate file ######
-fwrite(Y0, paste("inputs/", grid, "_1961_1990_BioVars.csv", sep = ""))
+fwrite(Y0, paste("inputs/", grid, "_1961_1990_", model,".csv", sep = ""))
 
 # ===============================================================================
 # BGC Projections for historical decades
@@ -172,6 +176,7 @@ fwrite(Y0, paste("inputs/", grid, "_1961_1990_BioVars.csv", sep = ""))
 # setwd('C:\\Colin\\Projects\\2019_CCISS')
 hist.years <- c(1995, 2005)
 hist.periods <- c("1991_2000", "2001_2010")
+#hist.year="1995"
 
 for (hist.year in hist.years){
   hist.period <- hist.periods[which(hist.years == hist.year)]
@@ -182,6 +187,7 @@ for (hist.year in hist.years){
   Y0 <- Y0[!is.na(Y0[, 2]), ]
   # str(Y0)
   Y0 <- addVars(Y0)
+  Y0 <- Y0 %>% dplyr::select(vars)
   
   ## Predict future subzones######
   assign(paste("BGC.pred", hist.year, sep = "."), predict(BGCmodel, Y0))
