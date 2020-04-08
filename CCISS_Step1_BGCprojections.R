@@ -72,7 +72,7 @@ Y0 <- Y0[!is.na(Y0[, 2]), ]
 
 Y0 <- addVars(Y0)
 
-Y0 <- Y0 %>% dplyr::select(vars)
+Y0 <- Y0 %>% dplyr::select(all_of(vars))
 
 ## Predict future subzones######
 BGC.pred.ref <- predict(BGCmodel, Y0)
