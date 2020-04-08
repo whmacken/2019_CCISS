@@ -36,7 +36,7 @@ addVars <- function(dat){
 
 
 ### Load random forest model
-model <- "16Var_6_2"
+model <- "18Var_6_2"
 fname <- "inputs/models/WNAv11_18_VAR_SubZone_ranger.Rdata"
 load(fname)
 #rownames(importance(BGCmodel)) ### shows the variable used in the RFmodel
