@@ -40,6 +40,12 @@ model <- "18Var_6_2"
 fname <- "inputs/models/WNAv11_18_VAR_SubZone_ranger.Rdata"
 load(fname)
 #rownames(importance(BGCmodel)) ### shows the variable used in the RFmodel
+vars <- as.data.frame(BGCmodel$variable.importance)
+vars <- row.names(vars)
+# setwd('C:/GitHub/2019_CCISS')
+Columns <- unique(c("PPT05", "PPT06", "PPT07", "PPT08", "PPT09", "PPT_at", 
+                    "PPT_wt", "CMD07", "CMD", "MAT", "PPT_sm", "Tmin_wt", "Tmax_sm",
+                    vars[!vars %in% c("PPT_MJ", "PPT_JAS", "PPT.dormant", "CMD.def", "CMDMax", "CMD.total")]))
 
 
 GCMs <- c("ACCESS1-0", "CanESM2", "CCSM4", "CESM1-CAM5", "CNRM-CM5", "CSIRO-Mk3-6-0", 
@@ -57,12 +63,6 @@ BGCcolors <- fread("inputs/BGCzone_Colorscheme.csv")
 # ===============================================================================
 # BGC Projections for reference period
 # ===============================================================================
-vars <- as.data.frame(BGCmodel$variable.importance)
-vars <- row.names(vars)
-# setwd('C:/GitHub/2019_CCISS')
-Columns <- unique(c("PPT05", "PPT06", "PPT07", "PPT08", "PPT09", "PPT_at", 
-                    "PPT_wt", "CMD07", "CMD", "MAT", "PPT_sm", "Tmin_wt", "Tmax_sm",
-                    vars[!vars %in% c("PPT_MJ", "PPT_JAS", "PPT.dormant", "CMD.def", "CMDMax", "CMD.total")]))
 
 fplot <- paste("inputs/", grid, "_Normal_1961_1990MSY.csv", sep = "")
 
@@ -183,14 +183,24 @@ for (hist.year in hist.years){
 }
 
 # ===============================================================================
-# BGC Projections for future periods [NOT UPDATED YET FOR THE NEW DATA STRUCTURE]
+# BGC Projections for future periods
 # ===============================================================================
 
 library(tidyr)
-Y0 <- fread(paste0("./inputs/",grid,"_90 GCMsMSY.csv", sep = ""), select = c("Year", "ID1","ID2", Columns))   ##
-Y0 <- separate(Y0, Year, into = c("Model","Scenario","FuturePeriod"), sep = "_", remove = T)
-Y0$FuturePeriod <- gsub(".gcm","",Y0$FuturePeriod)
-Y0 <- Y0 %>% select(Year, ID1,ID2, vars)
+
+GCM=GCMs[1]
+rcp=rcps[1]
+proj.year=proj.years[1]
+
+for(GCM in GCMs){
+
+Y0 <- fread(paste0("./inputs/",grid,"_",GCM,".csv", sep = ""), select = c("Year", "ID1","ID2", Columns), data.table = F)   ##
+Y0 <- separate(Y0, Year, into = c("GCM","rcp","proj.year"), sep = "_", remove = T)
+Y0$proj.year <- gsub(".gcm","",Y0$proj.year)
+
+Y0 <- addVars(Y0)
+
+Y0 <- Y0 %>% select(GCM, rcp,proj.year, vars)
 
 require(doParallel)
 set.seed(123321)
@@ -198,19 +208,16 @@ coreNum <- as.numeric(detectCores()-2)
 cl <- makeCluster(coreNum)
 registerDoParallel(cl, cores = coreNum)
 
-out <- foreach(GCM = GCMs, .combine = rbind) %:%
-  foreach(rcp = rcps, .combine = rbind) %:%
+out <- foreach(rcp = rcps, .combine = rbind) %:%
   foreach(proj.year = proj.years, .combine = rbind, .packages = c("data.table","ranger", "dplyr")) %do% {
-    sub <- Y0[Y0$Model == GCM & Y0$Scenario == rcp & Y0$FuturePeriod == proj.year,]
-    sub <- addVars(sub)
-    subPred <- data.frame(ID = sub$ID1)
-    subPred$BGC.pred <- predict(BGCmodel, sub)
+    sub <- Y0[which(Y0$GCM == GCM & Y0$rcp == rcp & Y0$proj.year == proj.year),]
+    subPred <- predict(BGCmodel, sub)
     
-    fwrite(subPred, paste("outputs/BGC.pred", grid, GCM, rcp, proj.year, ".csv", sep = ""))
-    temp <- aggregate(ID ~ BGC.pred, data = subPred, FUN = length) %>% 
-      mutate(Model = GCM, Scn = rcp, FuturePeriod = proj.year)
-    temp
+    fwrite(list(subPred$predictions), paste("outputs/BGC.pred", grid, GCM, rcp, proj.year, ".csv", sep = ""))
+    # temp <- aggregate(ID ~ BGC.pred, data = subPred, FUN = length) %>% 
+    #   mutate(GCM = GCM, rcp = rcp, proj.year = proj.year)
+    # temp
   }
-
-
+print(GCM)
+}
 
