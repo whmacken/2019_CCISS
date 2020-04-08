@@ -43,23 +43,13 @@ library(foreign)
 require(data.table)
 require(ranger)
 require(tidyverse)
+require(plotKML)
 
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-
-
-
-# ===============================================================================
 # Set analysis Parameters
-# ===============================================================================
 
+```{r set analysis parameters}
 grid <- "BC2kmGrid"
 
 GCMs <- c("ACCESS1-0", "CanESM2", "CCSM4", "CESM1-CAM5", "CNRM-CM5", "CSIRO-Mk3-6-0", 
@@ -101,7 +91,7 @@ edatopes <- c("B2", "C4", "D6")
 spps.lookup <- fread("inputs/Tree speciesand codes_2.0_2May2019.csv")
 edatope.name <- c("Subxeric-poor", "Mesic-medium", "Hygric-rich")
 BGCcolors <- fread("inputs/BGCzone_Colorscheme.csv")
-
+```
 
 # ===============================================================================
 # generate the vector of mapped BGCs
