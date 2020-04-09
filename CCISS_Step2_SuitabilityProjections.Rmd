@@ -27,51 +27,16 @@ July 21, 2019
      3. obtain suitability of spp in site series
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-source("./_CCISS_Packages.R")
+source("./_CCISS_Packages.R") ## packages required
+source("./_CCISS_Functions.R") ## common functions
+source("./_CCISS_Parameters.R") ## settings used through all scripts
 ```
 
-## R Markdown
+## Import BGC projections
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+```{r import BGCs}
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-
-
-
-
-# rm(list=ls())
-
-#===============================================================================
-# Set analysis Parameters
-#===============================================================================
-
-##setwd("C:\\Colin\\Projects\\2019_CCISS")
-#setwd("C:/Users/kirid/Desktop/2019_CCISS")
-
-grid <- "BC2kmGrid"
-
-GCMs <-  c("ACCESS1-0","CanESM2","CCSM4","CESM1-CAM5","CNRM-CM5","CSIRO-Mk3-6-0", "GFDL-CM3","GISS-E2R", "HadGEM2-ES", "INM-CM4", "IPSL-CM5A-MR", "MIROC-ESM", "MIROC5", "MPI-ESM-LR","MRI-CGCM3")
-rcps <- c("rcp45", "rcp85")
-proj.years <- c(2025, 2055, 2085)
-hist.years <- c(1995, 2004, 2005, 2009, 2014, 2017)
-edatopes<- c("B2", "C4", "D6")
-edatope.name <- c("Subxeric-poor", "Mesic-medium", "Hygric-rich")
-BGCcolors <- read.csv("./inputs/BGCzone_Colorscheme.csv")
-
-# Knowledge Tables
-inputFolder = "inputs"
-treesuit="TreeSpp_ESuit_v11_18"
-SiteSeries_Use <-read.csv("./inputs/SiteSeries_Use_CCISSpaper.csv",stringsAsFactors=FALSE,na.strings=".")
-spps.lookup <- read.csv("./inputs/Tree speciesand codes_2.0_2May2019.csv")
-
-
-#===============================================================================
-# generate the vector of mapped BGCs
-#===============================================================================
-
-points <- fread(paste(inputFolder,"/", grid,".csv", sep=""))
+points <- fread(paste("./inputs/", grid,".csv", sep=""))
 BGC <- points$ID2
 BGC <- gsub(" ","",BGC)  
 sort(table(BGC))
@@ -81,32 +46,36 @@ sort(table(BGC))
 #===============================================================================
 
 ## reference period BGC
-BGC.pred.ref <- as.character(read.csv(paste("outputs\\BGC.pred.ref", grid, "csv", sep="."))[,1])
+BGC.pred.ref <- as.character(read.csv(paste("./outputs/BGC.pred.ref", grid, "csv", sep="."))[,1])
 
 # Historical BGC
 for(hist.year in hist.years){
-  BGC.pred <- as.character(read.csv(paste("outputs\\BGC.pred", grid,hist.year,"csv", sep="."))[,1])
+  BGC.pred <- as.character(read.csv(paste("./outputs/BGC.pred", grid,hist.year,"csv", sep="."))[,1])
   assign(paste("BGC.pred",hist.year,sep="."), BGC.pred)
   print(hist.year)
 }
+
 
 # Future BGC
 predDat <- foreach(rcp = rcps, .combine = rbind) %:%
   foreach(proj.year = proj.years, .combine = rbind) %:%
   foreach(GCM = GCMs, .combine = rbind) %do% {
-    BGC.pred <- fread(paste("outputs\\BGC.pred",grid, GCM, rcp, proj.year,".csv", sep=""))
+    BGC.pred <- fread(paste("./outputs/BGC.pred",grid, GCM, rcp, proj.year,".csv", sep=""))
     BGC.pred <- BGC.pred %>% mutate(Scn = rcp, FuturePeriod = proj.year, GCM = GCM)
     cat(GCM, rcp, proj.year, "\n")
     BGC.pred
   }
+```
 
 
+# find the species suitability each projection/edatope/species combination
+```{r find suitability of futures}
 #===============================================================================
 # import will's lookup table for the site series associated with the selected edatope in each BGC unit
 #===============================================================================
 
-SiteLookup <- data.frame(MergedBGC=unique(SiteSeries_Use$MergedBGC))
-edatopes<- c("B2", "C4", "D6")
+SiteLookup <- data.frame(MergedBGC=unique(SiteSeries_Use$BGC))
+
 for(edatope in edatopes){
   # SiteLookup <- cbind(SiteLookup, SiteSeries_Use$SS_NoSpace[match(SiteLookup[,1], SiteSeries_Use$MergedBGC[which(SiteSeries_Use$Use==edatope)])])
   SiteLookup <- cbind(SiteLookup, SiteSeries_Use$SS_NoSpace[which(SiteSeries_Use$Edatopic==edatope)])
@@ -114,14 +83,8 @@ for(edatope in edatopes){
 }
 str(SiteLookup)
 
-#===============================================================================
-# find the species suitability each projection/edatope/species combination
-#===============================================================================
-
-hist.years <- c(1995, 2004, 2005, 2009, 2014, 2017)
-
 # Import suitability tables
-S1 <- read.csv(paste("inputs/",treesuit,".csv",sep=""),stringsAsFactors=F,na.strings=".")
+S1 <- treesuit ##imported in source call
 S1 <- unique(S1)
 
 ## EDA: are there suitabilities for all projected units? 
@@ -142,8 +105,12 @@ spps <- spps[-which(spps=="X")]
 spps.candidate <- spps.lookup$TreeCode[-which(spps.lookup$Exclude=="x")]
 spps <- spps[which(spps%in%spps.candidate)] 
 
-require(doParallel)
-library(iterators)
+```
+
+## big for each loop to generate future suitabilities
+
+```{r run}
+
 set.seed(123321)
 coreNum <- as.numeric(detectCores()-2)
 cl <- makeCluster(coreNum)
@@ -201,15 +168,7 @@ outAll <- foreach(spp = spps,.combine = rbind) %do% {
   }
 }
 
+stopCluster(cl)
 fwrite(outAll, "BGC.pred_AllFuture.csv")
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
