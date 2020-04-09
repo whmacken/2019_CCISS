@@ -21,8 +21,8 @@ grid.data <- fread(paste0("inputs/", grid, ".csv", sep = ""))
 model = "6,2"
 
 ###Load random forest model
-varset <- "16VAR"
-fname=paste("Rcode\\BGCv11_AB_USA_LHC_", varset, "_SubZone_RFmodel.Rdata", sep="")
+varset <- "16_VAR"
+fname=paste("inputs/models/WNAv11_", varset, "_SubZone_ranger.Rdata", sep="")
 load(fname)
 
 
@@ -31,7 +31,7 @@ load(fname)
 #===============================================================================
 
 ## create a dem from the climateBC input data
-points <- read.csv(paste("inputs/",grid,".csv", sep=""))
+points <- fread(paste("inputs/",grid,".csv", sep=""))
 dim(points)
 
 # points <- points[order(points$lon, points$lat),]
@@ -85,7 +85,6 @@ sort(table(BGC))
 # BGC[which(BGC=="ESSFdcp")] <- "ESSFdcw"
 
 #BGC zones
-BGCcolors <- read.csv("C:\\Users\\mahonyc.stu\\Documents\\Masters\\Research\\SpatialData\\BGCv10\\BGCv10\\BGCzone_Colorscheme.csv")
 zone <- rep(NA, length(BGC))
 for(i in BGCcolors$zone){ zone[grep(i,BGC)] <- i }
 table(zone)
@@ -94,7 +93,7 @@ table(zone)
 # generic spatial data
 #===============================================================================
 ### admin boundaries
-bdy.bc <- readOGR("InputData\\BC_AB_US_Shp\\ProvincialOutline.shp")
+bdy.bc <- readOGR("inputs/shapes/ProvincialOutline.shp")
 
 
 
@@ -103,20 +102,20 @@ bdy.bc <- readOGR("InputData\\BC_AB_US_Shp\\ProvincialOutline.shp")
 #===============================================================================
 
 ## mapped BGC
-points <- read.csv(paste("InputData\\",grid,".csv", sep=""))
+points <- fread(paste("inputs/",grid,".csv", sep=""))
 BGC <- points$ID2
 BGC <- gsub(" ","",BGC)  
 zone <- rep(NA, length(BGC))
 for(i in BGCcolors$zone){ zone[grep(i,BGC)] <- i }
 
 ## reference period BGC
-BGC.pred.ref <- as.character(read.csv(paste("OutputData\\BGC.pred", grid, "ref.csv", sep="."))[,1])
+BGC.pred.ref <- as.character(fread(paste("outputs/BGC.pred", grid, "ref.csv", sep="."))[,1])
 zone.pred.ref <- rep(NA, length(BGC))
 for(i in BGCcolors$zone){ zone.pred.ref[grep(i,BGC.pred.ref)] <- i }
 
 # Historical BGC
 for(hist.year in hist.years){
-  BGC.pred <- as.character(read.csv(paste("OutputData\\BGC.pred", grid,hist.year,"csv", sep="."))[,1])
+  BGC.pred <- as.character(read.csv(paste("outputs/BGC.pred", grid,hist.year,"csv", sep="."))[,1])
   assign(paste("BGC.pred", hist.year, sep="."), BGC.pred) #bgc projection
   print(hist.year)
 }
@@ -193,7 +192,7 @@ X <- dem
 zones <- c("BG", "BWBS", "CDF", "CWH", "ESSF", "ICH", "IDF", "MH", "MS", "PP", "SBPS", "SBS", "SWB" )
 ColScheme <- as.character(BGCcolors[match(zones,BGCcolors[,1]),5])
 
-png(filename=paste("Results\\CCISS.BGCEDA.BGCprojections.vert","png",sep="."), type="cairo", units="in", width=6.5, height=8.5, pointsize=11, res=600)
+png(filename=paste("results/CCISS.BGCEDA.BGCprojections.vert","png",sep="."), type="cairo", units="in", width=6.5, height=8.5, pointsize=11, res=600)
 par(mar=c(0.1,0.1, 0.1,0.1), mgp=c(2,0.25,0), mfrow=c(3,2))
   
 # png(filename=paste("Results\\CCISS.BGCEDA.BGCprojections.horiz","png",sep="."), type="cairo", units="in", width=11, height=6.5, pointsize=11, res=600)
@@ -253,14 +252,12 @@ dev.off()
 #===============================================================================
 
 ############## get the full list of BGC zones
-setwd("C:\\Users\\mahonyc.stu\\Documents\\Masters\\Research\\Publications\\2019_CCISS")
-
 ## parameters
 grid <- "WNA2"
-BGC.pred.ref.WNA <- read.csv(paste("OutputData\\BGC.pred.ref", grid, "csv", sep="."))[,1]
+BGC.pred.ref.WNA <- read.csv(paste("outputs/BGC.pred.ref", grid, "csv", sep="."))[,1]
 rcp="rcp45"
 proj.year=2055
-BGC.pred.WNA <- read.csv(paste("OutputData\\BGC.pred", grid, rcp, proj.year, "csv", sep="."))[,1]
+BGC.pred.WNA <- read.csv(paste("outputs/BGC.pred", grid, rcp, proj.year, "csv", sep="."))[,1]
 
 
 zone.pred.ref.WNA <- gsub("[:a-z:]","",BGC.pred.ref.WNA) 
@@ -273,7 +270,7 @@ zone <- sort(unique(c(zone.pred.ref.WNA, zone.pred.WNA)))
 zone <- factor(zone, levels=zone)
 
 #BGC zones
-BGCcolors <- read.csv("C:\\Users\\mahonyc.stu\\Documents\\Masters\\Research\\SpatialData\\BGCv10\\BGCv10\\BGCzone_Colorscheme.csv")
+
 colors = grDevices::colors()[grep('gr(a|e)y', grDevices::colors(), invert = T)][-1]
 
 ColScheme.zone <- rep(NA, length(zone))
@@ -286,7 +283,7 @@ ColScheme.zone <- factor(ColScheme.zone, levels=ColScheme.zone)
 GCM=GCMs[1]
 for(GCM in GCMs){
 
-png(filename=paste("Results\\CCISS.BGCEDA.BGCprojections", GCM,"png",sep="."), type="cairo", units="in", width=8.5, height=7.5, pointsize=11, res=600)
+png(filename=paste("results/CCISS.BGCEDA.BGCprojections", GCM,"png",sep="."), type="cairo", units="in", width=8.5, height=7.5, pointsize=11, res=600)
 par(mar=c(0.1,0.1, 0.1,0.1), mgp=c(2,0.25,0), mfrow=c(2,2))
 
 #predicted BGC zones (projected period)
@@ -325,7 +322,7 @@ GCM=GCMs[1]
 rcp=rcps[1]
 proj.year=proj.years[2]
 
-png(filename=paste("Results\\CCISS.BGCEDA.BGCprojections", rcp, proj.year,"png",sep="."), type="cairo", units="in", width=12.75, height=6.5, pointsize=10, res=600)
+png(filename=paste("results/CCISS.BGCEDA.BGCprojections", rcp, proj.year,"png",sep="."), type="cairo", units="in", width=12.75, height=6.5, pointsize=10, res=600)
 par(mar=c(0.1,0.1, 0.1,0.1), mgp=c(2,0.25,0), mfrow=c(3,5))
 
 for(GCM in GCMs){
@@ -358,7 +355,7 @@ dev.off()
 
 ################# 4-panel maps of historical time periods
 
-  png(filename=paste("Results\\CCISS.BGCEDA.BGCprojections.histYears","png",sep="."), type="cairo", units="in", width=8.5, height=7.5, pointsize=11, res=600)
+  png(filename=paste("results/CCISS.BGCEDA.BGCprojections.histYears","png",sep="."), type="cairo", units="in", width=8.5, height=7.5, pointsize=11, res=600)
   par(mar=c(0.1,0.1, 0.1,0.1), mgp=c(2,0.25,0), mfrow=c(2,2))
   
   #predicted BGC zones 
@@ -394,14 +391,12 @@ dev.off()
   #===============================================================================
   
   ############## get the full list of BGC zones
-  setwd("C:\\Users\\mahonyc.stu\\Documents\\Masters\\Research\\Publications\\2019_CCISS")
-  
   ## parameters
   grid <- "WNA2"
-  BGC.pred.ref.WNA <- read.csv(paste("OutputData\\BGC.pred.ref", grid, "csv", sep="."))[,1]
+  BGC.pred.ref.WNA <- read.csv(paste("outputs/BGC.pred.ref", grid, "csv", sep="."))[,1]
   rcp="rcp45"
   proj.year=2055
-  BGC.pred.WNA <- read.csv(paste("OutputData\\BGC.pred", grid, rcp, proj.year, "csv", sep="."))[,1]
+  BGC.pred.WNA <- read.csv(paste("outputs/BGC.pred", grid, rcp, proj.year, "csv", sep="."))[,1]
   
   BGC.WNA <- sort(unique(c(as.character(BGC.pred.ref.WNA), as.character(BGC.pred.WNA))))
 
@@ -418,7 +413,7 @@ dev.off()
   # for(hist.year in hist.years){
   # for(GCM in c("ensemble", GCMs)){
     
-    png(filename=paste("Results\\CCISS.BGCEDA.BGCprojections.BGCUnits", GCM, rcp, proj.year,"png",sep="."), type="cairo", units="in", width=8.5, height=7.5, pointsize=8, res=600)
+    png(filename=paste("results/CCISS.BGCEDA.BGCprojections.BGCUnits", GCM, rcp, proj.year,"png",sep="."), type="cairo", units="in", width=8.5, height=7.5, pointsize=8, res=600)
     # png(filename=paste("Results\\CCISS.BGCEDA.BGCprojections.BGCUnits.Reference.png",sep="."), type="cairo", units="in", width=8.5, height=7.5, pointsize=8, res=600)
     # png(filename=paste("Results\\CCISS.BGCEDA.BGCprojections.BGCUnits.Reference", hist.year,"png",sep="."), type="cairo", units="in", width=8.5, height=7.5, pointsize=8, res=600)
     par(mar=c(0.1,0.1, 0.1,0.1), mgp=c(2,0.25,0), mfrow=c(1,1))
@@ -487,7 +482,7 @@ for(GCM in GCMs){
 print(GCM)
   }
   
-png(filename=paste("Results\\CCISS.BGCEDA.RecentVsProjected","png",sep="."), type="cairo", units="in", width=6.5, height=6, pointsize=11, res=600)
+png(filename=paste("results/CCISS.BGCEDA.RecentVsProjected","png",sep="."), type="cairo", units="in", width=6.5, height=6, pointsize=11, res=600)
 par(mar=c(7,3,1,1), mgp=c(1.75, 0.25, 0))
 barplot(t(cbind(ctCompare.BGC, ctCompare.zone)), col=c("grey80", "grey30"),  names.arg = GCMs, beside=T, las=2, tck=0, ylab="% of BC with same unit predicted", ylim=c(0,1))
 legend("topleft",bty="n", fill=c("grey80", "grey30"), inset=0.05, legend=c("BGC subzone-variants", "BGC zones"), title = "Comparison of GCM projections (RCP4.5, 2011-2040)\nto recent BGC shifts (2001-2017)")
@@ -497,7 +492,7 @@ dev.off()
 # Ensemble Agreement
 #===============================================================================
 
-png(filename=paste("Results\\CCISS.BGCEDA.EnsembleAgreement","png",sep="."), type="cairo", units="in", width=6.5, height=6, pointsize=11, res=600)
+png(filename=paste("results/CCISS.BGCEDA.EnsembleAgreement","png",sep="."), type="cairo", units="in", width=6.5, height=6, pointsize=11, res=600)
 par(mar=c(0.1,0.1, 0.1,0.1), mgp=c(2,0.25,0), mfrow=c(2,2))
 
 for(j in 1:4){
@@ -530,7 +525,7 @@ dev.off()
 # exotic units in the ensemble projection
 #===============================================================================
 
-png(filename=paste("Results\\CCISS.BGCEDA.Exotic","png",sep="."), type="cairo", units="in", width=6.5, height=6, pointsize=11, res=600)
+png(filename=paste("results/CCISS.BGCEDA.Exotic","png",sep="."), type="cairo", units="in", width=6.5, height=6, pointsize=11, res=600)
 par(mar=c(0.1,0.1, 0.1,0.1), mgp=c(2,0.25,0), mfrow=c(2,2))
 
 for(j in 1:4){
@@ -577,7 +572,7 @@ BGC.sdMAT <- aggregate(MAT.ref,by=list(BGC), FUN=sd)[,-1]
 BGC.pctError <- aggregate(BGC.change,by=list(BGC), FUN=mean)[,-1]
 BGC.pctChange <- 1-table(BGC.pred)[match(names(table(BGC)), names(table(BGC.pred)))]/table(BGC)
 
-png(filename=paste("Results\\CCISS.BGCEDA.PredError.SizeBias","png",sep="."), type="cairo", units="in", width=6.5, height=6.5, pointsize=12, res=600)
+png(filename=paste("results/CCISS.BGCEDA.PredError.SizeBias","png",sep="."), type="cairo", units="in", width=6.5, height=6.5, pointsize=12, res=600)
 mat <- matrix(c(3,9,5,6,4,9,7,8,9,9,9,9,9,9,1,2),4, byrow=T)   #define the plotting order
 layout(mat, widths=c(0.1,.1,1,1,1), heights=c(1,1,.05,.1))   #set up the multipanel plot
 
@@ -696,7 +691,7 @@ Columns = c("AHM", "bFFP",
 
 # reference climatic means for BC units
 grid <- "BC2kmGrid"
-fplot=paste("InputData\\", grid, "_Normal_1961_1990MSY.csv", sep="")
+fplot=paste("inputs/", grid, "_Normal_1961_1990MSY.csv", sep="")
 Y0 <- fread(fplot, select = Columns, stringsAsFactors = FALSE, data.table = FALSE) #fread is faster than read.csv
 #####generate some additional variables
 Y0$PPT_MJ <- Y0$PPT05 + Y0$PPT06 # MaY/June precip
@@ -718,7 +713,7 @@ zones <- factor(zones, BGCcolors$zone)
 
 # reference climatic means for exotic units
 grid <- "WNA2"
-fplot=paste("InputData\\", grid, "_Normal_1961_1990MSY.csv", sep="")
+fplot=paste("inputs/", grid, "_Normal_1961_1990MSY.csv", sep="")
 Y0 <- fread(fplot, select = Columns, stringsAsFactors = FALSE, data.table = FALSE) #fread is faster than read.csv
 #####generate some additional variables
 Y0$PPT_MJ <- Y0$PPT05 + Y0$PPT06 # MaY/June precip
@@ -743,7 +738,7 @@ zones.WNA <- factor(zones.WNA, zone)
 grid <- "BC2kmGrid"
 # for(rcp in rcps){
   for(GCM in GCMs){
-    Y1 <- fread(paste("InputData\\", grid, "_", GCM, "_", rcp, "_BioVars.csv", sep=""), select = c("GCM", Columns), stringsAsFactors = FALSE, data.table = FALSE)
+    Y1 <- fread(paste("inputs/", grid, "_", GCM, "_", rcp, "_BioVars.csv", sep=""), select = c("GCM", Columns), stringsAsFactors = FALSE, data.table = FALSE)
     Y1$PPT_MJ <- Y1$PPT05 + Y1$PPT06 # MaY/June precip
     Y1$PPT_JAS <- Y1$PPT07 + Y1$PPT08 + Y1$PPT09 # July/Aug/Sept precip
     Y1$PPT.dormant <- Y1$PPT_at + Y1$PPT_wt # for calculating spring deficit
@@ -829,7 +824,7 @@ pcscores.bgc2 <- predict(pca.BGCs.WNA, Clim.bgc2)
 x.bgc2 <- pcscores.bgc2[,var1]
 y.bgc2 <- pcscores.bgc2[,var2]
 
-png(filename=paste("Results\\CCISS.BGCEDA.ClimateSpace.SpatialVar", varset, bgc1, var1,"X", var2, "png",sep="."), type="cairo", units="in", width=24, height=12, pointsize=10, res=300)
+png(filename=paste("results/CCISS.BGCEDA.ClimateSpace.SpatialVar", varset, bgc1, var1,"X", var2, "png",sep="."), type="cairo", units="in", width=24, height=12, pointsize=10, res=300)
 par(mar=c(3.25,3.25,0.1,0.1), mgp=c(2.25,0.25,0))
 eqscplot(x[-which(BGCs.WNA=="SASbo")],y[-which(BGCs.WNA=="SASbo")], col="white", cex=2, tck=0, 
      xlab=if(PCs==T) paste("Climate PC", var1, sep="") else var1, 
