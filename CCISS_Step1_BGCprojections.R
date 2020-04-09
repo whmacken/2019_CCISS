@@ -119,14 +119,14 @@ BGC.pred <- predict(BGCmodel, Y0)
 # BGC Projections for last year available
 # ===============================================================================
 
-fplot <- paste("inputs/", grid, "_2017-2018MSY.csv", sep = "")
+fplot <- paste("inputs/", grid, "_Year_2018MSY.csv", sep = "")
 
-Y0 <- fread(fplot, select = c("ID1", "Year", Columns), stringsAsFactors = FALSE, 
+Y0 <- fread(fplot, select = c("ID1",  Columns), stringsAsFactors = FALSE, 
             data.table = FALSE)  #fread is faster than read.csv
 # Y0 <- Y0[!is.na(Y0[,2]),]
 str(Y0)
 
-Y0 <- Y0[which(Y0$Year == 2018), ]
+#Y0 <- Y0[which(Y0$Year == 2018), ]
 
 Y0 <- addVars(Y0)
 Y0 <- Y0 %>% dplyr::select(vars)
