@@ -6,65 +6,19 @@
 # c_mahony@alumni.ubc.ca
 # 778-288-4008
 
-
-require (RGtk2)
-require(plyr)
-require (rChoiceDialogs)
-require (data.table)
-require(doBy)
-require (utils)
-require(labdsv)
-require(tools )
-require(svDialogs)
-require(tcltk)
-require(randomForest)
-require(foreach)
-require(dplyr)
-require(reshape2)
-require(reshape)
-library(doParallel)
-require(data.table)
-library(MASS)   
-library(scales)
-library(stats)
-library(rgl)
-library(RColorBrewer)
-library(FNN)
-library(igraph)
-library(raster)
-library(maps)
-library(mapdata)
-library(maptools)
-library(sp)
-library(colorRamps)
-library(rgeos)
-library(rgdal)
-library(foreign)
-
+source("./_CCISS_Packages.R") ## packages required
+source("./_CCISS_Functions.R") ## common functions
+source("./_CCISS_Parameters.R") ## settings used through all scripts
 
 
 #===============================================================================
 # Set analysis Parameters
 #===============================================================================
-
-setwd("C:\\Users\\mahonyc.stu\\Documents\\Masters\\Research\\Publications\\2019_CCISS")
-
 grid <- "BC2kmGrid"
-grid.data <- read.csv(paste("InputData\\", grid, ".csv", sep = ""))
-
-GCMs <-  c("ACCESS1-0","CanESM2","CCSM4","CESM1-CAM5","CNRM-CM5","CSIRO-Mk3-6-0", "GFDL-CM3","GISS-E2R", "HadGEM2-ES", "INM-CM4", "IPSL-CM5A-MR", "MIROC-ESM", "MIROC5", "MPI-ESM-LR","MRI-CGCM3")
-rcps <- c("rcp45", "rcp85")
-proj.years <- c(2025, 2055, 2085)
-hist.years <- c(1995, 2004, 2005, 2009, 2014, 2017)
-hist.year.name <- c("1991-2000", "1991-2017", "2001-2010", "2001-2017","2011-2017", "2017")
+grid.data <- fread(paste0("inputs/", grid, ".csv", sep = ""))
 
 ##Specify variables in model
-model = "5.1"
-VarList = c("AHM", "bFFP","CMD.total","DD5_sp","EMT","Eref_sm","EXT","FFP","MCMT","MSP",
-            "PPT_JAS","PPT_MJ","PPT06","SHM","TD","Tmax_sp","Tmin_at","Tmin_sm","Tmin_wt",
-            "PAS","CMD.def","CMDMax","eFFP","Eref09","MAT","PPT07","Tmin_sp")
-
-BGCcolors <- read.csv("C:\\Users\\mahonyc.stu\\Documents\\Masters\\Research\\SpatialData\\BGCv10\\BGCv10\\BGCzone_Colorscheme.csv")
+model = "6,2"
 
 ###Load random forest model
 varset <- "16VAR"
@@ -77,7 +31,7 @@ load(fname)
 #===============================================================================
 
 ## create a dem from the climateBC input data
-points <- read.csv(paste("InputData\\",grid,".csv", sep=""))
+points <- read.csv(paste("inputs/",grid,".csv", sep=""))
 dim(points)
 
 # points <- points[order(points$lon, points$lat),]
