@@ -4,36 +4,16 @@
 ## ======================================================================================
 
 # Colin Mahony c_mahony@alumni.ubc.ca 778-288-4008 July 21, 2019
-
-require(data.table)
-require(foreach)
-require(ranger)
-require(tidyverse)
-
-
 rm(list = ls())
+source("./_CCISS_Packages.R") ## packages required
+source("./_CCISS_Functions.R") ## common functions
+source("./_CCISS_Parameters.R") ## settings used through all scripts
 
 # ===============================================================================
 # Set analysis Parameters
 # ===============================================================================
 
 grid <- "BC2kmGrid"
-
-GCMs <- c("ACCESS1-0", "CanESM2", "CCSM4", "CESM1-CAM5", "CNRM-CM5", "CSIRO-Mk3-6-0", 
-          "GFDL-CM3", "GISS-E2R", "HadGEM2-ES", "INM-CM4", "IPSL-CM5A-MR", "MIROC-ESM", 
-          "MIROC5", "MPI-ESM-LR", "MRI-CGCM3")
-
-addVars <- function(dat){
-  dat$PPT_MJ <- dat$PPT05 + dat$PPT06  # MaY/June precip
-  dat$PPT_JAS <- dat$PPT07 + dat$PPT08 + dat$PPT09  # July/Aug/Sept precip
-  dat$PPT.dormant <- dat$PPT_at + dat$PPT_wt  # for calculating spring deficit
-  dat$CMD.def <- 500 - (dat$PPT.dormant)  # start of growing season deficit original value was 400 but 500 seems better
-  dat$CMD.def[dat$CMD.def < 0] <- 0  #negative values set to zero = no deficit
-  dat$CMDMax <- dat$CMD07
-  dat$CMD.total <- dat$CMD.def + dat$CMD
-  return(dat)
-}
-
 
 ### Load random forest model
 model <- "18Var_6_2"
@@ -43,26 +23,13 @@ load(fname)
 vars <- as.data.frame(BGCmodel$variable.importance)
 vars <- row.names(vars)
 # setwd('C:/GitHub/2019_CCISS')
-Columns <- unique(c("PPT05", "PPT06", "PPT07", "PPT08", "PPT09", "PPT_at", 
-                    "PPT_wt", "CMD07", "CMD", "MAT", "PPT_sm", "Tmin_wt", "Tmax_sm",
-                    vars[!vars %in% c("PPT_MJ", "PPT_JAS", "PPT.dormant", "CMD.def", "CMDMax", "CMD.total")]))
 
-
-GCMs <- c("ACCESS1-0", "CanESM2", "CCSM4", "CESM1-CAM5", "CNRM-CM5", "CSIRO-Mk3-6-0", 
-          "GFDL-CM3", "GISS-E2R", "HadGEM2-ES", "INM-CM4", "IPSL-CM5A-MR", "MIROC-ESM", 
-          "MIROC5", "MPI-ESM-LR", "MRI-CGCM3")
-rcps <- c("rcp45", "rcp85")
-proj.years <- c(2025, 2055, 2085)
-hist.years <- c(1995, 2004, 2005, 2009, 2014, 2018)
-edatopes <- c("B2", "C4", "D6")
-spps.lookup <- fread("inputs/Tree speciesand codes_2.0_2May2019.csv")
-edatope.name <- c("Subxeric-poor", "Mesic-medium", "Hygric-rich")
-BGCcolors <- fread("inputs/BGCzone_Colorscheme.csv")
 
 
 # ===============================================================================
 # BGC Projections for reference period
 # ===============================================================================
+
 
 fplot <- paste("inputs/", grid, "_Normal_1961_1990MSY.csv", sep = "")
 
@@ -87,7 +54,6 @@ fwrite(list(BGC.pred.ref$predictions), paste("outputs/BGC.pred.ref", grid, "csv"
 # BGC Projections for historical decades
 # ===============================================================================
 
-# setwd('C:\\Colin\\Projects\\2019_CCISS')
 hist.years <- c(1985, 1995, 2005, 2014)
 hist.periods <- c("1981_1990", "1991_2000", "2001_2010", "2011_2018")
 #hist.year="1995"
@@ -186,8 +152,6 @@ for (hist.year in hist.years){
 # BGC Projections for future periods
 # ===============================================================================
 
-library(tidyr)
-
 GCM=GCMs[1]
 rcp=rcps[1]
 proj.year=proj.years[1]
@@ -209,7 +173,7 @@ cl <- makeCluster(coreNum)
 registerDoParallel(cl, cores = coreNum)
 
 out <- foreach(rcp = rcps, .combine = rbind) %:%
-  foreach(proj.year = proj.years, .combine = rbind, .packages = c("data.table","ranger", "dplyr")) %do% {
+  foreach(proj.year = proj.years, .combine = rbind, .packages = c("data.table","ranger", "dplyr")) %dopar% {
     sub <- Y0[which(Y0$GCM == GCM & Y0$rcp == rcp & Y0$proj.year == proj.year),]
     subPred <- predict(BGCmodel, sub)
     
