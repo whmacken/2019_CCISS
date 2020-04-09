@@ -46,7 +46,7 @@ Y0 <- Y0 %>% dplyr::select(all_of(vars))
 ## Predict future subzones######
 BGC.pred.ref <- predict(BGCmodel, Y0)
 #dir.create("./outputs")
-fwrite(list(BGC.pred.ref$predictions), paste("outputs/BGC.pred", grid, "ref", model,".csv", sep = "."), 
+fwrite(list(BGC.pred.ref$predictions), paste("outputs/BGC.pred", grid, "ref", model,"csv", sep = "."), 
           row.names = F)
 
 ## Write Climate file ######
@@ -165,7 +165,7 @@ Columns <- c("Year",  Columns)
 Y0 <- fread("./inputs/BC2kmGrid_90 GCMsMSY.csv", select = Columns, stringsAsFactors = FALSE, data.table = FALSE)
 
 
-for(GCM in GCMs[11:15]){
+for(GCM in GCMs){
 
 Y0 <- fread(paste0("./inputs/",grid,"_",GCM,".csv", sep = ""), select = c("Year", "ID1","ID2", Columns), data.table = F)   ##
 
