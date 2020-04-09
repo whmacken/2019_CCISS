@@ -155,17 +155,30 @@ for (hist.year in hist.years){
 GCM=GCMs[1]
 rcp=rcps[1]
 proj.year=proj.years[1]
-
-for(GCM in GCMs){
-
-Y0 <- fread(paste0("./inputs/",grid,"_",GCM,".csv", sep = ""), select = c("Year", "ID1","ID2", Columns), data.table = F)   ##
+Columns <- c("Year",  Columns)
+##===============
+###Option if one big all GCM file
+Y0 <- fread("./inputs/BC2kmGrid_90 GCMsMSY.csv", select = Columns, stringsAsFactors = FALSE, data.table = FALSE)
 Y0 <- separate(Y0, Year, into = c("GCM","rcp","proj.year"), sep = "_", remove = T)
 Y0$proj.year <- gsub(".gcm","",Y0$proj.year)
 
 Y0 <- addVars(Y0)
 
-Y0 <- Y0 %>% select(GCM, rcp,proj.year, vars)
+Y0 <- Y0 %>% dplyr::select(GCM, rcp,proj.year, vars)
 
+##=======================
+##Option 2 if folder with individual GCM outputs
+
+#for(GCM in GCMs){
+
+#Y0 <- fread(paste0("./inputs/",grid,"_",GCM,".csv", sep = ""), select = c("Year", "ID1","ID2", Columns), data.table = F)   ##
+# Y0 <- separate(Y0, Year, into = c("GCM","rcp","proj.year"), sep = "_", remove = T)
+# Y0$proj.year <- gsub(".gcm","",Y0$proj.year)
+# 
+# Y0 <- addVars(Y0)
+# 
+# Y0 <- Y0 %>% select(GCM, rcp,proj.year, vars)
+##======================
 require(doParallel)
 set.seed(123321)
 coreNum <- as.numeric(detectCores()-2)
@@ -181,7 +194,8 @@ out <- foreach(rcp = rcps, .combine = rbind) %:%
     # temp <- aggregate(ID ~ BGC.pred, data = subPred, FUN = length) %>% 
     #   mutate(GCM = GCM, rcp = rcp, proj.year = proj.year)
     # temp
+    print(GCM)
   }
-print(GCM)
-}
+
+stopCluster(cl)
 
