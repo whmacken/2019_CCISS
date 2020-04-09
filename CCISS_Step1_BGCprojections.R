@@ -159,7 +159,7 @@ GCM=GCMs[1]
 rcp=rcps[1]
 proj.year=proj.years[1]
 
-for(GCM in GCMs[5:15]){
+for(GCM in GCMs){
 
 Y0 <- fread(paste0("./inputs/",grid,"_",GCM,".csv", sep = ""), select = c("Year", "ID1","ID2", Columns), data.table = F)   ##
 Y0 <- separate(Y0, Year, into = c("GCM","rcp","proj.year"), sep = "_", remove = T)
