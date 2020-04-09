@@ -102,7 +102,7 @@ Y0 <- Y0 %>% dplyr::select(vars)
 
 ## Predict BGC units######
 BGC.pred.2018 <- predict(BGCmodel, Y0)
-fwrite(list(BGC.pred.2018$predictions), paste("outputs/BGC.pred", grid, "2018", model, ".csv", sep = "."), 
+fwrite(list(BGC.pred.2018$predictions), paste("outputs/BGC.pred", grid, "2018", model, "csv", sep = "."), 
           row.names = F)
 
 ## Write Climate file ######
@@ -159,7 +159,7 @@ GCM=GCMs[1]
 rcp=rcps[1]
 proj.year=proj.years[1]
 
-for(GCM in GCMs){
+for(GCM in GCMs[11:15]){
 
 Y0 <- fread(paste0("./inputs/",grid,"_",GCM,".csv", sep = ""), select = c("Year", "ID1","ID2", Columns), data.table = F)   ##
 Y0 <- separate(Y0, Year, into = c("GCM","rcp","proj.year"), sep = "_", remove = T)
