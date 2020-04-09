@@ -11,16 +11,19 @@ Columns <- unique(c("PPT05", "PPT06", "PPT07", "PPT08", "PPT09", "PPT_at",
 
 edatopes <- c("B2", "C4", "D6")
 
-spps.lookup <- fread("inputs/Tree speciesand codes_2.0_2May2019.csv")
-
 edatope.name <- c("Subxeric-poor", "Mesic-medium", "Hygric-rich")
-
-BGCcolors <- fread("inputs/BGCzone_Colorscheme.csv")
 
 rcps <- c("rcp45", "rcp85")
 
 proj.years <- c(2025, 2055, 2085)
 
-hist.years <- c(1995, 2004, 2005, 2009, 2014, 2017)
+hist.years <- c(1995, 2004, 2005, 2009, 2014, 2018)
 
-hist.year.name <- c("1991-2000", "1991-2017", "2001-2010", "2001-2017","2011-2017", "2017")
+hist.year.name <- c("1991-2000", "1991-2018", "2001-2010", "2001-2018","2011-2018", "2018")
+
+####Lookup tables
+
+BGCcolors <- fread("inputs/BGCzone_Colorscheme.csv")
+treesuit <- fread("./lookup/ESuit_CCISSPaper_new.csv")
+SiteSeries_Use <-fread("./lookup/SiteSeries_Use_CCISSpaper_24Mar2020.csv",stringsAsFactors=FALSE,na.strings=".")
+spps.lookup <- fread("./lookup/Tree speciesand codes_2.0_2May2019.csv")
