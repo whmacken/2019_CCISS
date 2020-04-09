@@ -21,8 +21,8 @@ grid.data <- fread(paste0("inputs/", grid, ".csv", sep = ""))
 model = "6,2"
 
 ###Load random forest model
-varset <- "16VAR"
-fname=paste("Rcode\\BGCv11_AB_USA_LHC_", varset, "_SubZone_RFmodel.Rdata", sep="")
+varset <- "16_VAR"
+fname=paste("inputs/models/WNAv11_", varset, "_SubZone_ranger.Rdata", sep="")
 load(fname)
 
 
@@ -31,7 +31,7 @@ load(fname)
 #===============================================================================
 
 ## create a dem from the climateBC input data
-points <- read.csv(paste("inputs/",grid,".csv", sep=""))
+points <- fread(paste("inputs/",grid,".csv", sep=""))
 dim(points)
 
 # points <- points[order(points$lon, points$lat),]
@@ -85,7 +85,6 @@ sort(table(BGC))
 # BGC[which(BGC=="ESSFdcp")] <- "ESSFdcw"
 
 #BGC zones
-BGCcolors <- read.csv("C:\\Users\\mahonyc.stu\\Documents\\Masters\\Research\\SpatialData\\BGCv10\\BGCv10\\BGCzone_Colorscheme.csv")
 zone <- rep(NA, length(BGC))
 for(i in BGCcolors$zone){ zone[grep(i,BGC)] <- i }
 table(zone)
@@ -94,7 +93,7 @@ table(zone)
 # generic spatial data
 #===============================================================================
 ### admin boundaries
-bdy.bc <- readOGR("InputData\\BC_AB_US_Shp\\ProvincialOutline.shp")
+bdy.bc <- readOGR("inputs/shapes/ProvincialOutline.shp")
 
 
 
@@ -103,20 +102,20 @@ bdy.bc <- readOGR("InputData\\BC_AB_US_Shp\\ProvincialOutline.shp")
 #===============================================================================
 
 ## mapped BGC
-points <- read.csv(paste("InputData\\",grid,".csv", sep=""))
+points <- fread(paste("inputs/",grid,".csv", sep=""))
 BGC <- points$ID2
 BGC <- gsub(" ","",BGC)  
 zone <- rep(NA, length(BGC))
 for(i in BGCcolors$zone){ zone[grep(i,BGC)] <- i }
 
 ## reference period BGC
-BGC.pred.ref <- as.character(read.csv(paste("OutputData\\BGC.pred", grid, "ref.csv", sep="."))[,1])
+BGC.pred.ref <- as.character(fread(paste("outputs/BGC.pred", grid, "ref.csv", sep="."))[,1])
 zone.pred.ref <- rep(NA, length(BGC))
 for(i in BGCcolors$zone){ zone.pred.ref[grep(i,BGC.pred.ref)] <- i }
 
 # Historical BGC
 for(hist.year in hist.years){
-  BGC.pred <- as.character(read.csv(paste("OutputData\\BGC.pred", grid,hist.year,"csv", sep="."))[,1])
+  BGC.pred <- as.character(read.csv(paste("outputs/BGC.pred", grid,hist.year,"csv", sep="."))[,1])
   assign(paste("BGC.pred", hist.year, sep="."), BGC.pred) #bgc projection
   print(hist.year)
 }
