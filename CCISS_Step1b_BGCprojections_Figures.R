@@ -114,14 +114,14 @@ for(i in BGCcolors$classification){ zone[grep(i,BGC)] <- i }
 
 ## reference period BGC
 
-BGC.pred.ref <- as.character(read.csv(paste("outputs/BGC.pred", grid, "ref.csv", sep="."))[,1])
+BGC.pred.ref <- as.character(read.csv(paste("outputs/BGC.pred", grid, "ref", model,".csv", sep="."))[,1])
 zone.pred.ref <- rep(NA, length(BGC))
 for(i in BGCcolors$classification){ zone.pred.ref[grep(i,BGC.pred.ref)] <- i }
 
 # Historical BGC
 for(hist.year in hist.years){
 
-  BGC.pred <- as.character(read.csv(paste("outputs/BGC.pred", grid,hist.year,"csv", sep="."))[,1])
+  BGC.pred <- as.character(read.csv(paste("outputs/BGC.pred", grid,hist.year, model,"csv", sep="."))[,1])
   assign(paste("BGC.pred", hist.year, sep="."), BGC.pred) #bgc projection
   print(hist.year)
 }
@@ -131,7 +131,7 @@ PredSum <- data.frame()
 for(rcp in rcps){
   for(proj.year in proj.years){
     for(GCM in GCMs){
-      BGC.pred <- as.character(read.csv(paste("outputs\\BGC.pred",grid, GCM, rcp, proj.year,"csv", sep="."))[,1])
+      BGC.pred <- as.character(read.csv(paste("outputs\\BGC.pred",grid, GCM, rcp, proj.year, model,"csv", sep="."))[,1])
       assign(paste("BGC.pred", GCM, rcp, proj.year, sep="."), BGC.pred) #bgc projection
       PredSum <- rbind(PredSum, as.data.frame(table(BGC.pred)))
       # print(GCM)

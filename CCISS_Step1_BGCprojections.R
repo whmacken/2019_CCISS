@@ -46,7 +46,7 @@ Y0 <- Y0 %>% dplyr::select(all_of(vars))
 ## Predict future subzones######
 BGC.pred.ref <- predict(BGCmodel, Y0)
 #dir.create("./outputs")
-fwrite(list(BGC.pred.ref$predictions), paste("outputs/BGC.pred", grid, "ref.csv", sep = "."), 
+fwrite(list(BGC.pred.ref$predictions), paste("outputs/BGC.pred", grid, "ref", model,".csv", sep = "."), 
           row.names = F)
 
 ## Write Climate file ######
@@ -75,7 +75,7 @@ for (hist.year in hist.years){
 BGC.pred <- predict(BGCmodel, Y0)
   
 #assign(paste("BGC.pred", hist.year, sep = "."), 
-  fwrite(list(BGC.pred$predictions), paste("outputs/BGC.pred", grid, hist.year, "csv", sep = "."), row.names = F)
+  fwrite(list(BGC.pred$predictions), paste("outputs/BGC.pred", grid, hist.year, model, "csv", sep = "."), row.names = F)
   
   ## Write Climate file ######
   # fwrite(Y0, paste("inputs/", grid, "_", hist.year, "_", model, ".csv",  sep = ""), row.names = F)
@@ -102,7 +102,7 @@ Y0 <- Y0 %>% dplyr::select(vars)
 
 ## Predict BGC units######
 BGC.pred.2018 <- predict(BGCmodel, Y0)
-fwrite(list(BGC.pred.2018$predictions), paste("outputs/BGC.pred", grid, "2018.csv", sep = "."), 
+fwrite(list(BGC.pred.2018$predictions), paste("outputs/BGC.pred", grid, "2018", model, ".csv", sep = "."), 
           row.names = F)
 
 ## Write Climate file ######
@@ -142,7 +142,7 @@ for (hist.year in hist.years){
   
   ## Predict future subzones######
   BGC.pred <- predict(BGCmodel, get(paste("Y", hist.year, sep = ".")))
-  fwrite(list(BGC.pred$predictions), paste("outputs/BGC.pred", grid, hist.year, "csv", sep = "."), row.names = F)
+  fwrite(list(BGC.pred$predictions), paste("outputs/BGC.pred", grid, hist.year, model, "csv", sep = "."), row.names = F)
   
   ## Write Climate file ######
   # fwrite(get(paste("Y", hist.year, sep = ".")), paste("inputs/", grid, "_", hist.year, "_", model, ".csv", sep = ""), row.names = F)
@@ -178,7 +178,7 @@ out <- foreach(rcp = rcps, .combine = rbind) %:%
     sub <- Y0[which(Y0$GCM == GCM & Y0$rcp == rcp & Y0$proj.year == proj.year),]
     subPred <- predict(BGCmodel, sub)
     
-    fwrite(list(subPred$predictions), paste("outputs/BGC.pred", grid, GCM, rcp, proj.year, "csv", sep = "."))
+    fwrite(list(subPred$predictions), paste("outputs/BGC.pred", grid, GCM, rcp, proj.year, model, "csv", sep = "."))
     # temp <- aggregate(ID ~ BGC.pred, data = subPred, FUN = length) %>% 
     #   mutate(GCM = GCM, rcp = rcp, proj.year = proj.year)
     # temp
