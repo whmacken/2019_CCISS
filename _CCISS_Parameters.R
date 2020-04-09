@@ -7,15 +7,15 @@ GCMs <- c("ACCESS1-0", "CanESM2", "CCSM4", "CESM1-CAM5", "CNRM-CM5", "CSIRO-Mk3-
 
 edatopes <- c("B2", "C4", "D6")
 
-spps.lookup <- fread("inputs/Tree speciesand codes_2.0_2May2019.csv")
+spps.lookup <- read.csv("inputs/Tree speciesand codes_2.0_2May2019.csv")
 
 edatope.name <- c("Subxeric-poor", "Mesic-medium", "Hygric-rich")
 
-BGCcolors.BC <- fread("inputs/BGCzone_Colorscheme.csv")
+BGCcolors.BC <- read.csv("inputs/BGCzone_Colorscheme.csv")
 
-BGCcolors <- fread("inputs/WNAv11_Zone_Colours.csv")
+BGCcolors <- read.csv("inputs/WNAv11_Zone_Colours.csv")
 
-BGCcolors.subzone <- fread("inputs/WNAv11_Subzone_Colours.csv")
+BGCcolors.subzone <- read.csv("inputs/WNAv11_Subzone_Colours.csv")
 
 rcps <- c("rcp45", "rcp85")
 
