@@ -2,7 +2,7 @@
 ##Standard packages for all CCISS_2019 scripts
 require (RGtk2)
 require(plyr)
-require (rChoiceDialogs)
+# require (rChoiceDialogs)
 require (data.table)
 require(doBy)
 require (utils)
