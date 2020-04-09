@@ -18,7 +18,7 @@ grid <- "BC2kmGrid"
 grid.data <- fread(paste0("inputs/", grid, ".csv", sep = ""))
 
 ##Specify variables in model
-model = "6,2"
+model = "6.2"
 
 ###Load random forest model
 varset <- "16_VAR"
@@ -94,7 +94,6 @@ table(zone)
 #===============================================================================
 ### admin boundaries
 bdy.bc <- readOGR("inputs/shapes/ProvincialOutline.shp")
-
 
 
 #===============================================================================
@@ -244,7 +243,6 @@ mtext(paste("(", letters[j+2], ") ", rcp, " ",proj.year, sep=""), side=1, line=-
 
 }
 dev.off()
-
 
 
 #===============================================================================
