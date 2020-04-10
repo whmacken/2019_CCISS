@@ -30,16 +30,15 @@ Columns <- unique(c("PPT05", "PPT06", "PPT07", "PPT08", "PPT09", "PPT_at",
 # BGC Projections for reference period
 # ===============================================================================
 
+for(grid in c("WNA2", "Salish1", "BC2kmGrid")){
 
-fplot <- paste("inputs/", grid, "_Normal_1961_1990MSY.csv", sep = "")
+  fplot <- paste("inputs/", grid, "_Normal_1961_1990MSY.csv", sep = "")
 
 Y0 <- fread(fplot, select = Columns, stringsAsFactors = FALSE, data.table = FALSE)  #fread is faster than read.csv
 
 Y0 <- Y0[!is.na(Y0[, 2]), ]
 
 Y0 <- addVars(Y0)
-
-Y0 <- Y0 %>% dplyr::select(all_of(vars))
 
 ## Predict future subzones######
 BGC.pred.ref <- predict(BGCmodel, Y0)
@@ -49,6 +48,9 @@ fwrite(list(BGC.pred.ref$predictions), paste("outputs/BGC.pred", grid, "ref", mo
 
 ## Write Climate file ######
 # fwrite(Y0, paste("inputs/", grid, "_1961_1990_", model,".csv", sep = ""))
+
+print(grid)
+}
 
 # ===============================================================================
 # BGC Projections for historical decades
@@ -206,3 +208,6 @@ out <- foreach(rcp = rcps, .combine = rbind) %:%
 }
 stopCluster(cl)
 
+# ===============================================================================
+# BGC Projections for future periods
+# ===============================================================================
