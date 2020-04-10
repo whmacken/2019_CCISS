@@ -15,18 +15,10 @@ source("./_CCISS_Parameters.R") ## settings used through all scripts
 #===============================================================================
 # Set analysis Parameters
 #===============================================================================
-grid <- "BC2kmGrid"
 grid.data <- fread(paste0("inputs/", grid, ".csv", sep = ""))
 
-##Specify variables in model
-model = "6.2"
-
 ###Load random forest model
-varset <- "35_VAR"
-fname=paste("inputs/models/WNAv11_", varset, "_SubZone_ranger.Rdata", sep="")
 load(fname)
-
-model <- "35Var_6_2"
 
 #===============================================================================
 # create a dem from the climateBC input data
@@ -117,12 +109,9 @@ for(i in BGCcolors$classification){ zone[grep(i,BGC)] <- i }
 BGC.pred.ref <- as.character(read.csv(paste("outputs/BGC.pred", grid, "ref", model,"csv", sep="."), header = F)[,1])
 zone.pred.ref <- rep(NA, length(BGC))
 for(i in BGCcolors$classification){ zone.pred.ref[grep(i,BGC.pred.ref)] <- i }
-length(BGC.pred.ref)
-
 
 # Historical BGC
 for(hist.year in hist.years){
-
   BGC.pred <- as.character(read.csv(paste("outputs/BGC.pred", grid,hist.year, model,"csv", sep="."), header = F)[,1])
   assign(paste("BGC.pred", hist.year, sep="."), BGC.pred) #bgc projection
   print(hist.year)
