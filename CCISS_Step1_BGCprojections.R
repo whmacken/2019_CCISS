@@ -67,8 +67,7 @@ for (hist.year in hist.years){
   Y0 <- Y0[!is.na(Y0[, 2]), ]
   # str(Y0)
   Y0 <- addVars(Y0)
-  Y0 <- Y0 %>% dplyr::select(vars)
-  
+
   ## Predict future subzones######
 BGC.pred <- predict(BGCmodel, Y0)
   
@@ -76,7 +75,7 @@ BGC.pred <- predict(BGCmodel, Y0)
   fwrite(list(BGC.pred$predictions), paste("outputs/BGC.pred", grid, hist.year, model, "csv", sep = "."), row.names = F)
   
   ## Write Climate file ######
-  # fwrite(Y0, paste("inputs/", grid, "_", hist.year, "_", model, ".csv",  sep = ""), row.names = F)
+  fwrite(Y0, paste("inputs/", grid, "_", hist.year, "_BioVars.csv", sep=""), row.names = F)
   
   print(hist.year)
 }
@@ -95,8 +94,6 @@ str(Y0)
 #Y0 <- Y0[which(Y0$Year == 2018), ]
 
 Y0 <- addVars(Y0)
-Y0 <- Y0 %>% dplyr::select(vars)
-# Extract the year 2018
 
 ## Predict BGC units######
 BGC.pred.2018 <- predict(BGCmodel, Y0)
@@ -104,7 +101,7 @@ fwrite(list(BGC.pred.2018$predictions), paste("outputs/BGC.pred", grid, "2018", 
           row.names = F)
 
 ## Write Climate file ######
-# fwrite(Y0, paste("inputs/", grid, "_2018_",model,".csv", sep = ""))
+fwrite(Y0, paste("inputs/", grid, "_2018_BioVars.csv", sep = ""))
 
 # ===============================================================================
 # BGC Projections for other historical normals
@@ -143,7 +140,7 @@ for (hist.year in hist.years){
   fwrite(list(BGC.pred$predictions), paste("outputs/BGC.pred", grid, hist.year, model, "csv", sep = "."), row.names = F)
   
   ## Write Climate file ######
-  # fwrite(get(paste("Y", hist.year, sep = ".")), paste("inputs/", grid, "_", hist.year, "_", model, ".csv", sep = ""), row.names = F)
+  fwrite(get(paste("Y", hist.year, sep = ".")), paste("inputs/", grid, "_", hist.year, "_BioVars.csv", sep = ""), row.names = F)
   
   print(hist.year)
 }
