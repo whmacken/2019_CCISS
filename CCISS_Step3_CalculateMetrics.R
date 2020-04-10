@@ -227,20 +227,21 @@ MAT.mean.ref <- mean(MAT.ref, na.rm=T)
 for(hist.year in hist.years){
   Y0 <- fread(paste("inputs\\", grid, "_", hist.year, "_BioVars.csv", sep=""), select = "MAT", stringsAsFactors = FALSE, data.table = FALSE) #fread is faster than read.csv
   assign(paste("MAT", hist.year, sep="."), Y0$MAT)
- assign(paste("MAT.change", hist.year, sep="."), mean(Y0$MAT, na.rm=T)-MAT.mean.ref)
+  assign(paste("MAT.change", hist.year, sep="."), mean(Y0$MAT, na.rm=T)-MAT.mean.ref)
   print(hist.year)
 }
 
 for(GCM in GCMs){
-  Y1 <- fread(paste("inputs\\", grid, "_", GCM, "_BioVars.csv", sep=""), select = c("GCM", "MAT"), stringsAsFactors = FALSE, data.table = FALSE)
+  Y1 <- fread(paste("inputs\\", grid, "_", GCM, ".csv", sep=""), select = c("Year", "MAT"), stringsAsFactors = FALSE, data.table = FALSE)
   ## assign single vectors to RCPs and proj.years
   Ystr <- strsplit(Y1[,1], "_")
   Y4 <- matrix(unlist(Ystr), ncol=3, byrow=TRUE)
+  Y4[,3] <- gsub(".gcm","",Y4[,3])
   for(rcp in rcps){
     for(proj.year in proj.years){
       assign(paste("MAT", GCM, rcp, proj.year, sep="."), Y1$MAT[which(Y4[,2]==rcp & Y4[,3]==proj.year)])
     }
-    print(rcp)
+    # print(rcp)
   }
   print(GCM)
 }
@@ -259,6 +260,7 @@ for(rcp in rcps){
   }
   print(rcp)
 }
+
 
 #===============================================================================
 # calculate mean suitability turnover for each GCM/year/rcp
