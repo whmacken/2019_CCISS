@@ -58,37 +58,12 @@ source("./_CCISS_Parameters.R") ## settings used through all scripts
 # write.csv(CNAinput,"inputs\\Salish1.csv", row.names=FALSE)
 
 #==================================================
-# BGC projections (commented out because only have to do it once)
+# BGC projections
 #==================================================
 
 ## parameters
 grid <- "WNA2"
 grid.dem <- "dem2_WNA"
-
-# ###Load random forest model
-# load(fname)
-# 
-# vars <- as.data.frame(BGCmodel$variable.importance)
-# vars <- row.names(vars)
-# # setwd('C:/GitHub/2019_CCISS')
-# 
-# Columns <- unique(c("PPT05", "PPT06", "PPT07", "PPT08", "PPT09", "PPT_at",
-#                     "PPT_wt", "CMD07", "CMD", "MAT", "PPT_sm", "Tmin_wt", "Tmax_sm",
-#                     vars[!vars %in% c("PPT_MJ", "PPT_JAS", "PPT.dormant", "CMD.def", "CMDMax", "CMD.total")]))
-# 
-# 
-# fplot=paste("inputs\\", grid, "_Normal_1961_1990MSY.csv", sep="")
-# 
-# 
-# Y0 <- fread(fplot, select = Columns, stringsAsFactors = FALSE, data.table = FALSE)  #fread is faster than read.csv
-# 
-# Y0 <- addVars(Y0)
-# 
-# ## Predict future subzones######
-# BGC.pred.ref <- predict(BGCmodel, Y0)
-# #dir.create("./outputs")
-# fwrite(list(BGC.pred.ref$predictions), paste("outputs/BGC.pred", grid, "ref", model,"csv", sep = "."),
-#        row.names = F)
 
 BGC.pred.ref <- read.csv(paste("outputs/BGC.pred", grid, "ref", model,"csv", sep = "."), header=F)[,1]
 unique(BGC.pred.ref)
