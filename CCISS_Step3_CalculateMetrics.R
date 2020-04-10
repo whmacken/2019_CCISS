@@ -78,7 +78,6 @@ for(edatope in edatopes){
 #===============================================================================
 # for each hist.year, assemble the community and calculate richness and turnover. write to disk
 #===============================================================================
-# hist.years <- c(2004, 2009)
 
 for(edatope in edatopes){
   comm.ref <- get(paste("comm.ref", edatope, sep=""))
