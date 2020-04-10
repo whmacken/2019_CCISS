@@ -254,9 +254,7 @@ par(mar=c(0.1,0.1,0.1,0.1), mgp=c(2,0.25,0))
 
 #BGC zone color scheme
 BGCcolors$colour <- as.character(BGCcolors$colour)
-BGCcolors.BC <- read.csv("C:\\Colin\\Projects\\2019_CCISS\\InputData\\BGCzone_Colorscheme.csv")
 BGCcolors$colour[match(BGCcolors.BC$zone, BGCcolors$classification)] <- as.character(BGCcolors.BC$HEX)
-
 ColScheme <- factor(BGCcolors$colour, levels=BGCcolors$colour)
 zones <- factor(BGCcolors$classification, levels=BGCcolors$classification)
 
