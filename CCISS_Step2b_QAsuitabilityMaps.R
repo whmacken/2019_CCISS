@@ -192,7 +192,7 @@ length(ColScheme)
 for(spp in spps){
   for(edatope in edatopes){
     
-    png(filename=paste("results\\QAsuitability\\EnvSuit",spp, edatope, "png",sep="."), type="cairo", units="in", width=8.5, height=10, pointsize=10, res=300)
+    png(filename=paste("results\\QAsuitability\\EnvSuit",spp, edatope, "png",sep="."), type="cairo", units="in", width=8.5, height=10, pointsize=10, res=100)
     
     values(X) <- NA
     values(X)[land.fine] <- get(paste("Suit.ref", spp, edatope, "csv", sep="."))

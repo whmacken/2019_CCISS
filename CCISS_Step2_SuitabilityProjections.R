@@ -99,12 +99,12 @@ NoSuit <- PredSum[-which(PredSum$BGC%in%S1$BGC),]
 NoSuit[rev(order(NoSuit$count)),]
 
 ## EDA: Which site series are missing suitabilities? 
-for(edatope in edatopes) assign(paste("NoSuit", edatope, sep="."), SiteLookup[-which(SiteLookup[,which(names(SiteLookup)==edatope)]%in%S1$Unit),which(names(SiteLookup)==edatope)])
+for(edatope in edatopes) assign(paste("NoSuit", edatope, sep="."), SiteLookup[-which(SiteLookup[,which(names(SiteLookup)==edatope)]%in%S1$SS_NoSpace),which(names(SiteLookup)==edatope)])
 for(edatope in edatopes) print(get(paste("NoSuit", edatope, sep=".")))
 
 ## EDA: are there any units missing from the SiteSeries_Use table? 
 BGClist <- unique(S1$BGC)
-BGClist[-which(BGClist%in%SiteLookup$MergedBGC)]
+BGClist[-which(BGClist%in%SiteLookup$BGC)]
 
 # select the species to run the analysis on
 spps <- unique(S1$Spp)
@@ -112,14 +112,15 @@ spps <- spps[-which(spps=="X")]
 spps.candidate <- spps.lookup$TreeCode[-which(spps.lookup$Exclude=="x")]
 spps <- spps[which(spps%in%spps.candidate)] 
 
-for(spp in spps){
+# for(spp in c("Pl", "Fd", "Cw", "Sx")){
+  for(spp in spps){
   for(edatope in edatopes){
     # get the suitability for the reference period predicted BGC.
     BGC.pred <- as.character(BGC.pred.ref) # get the BGC prediction
     
     # get the suitability for the selected species associated with each site series
-    suit <- S1$ESuit[which(S1$Spp==spp)][match(as.vector(unlist(SiteLookup[which(names(SiteLookup)==edatope)])), S1$Unit[which(S1$Spp==spp)])]
-    Suit.ref <- suit[match(BGC.pred, SiteLookup$MergedBGC)]
+    suit <- S1$ESuit[which(S1$Spp==spp)][match(as.vector(unlist(SiteLookup[which(names(SiteLookup)==edatope)])), as.character(S1$SS_NoSpace[which(S1$Spp==spp)]))]
+    Suit.ref <- suit[match(BGC.pred, SiteLookup$BGC)]
     Suit.ref[is.na(Suit.ref)] <- 5 #set the NA values to suitability 5
     Suit.ref[Suit.ref==4] <- 5 #set 4 to suitability 5
     write.csv(Suit.ref, paste("outputs\\Suit.ref", grid, spp, edatope, "csv", sep="."), row.names = F)
@@ -130,8 +131,8 @@ for(spp in spps){
       bgc.exotic <- (1:length(BGC.pred))[-which(BGC.pred%in%unique(BGC))]
       bgc.exotic.noSuit <- bgc.exotic[-which(BGC.pred[bgc.exotic]%in%unique(S1$BGC))]
       
-      suit <- S1$ESuit[which(S1$Spp==spp)][match(as.vector(unlist(SiteLookup[which(names(SiteLookup)==edatope)])), S1$Unit[which(S1$Spp==spp)])]
-      temp <- suit[match(BGC.pred, SiteLookup$MergedBGC)]
+      suit <- S1$ESuit[which(S1$Spp==spp)][match(as.vector(unlist(SiteLookup[which(names(SiteLookup)==edatope)])), S1$SS_NoSpace[which(S1$Spp==spp)])]
+      temp <- suit[match(BGC.pred, SiteLookup$BGC)]
       temp[is.na(temp)] <- 5 #set the NA values to suitability 5
       temp[temp==4] <- 5 #set 4 to suitability 5
       temp[bgc.exotic.noSuit] <- NA # set cells with no suitabilty interpretatoin to NA
@@ -153,8 +154,8 @@ for(spp in spps){
           bgc.exotic.noSuit <- bgc.exotic[-which(BGC.pred[bgc.exotic]%in%unique(S1$BGC))]
           
           # get the suitability for the selected species associated with each site series
-          suit <- S1$ESuit[which(S1$Spp==spp)][match(as.vector(unlist(SiteLookup[which(names(SiteLookup)==edatope)])), S1$Unit[which(S1$Spp==spp)])]
-          temp <- suit[match(BGC.pred, SiteLookup$MergedBGC)]
+          suit <- S1$ESuit[which(S1$Spp==spp)][match(as.vector(unlist(SiteLookup[which(names(SiteLookup)==edatope)])), S1$SS_NoSpace[which(S1$Spp==spp)])]
+          temp <- suit[match(BGC.pred, SiteLookup$BGC)]
           temp[is.na(temp)] <- 5 #set the NA values to suitability 5 (weights unsuitable a bit more heavily than suitable classes during averaging)
           temp[temp==4] <- 5 #set 4 to suitability 5
           temp[bgc.exotic.noSuit] <- NA # set cells with no suitabilty interpretation to NA
