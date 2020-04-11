@@ -280,7 +280,7 @@ spps <- spps[-which(spps=="X")]
 spps.candidate <- spps.lookup$TreeCode[-which(spps.lookup$Exclude=="x")]
 spps <- spps[which(spps%in%spps.candidate)] 
 
-spp="Sx"
+spp="Fd"
 
 for(spp in spps){
 
@@ -293,6 +293,11 @@ for(spp in spps){
     outRange.base <- RefSuit==5
     RefSuit[RefSuit==5] <- 4
     RefSuit[is.na(RefSuit)] <- 4
+    
+    HistSuit <- read.csv(paste("outputs\\Suit", grid, hist.year, spp, edatope, "csv", sep="."))[,1]
+    HistSuit[HistSuit==5] <- 4
+    HistSuit[is.na(HistSuit)] <- 4
+    ChangeSuit.hist <- RefSuit-HistSuit
     
     # compile the GCM projections into a data frame
     ProjSuit <- data.frame(temp=rep(NA, length(RefSuit))) #initiate the data frame with a dummy column
@@ -375,25 +380,43 @@ for(spp in spps){
     mtext(paste("(", LETTERS[c(1,5,9)][which(edatopes==edatope)],")", sep=""), side=3, line=-3.75, adj=0.05, cex=0.8, font=2)
     
     ##=================================
-    # map of suitability change
-    breakpoints <- seq(-3,3,0.5); length(breakpoints)
-    labels <- c("-3","-2", "-1", "no change", "+1","+2","+3")
-    ColScheme <- c(brewer.pal(11,"RdBu")[c(1,2,3,4,4)], "grey80", brewer.pal(11,"RdBu")[c(7,8,8,9,10,11)]); length(ColScheme)
+    # recent period binary change
+    binary <- rep(0, length(RefSuit))
+    binary[outRange.base==T] <- NA
+    binary[outRange.base==T][HistSuit[outRange.base==T] < 4] <- 1   
+    binary[outRange.base==F][HistSuit[outRange.base==F] == 4] <- -1
+    
+    values(X) <- binary[plotOrder]
+    
+    ColScheme <- c(brewer.pal(11,"RdBu")[2], "grey90", brewer.pal(11,"RdBu")[10]); length(ColScheme)
     
     par(plt = c(0.6, 0.95, 0.3, 1), new = TRUE)
-    values(X) <- ChangeSuit.mean[plotOrder]
     plot(bdy.bc, border="black", lwd=0.4)
-    image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, breaks=breakpoints, maxpixels= ncell(X))
-    plot(bdy.bc, add=T, border="black", lwd=0.4)
-    # if(spp==spps[1]){
-    par(xpd=T)
-    xl <- 1600000; yb <- 1000000; xr <- 1700000; yt <- 1700000
-    rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
-    text(rep(xr-10000,length(labels)),seq(yb,yt,(yt-yb)/(length(labels)-1)),labels,pos=4,cex=0.8,font=1)
-    text(xl-30000, mean(c(yb,yt))-30000, paste("Mean change\nin suitability (", proj.year.name[which(proj.years==proj.year)], ")", sep=""), srt=90, pos=3, cex=0.9, font=2)
-    # }
-    par(xpd=F)
+    image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, maxpixels= ncell(X))
+    legend(1400000, 1600000, legend=c("Expand", "Persist", "Retreat"), 
+           fill=rev(ColScheme), bty="n", cex=0.9, title="Recent Period\n(2001-2018)", inset=0.015)
     mtext(paste("(", LETTERS[c(3,7,11)][which(edatopes==edatope)],")", sep=""), side=3, line=-3.25, adj=0.1, cex=0.8, font=2)
+
+    # ##=================================
+    # # ALTERNATE: map of suitability change
+    # breakpoints <- seq(-3,3,0.5); length(breakpoints)
+    # labels <- c("-3","-2", "-1", "no change", "+1","+2","+3")
+    # ColScheme <- c(brewer.pal(11,"RdBu")[c(1,2,3,4,4)], "grey80", brewer.pal(11,"RdBu")[c(7,8,8,9,10,11)]); length(ColScheme)
+    # 
+    # par(plt = c(0.6, 0.95, 0.3, 1), new = TRUE)
+    # values(X) <- ChangeSuit.mean[plotOrder]
+    # plot(bdy.bc, border="black", lwd=0.4)
+    # image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, breaks=breakpoints, maxpixels= ncell(X))
+    # plot(bdy.bc, add=T, border="black", lwd=0.4)
+    # # if(spp==spps[1]){
+    # par(xpd=T)
+    # xl <- 1600000; yb <- 1000000; xr <- 1700000; yt <- 1700000
+    # rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
+    # text(rep(xr-10000,length(labels)),seq(yb,yt,(yt-yb)/(length(labels)-1)),labels,pos=4,cex=0.8,font=1)
+    # text(xl-30000, mean(c(yb,yt))-30000, paste("Mean change\nin suitability (", proj.year.name[which(proj.years==proj.year)], ")", sep=""), srt=90, pos=3, cex=0.9, font=2)
+    # # }
+    # par(xpd=F)
+    # mtext(paste("(", LETTERS[c(3,7,11)][which(edatopes==edatope)],")", sep=""), side=3, line=-3.25, adj=0.1, cex=0.8, font=2)
     
     ##=================================
     ## Summary by zone
@@ -411,11 +434,11 @@ for(spp in spps){
     }
     bxp(z, xlim=xlim, ylim=ylim, xaxt="n", yaxt="n", xaxs="i", ylab="", pch=0,outline=FALSE)
     lines(c(-99,99), c(0,0), lwd=2, col="darkgrey")
-    bxp(z, add=T, boxfill = as.character(BGCcolors$HEX[match(levels(zone), BGCcolors$zone)]), xaxt="n", yaxt="n", xaxs="i", ylab="", pch=0,outline=FALSE)
+    bxp(z, add=T, boxfill = as.character(BGCcolors.BC$HEX[match(levels(zone), BGCcolors.BC$zone)]), xaxt="n", yaxt="n", xaxs="i", ylab="", pch=0,outline=FALSE)
     axis(1, at=1:length(levels(zone)), levels(zone), tick=F, las=2, cex.axis=0.8)
     axis(2,at=seq(ylim[1], ylim[2], 3), seq(ylim[1], ylim[2], 3), las=2, tck=0)
     mtext(paste("(", LETTERS[c(4,8,12)][which(edatopes==edatope)],")", sep=""), side=3, line=1, adj=0.975, cex=0.8, font=2)
-    mtext("Mean change in suitability", side=3, line=0.1, adj=.975, cex=0.55, font=2)
+    mtext(paste("Mean suitability change (", proj.year.name[which(proj.years==proj.year)], ")", sep=""), side=3, line=0.1, adj=.975, cex=0.55, font=2)
     
     print(edatope)
   }
