@@ -4,53 +4,17 @@
 ## Step 4d - Figures - Suitability for individual species and groups of species
 ##======================================================================================
 
-# Colin Mahony
-# c_mahony@alumni.ubc.ca
-# 778-288-4008
-# July 21, 2019
 
-
-library(MASS)   
-library(scales)
-library(stats)
-library(rgl)
-library(RColorBrewer)
-library(FNN)
-library(igraph)
-library(raster)
-library(maps)
-library(mapdata)
-library(maptools)
-library(sp)
-library(colorRamps)
-library(rgeos)
-library(rgdal)
-library(foreign)
-
-#===============================================================================
-# Set analysis Parameters
-#===============================================================================
-
-setwd("C:\\Colin\\Projects\\2019_CCISS")
-
-grid <- "BC2kmGrid"
-
-GCMs <-  c("ACCESS1-0","CanESM2","CCSM4","CESM1-CAM5","CNRM-CM5","CSIRO-Mk3-6-0", "GFDL-CM3","GISS-E2R", "HadGEM2-ES", "INM-CM4", "IPSL-CM5A-MR", "MIROC-ESM", "MIROC5", "MPI-ESM-LR","MRI-CGCM3")    
-rcps <- c("rcp45", "rcp85")
-proj.years <- c(2025, 2055, 2085)
-edatopes<- c("B2", "C4", "D6")
-
-# Knowledge Tables
-treesuit="TreeSpp_ESuit_v11_18"
-SiteSeries_Use <-read.csv(paste("InputData/","SiteSeries_Use_5",".csv",sep=""),stringsAsFactors=FALSE,na.strings=".")
-spps.lookup <- read.csv("InputData\\Tree speciesand codes_2.0_2May2019.csv")
+source("./_CCISS_Packages.R") ## packages required
+source("./_CCISS_Functions.R") ## common functions
+source("./_CCISS_Parameters.R") ## settings used through all scripts
 
 #===============================================================================
 # create a dem from the climateBC input data
 #===============================================================================
 
 ## create a dem from the climateBC input data
-points <- read.csv(paste("InputData\\",grid,".csv", sep=""))
+points <- read.csv(paste("inputs\\",grid,".csv", sep=""))
 dim(points)
 
 # points <- points[order(points$lon, points$lat),]
@@ -90,15 +54,14 @@ plot(X)
 # generic spatial data
 #===============================================================================
 ### admin boundaries
-bdy.bc <- readOGR("InputData\\BC_AB_US_Shp\\ProvincialOutline.shp")
+bdy.bc <- readOGR("inputs\\shapes\\ProvincialOutline.shp")
 
 
 #===============================================================================
 # Import suitability tables
 #===============================================================================
-wd="InputData"
-treesuit2=paste(wd,"/",treesuit,".csv",sep="")
-S1 <- read.csv(treesuit2,stringsAsFactors=F,na.strings=".")
+
+S1 <- treesuit
 S1 <- unique(S1)
 
 # select the species to run the analysis on
@@ -110,14 +73,13 @@ spps <- spps[which(spps%in%spps.candidate)]
 ## non-THLB BGCs for exclusion from results
 BGC <- points$ID2
 BGC <- gsub(" ","",BGC)
-BGCs_notin_THLB <- read.csv("InputData\\BGCs_notin_THLB.csv")
+BGCs_notin_THLB <- read.csv("inputs\\BGCs_notin_THLB.csv")
 BGCs_notin_THLB <- BGCs_notin_THLB$BGC[which(BGCs_notin_THLB$Exlude=="x")]
 exclude <- which(BGC%in%BGCs_notin_THLB)
 
 #BGC zones
-BGCcolors <- read.csv("C:\\Colin\\Projects\\2019_CCISS\\InputData\\BGCzone_Colorscheme.csv")
 zone <- rep(NA, length(BGC))
-for(i in BGCcolors$zone){ zone[grep(i,BGC)] <- i }
+for(i in BGCcolors.BC$zone){ zone[grep(i,BGC)] <- i }
 table(zone)
 zone <- factor(zone, levels=c("CDF", "CWH", "MH", "ESSF", "MS", "IDF", "PP", "BG", "ICH", "SBPS", "SBS", "BWBS", "SWB", "CMA", "IMA", "BAFA"))
 
@@ -125,10 +87,9 @@ zone <- factor(zone, levels=c("CDF", "CWH", "MH", "ESSF", "MS", "IDF", "PP", "BG
 #===============================================================================
 # Manuscript plot for a subset of species
 #===============================================================================
-edatope.name <- c("Poor-Subxeric", "Medium-Mesic", "Rich-Hygric")
-proj.year.name=c("2020s", "2050s", "2080s")
 rcp=rcps[1]
-proj.year=proj.years[2]
+hist.year=hist.years[4]
+proj.year=proj.years[1]
 
 edatope="C4"
 # for(edatope in edatopes){
@@ -140,21 +101,27 @@ spps.matrix <- matrix(c("Pl", "Fd", "Cw","Ba", "Bl", "Bg", "Yc", "Pa", "Hm", "Lw
 for(matrow in 1:dim(spps.matrix)){
  spps <- spps.matrix[matrow,]
 
-png(filename=paste("Results\\Manu_Suitability_Groups\\CCISS.manu.Suitability",spps[1],spps[2],spps[3], edatope, rcp, proj.year,"png",sep="."), type="cairo", units="in", width=6.5, height=8.5, pointsize=12, res=600)
+png(filename=paste("results\\Manu_Suitability_Groups\\CCISS.manu.Suitability",spps[1],spps[2],spps[3], edatope, rcp, proj.year,"png",sep="."), type="cairo", units="in", width=6.5, height=8.5, pointsize=12, res=600)
 par(mar=c(0,0,0,0), mfrow=c(3,1), bg="white")
 
 for(spp in spps){
 
-  RefSuit <- read.csv(paste("OutputData\\Suit.ref", grid, spp, edatope, "csv", sep="."))[,1]
+  RefSuit <- read.csv(paste("outputs\\Suit.ref", grid, spp, edatope, "csv", sep="."))[,1]
   outRange.base <- RefSuit==5
   RefSuit[RefSuit==5] <- 4
   RefSuit[is.na(RefSuit)] <- 4
+  table(RefSuit)
   
-  # compile the GCM projections into a data frame
+  HistSuit <- read.csv(paste("outputs\\Suit", grid, hist.year, spp, edatope, "csv", sep="."))[,1]
+  HistSuit[HistSuit==5] <- 4
+  HistSuit[is.na(HistSuit)] <- 4
+  ChangeSuit.hist <- RefSuit-HistSuit
+  
+    # compile the GCM projections into a data frame
       ProjSuit <- data.frame(temp=rep(NA, length(RefSuit))) #initiate the data frame with a dummy column
       ChangeSuit <- data.frame(temp=rep(NA, length(RefSuit))) #initiate the data frame with a dummy column
       for(GCM in GCMs){
-        temp <- read.csv(paste("OutputData\\Suit", grid, GCM, rcp, proj.year, spp, edatope, "csv", sep="."))
+        temp <- read.csv(paste("outputs\\Suit", grid, GCM, rcp, proj.year, spp, edatope, "csv", sep="."))
         temp[temp==5] <- 4
         temp[is.na(temp)] <- 4
         ProjSuit <- cbind(ProjSuit,temp)
@@ -209,7 +176,7 @@ for(spp in spps){
   rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
   text(rep(xr+10000,length(labels)),seq(yb,yt,(yt-yb)/(length(GCMs)-1))[c(3,9)],labels,pos=4,cex=0.9,font=0.8, srt=90)
   text(rep(xr-20000,length(labels)),seq(yb,yt,(yt-yb)/(length(GCMs)-1))[c(1,8,15)],c("100%", "0%", "100%"),pos=4,cex=0.8,font=1)
-  text(xl-30000, mean(c(yb,yt))-30000, paste("Change in presence/absence\n(2050s), % of GCMs"), srt=90, pos=3, cex=0.9, font=2)
+  text(xl-30000, mean(c(yb,yt))-30000, paste("Change in presence/absence\n(", proj.year.name[which(proj.years==proj.year)], "), % of GCMs", sep=""), srt=90, pos=3, cex=0.9, font=2)
   mtext(paste("(", LETTERS[c(2,6,10)][which(spps==spp)],")", sep=""), side=3, line=-2.5, adj=0.22, cex=0.8, font=2)
   # legend("bottomleft", legend=c(spp, paste("Edatope:", edatope), proj.year, rcp, " "), cex=1.4, bty="n", inset=-0.05)
   # }
@@ -234,26 +201,45 @@ for(spp in spps){
     mtext(paste("(", LETTERS[c(1,5,9)][which(spps==spp)],")", sep=""), side=3, line=-3.75, adj=0.05, cex=0.8, font=2)
     
     ##=================================
-    # map of suitability change
-    breakpoints <- seq(-3,3,0.5); length(breakpoints)
-    labels <- c("-3","-2", "-1", "no change", "+1","+2","+3")
-    ColScheme <- c(brewer.pal(11,"RdBu")[c(1,2,3,4,4)], "grey80", brewer.pal(11,"RdBu")[c(7,8,8,9,10,11)]); length(ColScheme)
+    # recent period binary change
+    binary <- rep(0, length(RefSuit))
+    binary[outRange.base==T] <- NA
+    binary[outRange.base==T][HistSuit[outRange.base==T] < 4] <- 1   
+    binary[outRange.base==F][HistSuit[outRange.base==F] == 4] <- -1
+
+    values(X) <- binary[plotOrder]
+    
+    ColScheme <- c(brewer.pal(11,"RdBu")[2], "grey90", brewer.pal(11,"RdBu")[10]); length(ColScheme)
     
     par(plt = c(0.6, 0.95, 0.3, 1), new = TRUE)
-    values(X) <- ChangeSuit.mean[plotOrder]
     plot(bdy.bc, border="black", lwd=0.4)
-    image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, breaks=breakpoints, maxpixels= ncell(X))
-    plot(bdy.bc, add=T, border="black", lwd=0.4)
-    # if(spp==spps[1]){
-    par(xpd=T)
-    xl <- 1600000; yb <- 1000000; xr <- 1700000; yt <- 1700000
-    rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
-    text(rep(xr-10000,length(labels)),seq(yb,yt,(yt-yb)/(length(labels)-1)),labels,pos=4,cex=0.8,font=1)
-    text(xl-30000, mean(c(yb,yt))-30000, paste("Mean change\nin suitability (", proj.year.name[which(proj.years==proj.year)], ")", sep=""), srt=90, pos=3, cex=0.9, font=2)
-    # }
-    par(xpd=F)
+    image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, maxpixels= ncell(X))
+    legend(1400000, 1600000, legend=c("Expand", "Persist", "Retreat"), 
+           fill=rev(ColScheme), bty="n", cex=0.9, title="Recent Period\n(2001-2018)", inset=0.015)
     mtext(paste("(", LETTERS[c(3,7,11)][which(spps==spp)],")", sep=""), side=3, line=-3.25, adj=0.1, cex=0.8, font=2)
     
+  
+    # ##=================================
+    # # ALTERNATE: map of suitability change
+    # breakpoints <- seq(-3,3,0.5); length(breakpoints)
+    # labels <- c("-3","-2", "-1", "no change", "+1","+2","+3")
+    # ColScheme <- c(brewer.pal(11,"RdBu")[c(1,2,3,4,4)], "grey80", brewer.pal(11,"RdBu")[c(7,8,8,9,10,11)]); length(ColScheme)
+    # 
+    # par(plt = c(0.6, 0.95, 0.3, 1), new = TRUE)
+    # values(X) <- ChangeSuit.mean[plotOrder]
+    # plot(bdy.bc, border="black", lwd=0.4)
+    # image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, breaks=breakpoints, maxpixels= ncell(X))
+    # plot(bdy.bc, add=T, border="black", lwd=0.4)
+    # # if(spp==spps[1]){
+    # par(xpd=T)
+    # xl <- 1600000; yb <- 1000000; xr <- 1700000; yt <- 1700000
+    # rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
+    # text(rep(xr-10000,length(labels)),seq(yb,yt,(yt-yb)/(length(labels)-1)),labels,pos=4,cex=0.8,font=1)
+    # text(xl-30000, mean(c(yb,yt))-30000, paste("Mean change\nin suitability (", proj.year.name[which(proj.years==proj.year)], ")", sep=""), srt=90, pos=3, cex=0.9, font=2)
+    # # }
+    # par(xpd=F)
+    # mtext(paste("(", LETTERS[c(3,7,11)][which(spps==spp)],")", sep=""), side=3, line=-3.25, adj=0.1, cex=0.8, font=2)
+
     ##=================================
     ## Summary by zone
 
@@ -270,11 +256,11 @@ for(spp in spps){
     }
     bxp(z, xlim=xlim, ylim=ylim, xaxt="n", yaxt="n", xaxs="i", ylab="", pch=0,outline=FALSE)
     lines(c(-99,99), c(0,0), lwd=2, col="darkgrey")
-    bxp(z, add=T, boxfill = as.character(BGCcolors$HEX[match(levels(zone), BGCcolors$zone)]), xaxt="n", yaxt="n", xaxs="i", ylab="", pch=0,outline=FALSE)
+    bxp(z, add=T, boxfill = as.character(BGCcolors.BC$HEX[match(levels(zone), BGCcolors.BC$zone)]), xaxt="n", yaxt="n", xaxs="i", ylab="", pch=0,outline=FALSE)
     axis(1, at=1:length(levels(zone)), levels(zone), tick=F, las=2, cex.axis=0.8)
     axis(2,at=seq(ylim[1], ylim[2], 3), seq(ylim[1], ylim[2], 3), las=2, tck=0)
     mtext(paste("(", LETTERS[c(4,8,12)][which(spps==spp)],")", sep=""), side=3, line=1, adj=0.975, cex=0.8, font=2)
-    mtext("Mean change in suitability", side=3, line=0.1, adj=.975, cex=0.55, font=2)
+    mtext(paste("Mean suitability change (", proj.year.name[which(proj.years==proj.year)], ")", sep=""), side=3, line=0.1, adj=.975, cex=0.5, font=2)
 
     print(spp)
 }
@@ -298,12 +284,12 @@ spp="Sx"
 
 for(spp in spps){
 
-  png(filename=paste("Results\\Manu_Suitability_Indiv\\CCISS.manu.Suitability.edatopes",spp, rcp, proj.year,"png",sep="."), type="cairo", units="in", width=6.5, height=8.5, pointsize=12, res=600)
+  png(filename=paste("results\\Manu_Suitability_Indiv\\CCISS.manu.Suitability.edatopes",spp, rcp, proj.year,"png",sep="."), type="cairo", units="in", width=6.5, height=8.5, pointsize=12, res=600)
   par(mar=c(0,0,0,0), mfrow=c(3,1), bg="white")
   
   for(edatope in edatopes){
     
-    RefSuit <- read.csv(paste("OutputData\\Suit.ref", grid, spp, edatope, "csv", sep="."))[,1]
+    RefSuit <- read.csv(paste("outputs\\Suit.ref", grid, spp, edatope, "csv", sep="."))[,1]
     outRange.base <- RefSuit==5
     RefSuit[RefSuit==5] <- 4
     RefSuit[is.na(RefSuit)] <- 4
@@ -312,7 +298,7 @@ for(spp in spps){
     ProjSuit <- data.frame(temp=rep(NA, length(RefSuit))) #initiate the data frame with a dummy column
     ChangeSuit <- data.frame(temp=rep(NA, length(RefSuit))) #initiate the data frame with a dummy column
     for(GCM in GCMs){
-      temp <- read.csv(paste("OutputData\\Suit", grid, GCM, rcp, proj.year, spp, edatope, "csv", sep="."))
+      temp <- read.csv(paste("outputs\\Suit", grid, GCM, rcp, proj.year, spp, edatope, "csv", sep="."))
       temp[temp==5] <- 4
       temp[is.na(temp)] <- 4
       ProjSuit <- cbind(ProjSuit,temp)
@@ -454,10 +440,10 @@ for(proj.year in proj.years){
     
     for(spp in spps){
       
-      png(filename=paste("Results\\SI_Suitability_Basic\\CCISS.manu.Suitability.basic",spp, edatope, rcp, proj.year,"png",sep="."), type="cairo", units="in", width=6.5, height=6, pointsize=10, res=600)
+      png(filename=paste("results\\SI_Suitability_Basic\\CCISS.manu.Suitability.basic",spp, edatope, rcp, proj.year,"png",sep="."), type="cairo", units="in", width=6.5, height=6, pointsize=10, res=600)
       par(mar=c(0,0,0,0), mfrow=c(2,2), bg="white")
       
-      RefSuit <- read.csv(paste("OutputData\\Suit.ref", grid, spp, edatope, "csv", sep="."))[,1]
+      RefSuit <- read.csv(paste("outputs\\Suit.ref", grid, spp, edatope, "csv", sep="."))[,1]
       outRange.base <- RefSuit==5
       RefSuit[RefSuit==5] <- 4
       RefSuit[is.na(RefSuit)] <- 4
@@ -466,7 +452,7 @@ for(proj.year in proj.years){
       ProjSuit <- data.frame(temp=rep(NA, length(RefSuit))) #initiate the data frame with a dummy column
       ChangeSuit <- data.frame(temp=rep(NA, length(RefSuit))) #initiate the data frame with a dummy column
       for(GCM in GCMs){
-        temp <- read.csv(paste("OutputData\\Suit", grid, GCM, rcp, proj.year, spp, edatope, "csv", sep="."))
+        temp <- read.csv(paste("outputs\\Suit", grid, GCM, rcp, proj.year, spp, edatope, "csv", sep="."))
         temp[temp==5] <- 4
         temp[is.na(temp)] <- 4
         ProjSuit <- cbind(ProjSuit,temp)
