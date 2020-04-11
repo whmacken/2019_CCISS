@@ -9,45 +9,11 @@
 # 778-288-4008
 # July 21, 2019
 
-require (RGtk2)
-require(plyr)
-require (rChoiceDialogs)
-require (data.table)
-require(doBy)
-require (utils)
-require(labdsv)
-require(tools )
-require(svDialogs)
-require(tcltk)
-require(randomForest)
-require(foreach)
-require(dplyr)
-require(reshape2)
-require(reshape)
-library(doParallel)
-require(data.table)
-library(MASS)   
-library(scales)
-library(stats)
-library(rgl)
-library(RColorBrewer)
-library(FNN)
-library(igraph)
-library(raster)
-library(maps)
-library(mapdata)
-library(maptools)
-library(sp)
-library(colorRamps)
-library(rgeos)
-library(rgdal)
-library(foreign)
 
+source("./_CCISS_Packages.R") ## packages required
+source("./_CCISS_Functions.R") ## common functions
+source("./_CCISS_Parameters.R") ## settings used through all scripts
 
-# Knowledge Tables
-treesuit="TreeSpp_ESuit_v11_18"
-SiteSeries_Use <-read.csv(paste("InputData/","SiteSeries_Use_5",".csv",sep=""),stringsAsFactors=FALSE,na.strings=".")
-spps.lookup <- read.csv("InputData\\Tree speciesand codes_2.0_2May2019.csv")
 
 
 # #==================================================
@@ -62,7 +28,7 @@ spps.lookup <- read.csv("InputData\\Tree speciesand codes_2.0_2May2019.csv")
 # plot(bdy.can, add=T)
 # r.crop <- crop(r, c(-140, -108,39,60))
 # r.crop <- aggregate(r.crop, fact=2)
-# writeRaster(r.crop, filename="InputData\\dem2_WNA.tif", format="GTiff", overwrite=TRUE)
+# writeRaster(r.crop, filename="inputs\\dem2_WNA.tif", format="GTiff", overwrite=TRUE)
 # ## create a data frame of the projected coordinates of the dem
 # r.pts <- rasterToPoints(r.crop, spatial=T) #create a spatial points data frame of the non-NA values of the DEM
 # r.pts <- as.data.frame(r.pts) #projected coordinates of the dem
@@ -70,7 +36,7 @@ spps.lookup <- read.csv("InputData\\Tree speciesand codes_2.0_2May2019.csv")
 # ## create the climateNA input file
 # CNAinput <- data.frame(id1=1:dim(r.pts)[1], id2=rep(NA, dim(r.pts)[1]), lat=r.pts$y, lon=r.pts$x, el=r.pts$namer_dem1)
 # str(CNAinput)
-# write.csv(CNAinput,"InputData\\WNA2.csv", row.names=FALSE)
+# write.csv(CNAinput,"inputs\\WNA2.csv", row.names=FALSE)
 
 
 # setwd("C:\\Colin\\Projects\\2019_CCISS")
@@ -81,7 +47,7 @@ spps.lookup <- read.csv("InputData\\Tree speciesand codes_2.0_2May2019.csv")
 # # plot(bdy.can, add=T)
 # r.crop <- crop(r, c(-124.75, -121,46,50.5))
 # # r.crop <- aggregate(r.crop, fact=2)
-# writeRaster(r.crop, filename="InputData\\dem1_Salish.tif", format="GTiff", overwrite=TRUE)
+# writeRaster(r.crop, filename="inputs\\dem1_Salish.tif", format="GTiff", overwrite=TRUE)
 # ## create a data frame of the projected coordinates of the dem
 # r.pts <- rasterToPoints(r.crop, spatial=T) #create a spatial points data frame of the non-NA values of the DEM
 # r.pts <- as.data.frame(r.pts) #projected coordinates of the dem
@@ -89,58 +55,24 @@ spps.lookup <- read.csv("InputData\\Tree speciesand codes_2.0_2May2019.csv")
 # ## create the climateNA input file
 # CNAinput <- data.frame(id1=1:dim(r.pts)[1], id2=rep(NA, dim(r.pts)[1]), lat=r.pts$y, lon=r.pts$x, el=r.pts$namer_dem1)
 # str(CNAinput)
-# write.csv(CNAinput,"InputData\\Salish1.csv", row.names=FALSE)
+# write.csv(CNAinput,"inputs\\Salish1.csv", row.names=FALSE)
 
 #==================================================
-# BGC projections (commented out because only have to do it once)
+# BGC projections
 #==================================================
-setwd("C:\\Colin\\Projects\\2019_CCISS")
 
 ## parameters
 grid <- "WNA2"
 grid.dem <- "dem2_WNA"
 
-# ###Load random forest model
-# fname="Rcode\\BGCv11_AB_USA_16VAR_SubZone_RFmodel.Rdata"
-# # fname="Rcode\\BGCv11_AB_USA_500pts_27VAR_Subzone_RFmodel.Rdata"
-# #fname = (file.choose())
-# load(fname)
-# 
-# 
-# fplot=paste("InputData\\", grid, "_Normal_1961_1990MSY.csv", sep="")
-# 
-# 
-# Y0 <- fread(fplot, stringsAsFactors = FALSE, data.table = FALSE) #fread is faster than read.csv
-# 
-# #####generate some additional variables
-# Y0$PPT_MJ <- Y0$PPT05 + Y0$PPT06 # MaY/June precip
-# Y0$PPT_JAS <- Y0$PPT07 + Y0$PPT08 + Y0$PPT09 # July/Aug/Sept precip
-# Y0$PPT.dormant <- Y0$PPT_at + Y0$PPT_wt # for calculating spring deficit
-# Y0$CMD.def <- 500 - (Y0$PPT.dormant)# start of growing season deficit original value was 400 but 500 seems better
-# Y0$CMD.def [Y0$CMD.def < 0] <- 0 #negative values set to zero = no deficit
-# Y0$CMDMax <- Y0$CMD07
-# Y0$CMD.total <- Y0$CMD.def + Y0$CMD
-# 
-# ##Predict reference subzones###### (need to break it up because it is big)
-# BGC.pred.ref <- vector()
-# factor <- 9
-# for(i in 1:factor){
-#   temp <- Y0[(dim(Y0)[1]/factor*(i-1)+1):(dim(Y0)[1]/factor*i),-c(1:3)]
-#   # str(temp)
-#   BGC.pred.ref <- c(BGC.pred.ref, as.character(predict(BGCmodel, temp)))
-# print(i)
-# }
-# BGC.pred.ref
-# write.csv(BGC.pred.ref, paste("OutputData\\BGC.pred.ref", grid, "csv", sep="."), row.names = F)
-
-BGC.pred.ref <- read.csv(paste("OutputData\\BGC.pred.ref", grid, "csv", sep="."))[,1]
+BGC.pred.ref <- read.csv(paste("outputs/BGC.pred", grid, "ref", model,"csv", sep = "."), header=F)[,1]
 unique(BGC.pred.ref)
 
 #==================================================
 # spatial data
 #==================================================
-grid <- read.csv(paste("InputData\\", grid, ".csv", sep = ""))
-dem <- raster(paste("InputData\\", grid.dem,".tif", sep=""))
+grid <- read.csv(paste("inputs\\", grid, ".csv", sep = ""))
+dem <- raster(paste("inputs\\", grid.dem,".tif", sep=""))
 land.fine <- which(!is.na(values(dem)))  # raster cells with no dem value
 P4S.latlon <- CRS("+proj=longlat +datum=WGS84")
 X <- dem
@@ -176,10 +108,10 @@ bdy.can <- gSimplify(bdy.can1, tol=0.01, topologyPreserve=TRUE) #generalize the 
 #     bdy.usa@polygons[[i]]@plotOrder <- 1:length(bdy.usa@polygons[[i]]@Polygons)
 #   }
 # }
-setwd("C:\\Colin\\Projects\\2019_CCISS")
+setwd("C:\\GitHub\\2019_CCISS")
 
 ### admin boundaries
-bdy.bc <- readOGR("InputData\\BC_AB_US_Shp\\ProvincialOutline.shp")
+bdy.bc <- readOGR("inputs\\shapes\\ProvincialOutline.shp")
 
 #==================================================
 # create a hillshade
@@ -196,18 +128,21 @@ hill = hillShade(slope, aspect, 40, 270)
 # find the species suitability each projection/edatope/species combination
 #===============================================================================
 
-SiteLookup <- data.frame(MergedBGC=unique(SiteSeries_Use$MergedBGC))
+SiteLookup <- data.frame(BGC=unique(SiteSeries_Use$BGC))
 edatopes<- c("B2", "C4", "D6")
 for(edatope in edatopes){
   # SiteLookup <- cbind(SiteLookup, SiteSeries_Use$SS_NoSpace[match(SiteLookup[,1], SiteSeries_Use$MergedBGC[which(SiteSeries_Use$Use==edatope)])])
-  SiteLookup <- cbind(SiteLookup, SiteSeries_Use$SS_NoSpace[which(SiteSeries_Use$Edatopic==edatope)])
+  SiteLookup <- cbind(SiteLookup, SiteSeries_Use$SS_NoSpace[which(SiteSeries_Use$Use==edatope)])
   names(SiteLookup)[which(edatopes==edatope)+1] <- edatope
 }
 str(SiteLookup)
 
 # Import suitability tables
-S1 <- read.csv(paste("InputData/",treesuit,".csv",sep=""),stringsAsFactors=F,na.strings=".")
+S1 <- treesuit
+S1 <- S1[,-5]
+dim(S1)
 S1 <- unique(S1)
+dim(S1)
 
 # ## EDA: are there suitabilities for all projected units? 
 # NoSuit <- PredSum$Group.1[-which(PredSum$Group.1%in%S1$BGC)]
@@ -223,7 +158,7 @@ spps <- spps[-which(spps=="X")]
 spps.candidate <- spps.lookup$TreeCode[-which(spps.lookup$Exclude=="x")]
 spps <- spps[which(spps%in%spps.candidate)] 
 
-spp="Fd"
+spp="Act"
 edatope="C4"
 for(spp in spps){
   for(edatope in edatopes){
@@ -231,9 +166,9 @@ for(spp in spps){
     BGC.pred <- as.character(BGC.pred.ref) # get the BGC prediction 
     # BGC.pred[which(BGC.pred%in%Crosswalk$Modeled)] <- as.character(Crosswalk$Tables[match(BGC.pred[which(BGC.pred%in%Crosswalk$Modeled)], Crosswalk$Modeled)]) # XXX THIS IS NOT CORRECT. NEED TO FIGURE OUT HOW TO INCORPORATE THE CROSSWALK TABLE PROPERLY. sub in the crosswalk between the modeled units and the table units
     # get the suitability for the selected species associated with each site series
-    suit <- S1$ESuit[which(S1$Spp==spp)][match(as.vector(unlist(SiteLookup[which(names(SiteLookup)==edatope)])), S1$Unit[which(S1$Spp==spp)])]
+    suit <- S1$ESuit[which(S1$Spp==spp)][match(as.vector(unlist(SiteLookup[which(names(SiteLookup)==edatope)])), S1$SS_NoSpace[which(S1$Spp==spp)])]
     # suit <- S1$Suitability[which(S1$Spp==spp)][match(as.vector(unlist(SiteLookup[which(names(SiteLookup)==edatope)])), S1$Unit[which(S1$Spp==spp)])]
-    Suit.ref <- as.numeric(suit[match(BGC.pred, SiteLookup$MergedBGC)])
+    Suit.ref <- as.numeric(suit[match(BGC.pred, SiteLookup$BGC)])
     Suit.ref[Suit.ref>3] <- NA
     assign(paste("Suit.ref", spp, edatope, "csv", sep="."), Suit.ref)
     # values(X)[land.fine] <- Suit.ref
@@ -243,7 +178,6 @@ for(spp in spps){
   }
   print(spp)
 }
-
 
 #===============================================================================
 # map the suitability for each species
@@ -258,11 +192,11 @@ length(ColScheme)
 for(spp in spps){
   for(edatope in edatopes){
     
-    png(filename=paste("Results\\QAsuitability\\EnvSuit",spp, edatope, "png",sep="."), type="cairo", units="in", width=8.5, height=10, pointsize=10, res=300)
+    png(filename=paste("results\\QAsuitability\\EnvSuit",spp, edatope, "png",sep="."), type="cairo", units="in", width=8.5, height=10, pointsize=10, res=300)
     
     values(X) <- NA
     values(X)[land.fine] <- get(paste("Suit.ref", spp, edatope, "csv", sep="."))
-
+    
     par(mar=c(0.1,0.1,0.1,0.1))
     image(hill, xlim=c(-135, -108), ylim=c(39, 60), col=alpha(grey(0:100/100), 0.7), xaxt="n", yaxt="n", maxpixels= ncell(hill))
     image(X, add=T, xlim=c(-125, -112.5), ylim=c(40, 49), xaxt="n", yaxt="n", col=alpha(ColScheme, 0.6), breaks=breakseq , legend=FALSE, legend.mar=0, maxpixels=ncell(X), bty="n", box=FALSE)
@@ -275,11 +209,11 @@ for(spp in spps){
     Latin <- as.character(spps.lookup$ScientificName[which(spps.lookup$TreeCode==spp)])
     text(-134.5, 46.5, spp, font=2, pos=4, cex=2)
     if(length(Common)>0){
-    text(-134.5, 46, Common, font=2, pos=4, cex=1.6)
-    text(-134.5, 45.5, Latin, font=3, pos=4, cex=1.3)
+      text(-134.5, 46, Common, font=2, pos=4, cex=1.6)
+      text(-134.5, 45.5, Latin, font=3, pos=4, cex=1.3)
     }
     text(-134.5, 45, paste("Edatope: ", edatope, " (", edatope.name[which(edatopes==edatope)], ")", sep=""), font=1, pos=4, cex=1.3)
-
+    
     box()
     
     dev.off()
