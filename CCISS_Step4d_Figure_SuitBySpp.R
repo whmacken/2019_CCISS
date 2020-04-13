@@ -89,14 +89,15 @@ zone <- factor(zone, levels=c("CDF", "CWH", "MH", "ESSF", "MS", "IDF", "PP", "BG
 #===============================================================================
 rcp=rcps[1]
 hist.year=hist.years[4]
-proj.year=proj.years[1]
+proj.year=proj.years[2]
 
 edatope="C4"
 # for(edatope in edatopes){
 
-spps.matrix <- matrix(c("Pl", "Fd", "Cw","Ba", "Bl", "Bg", "Yc", "Pa", "Hm", "Lw", "Hw", "Py", "Dr", "Ep", "At"), 5, byrow=T)  
+spps.matrix <- matrix(c("Pl", "Fd", "Cw","Ba", "Bl", "Bg", "Yc", "Ss", "Hm", "Lw", "Hw", "Py", "Dr", "Ep", "At"), 5, byrow=T)  
 
 # x11(width=6.5, height=8.5, pointsize=12)
+
 
 for(matrow in 1:dim(spps.matrix)){
  spps <- spps.matrix[matrow,]
