@@ -130,27 +130,27 @@ for(rcp in rcps){
   print(rcp)
 }
 
-# determine vote winner BGC and ensemble agreement (WARNING: takes about 2 minutes per rcp/proj.year, so i just did RCP45, 2055)
-rcp=rcp.focal
-# for(rcp in rcps){
-  proj.year=proj.year.focal
-  # for(proj.year in proj.years){
-    temp <- as.data.frame(matrix(rep(NA, length(BGC.pred)*length(GCMs)), nrow=length(BGC.pred), ncol=length(GCMs)))
-    for(GCM in GCMs){
-      BGC.pred <- get(paste("BGC.pred", GCM, rcp, proj.year, sep="."))
-      #add votes to votes matrix
-      temp[,which(GCMs==GCM)] <- BGC.pred
-      print(GCM)
-    }
-    vote.winner <- function(x){return(names(which(table(x)==max(table(x))))[1])}
-    agreement <- function(x){return(max(table(x)))}
-    assign(paste("BGC.pred.ensemble", rcp, proj.year, sep="."), apply(temp, 1, vote.winner))
-    # assign(paste("BGC.pred.agreement", rcp, proj.year, sep="."), apply(temp, 1, agreement))
-    
-#     print(proj.year)
-#   }
-#   print(rcp)
-# }
+# # determine vote winner BGC and ensemble agreement (WARNING: takes about 2 minutes per rcp/proj.year, so i just did RCP45, 2055)
+# rcp=rcp.focal
+# # for(rcp in rcps){
+#   proj.year=proj.year.focal
+#   # for(proj.year in proj.years){
+#     temp <- as.data.frame(matrix(rep(NA, length(BGC.pred)*length(GCMs)), nrow=length(BGC.pred), ncol=length(GCMs)))
+#     for(GCM in GCMs){
+#       BGC.pred <- get(paste("BGC.pred", GCM, rcp, proj.year, sep="."))
+#       #add votes to votes matrix
+#       temp[,which(GCMs==GCM)] <- BGC.pred
+#       print(GCM)
+#     }
+#     vote.winner <- function(x){return(names(which(table(x)==max(table(x))))[1])}
+#     agreement <- function(x){return(max(table(x)))}
+#     assign(paste("BGC.pred.ensemble", rcp, proj.year, sep="."), apply(temp, 1, vote.winner))
+#     # assign(paste("BGC.pred.agreement", rcp, proj.year, sep="."), apply(temp, 1, agreement))
+#     
+# #     print(proj.year)
+# #   }
+# #   print(rcp)
+# # }
 
 # calculate percentage of ensemble projecting an exotic unit
     rcp=rcp.focal
@@ -266,7 +266,7 @@ box(col="white")
 
 #=============================
 ## featured GCM projection
-par(plt = c(0.1,1,0.55,1), new = TRUE)
+par(plt = c(0,1,0.55,1), new = TRUE)
 #predicted BGC zones (projected period)
 rcp<- rcp.focal
 proj.year <- proj.year.focal
@@ -291,7 +291,7 @@ image(X, add=T, col="white") # cover up the color bar
 values(X) <- factor(pred, levels=zones)[plotOrder] # restore the raster values
 plot(bdy.bc, add=T, lwd=0.4)
 # mtext(paste("(", letters[j], ") ", rcp, " ",proj.year, sep=""), side=1, line=-4.5, adj=0.12, cex=1, font=2)
-mtext(paste("(B) ", GCM, "\n      (", proj.year.name[which(proj.years==proj.year)], ", " , rcp.name[which(rcps==rcp)], ")", sep=""), side=3, line=-1.5, adj=0, cex=0.8, font=2)
+mtext(paste("(B) ", GCM, "\n      (", proj.year.name[which(proj.years==proj.year)], ", " , rcp.name[which(rcps==rcp)], ")", sep=""), side=3, line=-1.75, adj=0.08, cex=0.8, font=2)
 
 exotic.pct <- round(as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#")),2)
 # legend(250000, 1500000, cex=0.8, title="Exotic zones", legend=paste(names(exotic), " (", exotic.pct, "%)", sep=""), fill=alpha(ColScheme.zone[as.numeric(factor(names(exotic), zone))], 1), bty="n")
@@ -303,13 +303,13 @@ for(bgc in bgcs){
   q=0.5
   pt <- xyFromCell(X, pts[min(which(pts >= quantile(pts, q)))])
   points(pt, pch=21, bg=as.character(ColScheme[which(BGCcolors$classification==bgc)]), cex=1, lwd=0.8)
-  text(pt-c(0, 0), paste(bgc, " (", exotic.pct[which(bgcs==bgc)], "%)", sep=""), pos=c(2,4,4,2,4,4,2)[which(bgcs==bgc)], cex=0.7, font=1, offset=0.3)
+  text(pt-c(0, 0), bgc, pos=4, cex=0.8, font=1, offset=0.3)
   # print(q)
 }
 
 #=============================
-## Mapped BGCs zones
-par(plt = c(0, 0.45, 0.55, 0.9), new = TRUE)
+## Mapped BGC zones
+par(plt = c(0.01, 0.41, 0.55, 0.875), new = TRUE)
 #Mapped BGC zones
 zones.bc <- c("BG", "BWBS", "CDF", "CWH", "ESSF", "ICH", "IDF", "MH", "MS", "PP", "SBPS", "SBS", "SWB" )
 ColScheme.bc <- as.character(BGCcolors[match(zones.bc,BGCcolors[,1]),2])
@@ -331,28 +331,31 @@ legend("bottomleft", legend=c(zones.bc, "Alpine"), fill=c(ColScheme.bc, "white")
 # box()
 
 
+
 #=============================
-## exotic units
-par(plt = c(0.65, 1, 0.7, 1), new = TRUE)
-exotic <- get(paste("BGC.pred.exotic", rcp, proj.year, sep="."))
-
+## Recent Period
+hist.year <- 2009
+par(plt = c(0.6, 1, 0.625, 1), new = TRUE)
+BGC.pred <- get(paste("BGC.pred", hist.year, sep="."))
+zone.pred <- rep(NA, length(BGC.pred))
+for(i in zones){ zone.pred[grep(i,BGC.pred)] <- i }
+# exotic <- table(zone.pred[-which(zone.pred%in%BGCcolors$zone)])
+# exotic <- exotic[exotic>20]
+# exotic <- exotic[rev(order(exotic))]
+# as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#"))
+pred <- zone.pred
 values(X) <- NA
-values(X) <- exotic[plotOrder]
-breakpoints <- seq(0,1,1/length(GCMs)); length(breakpoints)
-# ColScheme <- c("white", colorRampPalette(brewer.pal(9,"YlOrBr"))(length(breakpoints)-2)); length(ColScheme)
-# ColScheme <- c("white", colorRampPalette(brewer.pal(9,"YlOrBr"))(length(breakpoints)-7), rep(rev(brewer.pal(9,"YlOrBr"))[1], 5)); length(ColScheme)
-ColScheme.grays <- c("white", colorRampPalette(brewer.pal(9,"Greys"))(length(breakpoints)-4), rep(rev(brewer.pal(9,"Greys"))[1], 2)); length(ColScheme)
+values(X) <- factor(pred, levels=zones)[plotOrder]
+values(X)[1:length(zones)] <- 1:length(zones) # this is a patch that is necessary to get the color scheme right.
 
-plot(X, xaxt="n", yaxt="n", col=alpha(ColScheme.grays, 1), legend=FALSE, legend.mar=0, maxpixels=ncell(X), bty="n", box=FALSE) 
-# box(col="white", lwd=1.5)
+plot(X, xaxt="n", yaxt="n", col=alpha(ColScheme, 1), legend=FALSE, legend.mar=0, maxpixels=ncell(X), bty="n", box=FALSE)
+values(X)[-(1:length(zones))] <- NA # cover up the color bar
+image(X, add=T, col="white")
 plot(bdy.bc, add=T, lwd=0.4)
-xl <- 1600000; yb <- 1000000; xr <- 1670000; yt <- 1700000
-rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme.grays)),-1),  col=ColScheme.grays, border = NA)
-rect(xl,  yb,  xr,  yt)
-text(rep(xr-40000,length(breakpoints))[seq(1, length(breakpoints), 3)],seq(yb,yt,(yt-yb)/(length(breakpoints)-1))[seq(1, length(breakpoints), 3)],paste(round(breakpoints*100),"%", sep="")[seq(1, length(breakpoints), 3)],pos=4,cex=0.7,font=1)
-text(xl-40000, mean(c(yb,yt))-30000, paste("% Non-BC climates\nin GCM ensemble"), srt=90, pos=3, cex=0.8, font=2)
-# mtext(paste(rcp, proj.year, sep="\n"), side=1, line=-3.5, adj=0.05, cex=1, font=2)
-mtext(paste("(C) ", sep=""), side=3, line=-3, adj=0.05, cex=0.8, font=2)
+mtext(paste("(", LETTERS[3], ") Observed change (", hist.year.name[which(hist.years==hist.year)],")", sep=""), side=3, line=-1.1, adj=0.05, cex=0.8, font=2)
+
+# exotic.pct <- round(as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#")),2)
+# legend("topright", cex=0.8, title="Exotic zones", legend=paste(names(exotic), " (", exotic.pct, "%)", sep=""), fill=alpha(ColScheme[as.numeric(factor(names(exotic), zone))], 1), bty="n")
 
 
 #=============================
@@ -362,7 +365,7 @@ x2 <- c(0.275,0.5,0.275,0.5)
 y1 <- c(0.265, 0.265,0,0)
 y2 <- c(0.505,0.505,0.24,0.24)
 
-select <- c(8,7)
+select <- c(15,7)
 for(i in 1:2){
   GCM=GCMs[select[i]]
   rcp=rcps[1]
@@ -394,37 +397,13 @@ for(i in 1:2){
   print(GCM)
 }
 
-#=============================
-## historic
-hist.year <- 2009
-par(plt = as.vector(rbind(x1, x2, y1, y2)[,3]), new = TRUE)
-BGC.pred <- get(paste("BGC.pred", hist.year, sep="."))
-zone.pred <- rep(NA, length(BGC.pred))
-for(i in zones){ zone.pred[grep(i,BGC.pred)] <- i }
-# exotic <- table(zone.pred[-which(zone.pred%in%BGCcolors$zone)])
-# exotic <- exotic[exotic>20]
-# exotic <- exotic[rev(order(exotic))]
-# as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#"))
-pred <- zone.pred
-values(X) <- NA
-values(X) <- factor(pred, levels=zones)[plotOrder]
-values(X)[1:length(zones)] <- 1:length(zones) # this is a patch that is necessary to get the color scheme right.
-
-plot(X, xaxt="n", yaxt="n", col=alpha(ColScheme, 1), legend=FALSE, legend.mar=0, maxpixels=ncell(X), bty="n", box=FALSE)
-values(X)[-(1:length(zones))] <- NA # cover up the color bar
-image(X, add=T, col="white")
-plot(bdy.bc, add=T, lwd=0.4)
-mtext(paste("(", LETTERS[6], ") Recent (", hist.year.name[which(hist.years==hist.year)],")", sep=""), side=3, line=-0.50, adj=0.05, cex=0.8, font=2)
-
-# exotic.pct <- round(as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#")),2)
-# legend("topright", cex=0.8, title="Exotic zones", legend=paste(names(exotic), " (", exotic.pct, "%)", sep=""), fill=alpha(ColScheme[as.numeric(factor(names(exotic), zone))], 1), bty="n")
 
 #=============================
 ## RCP8.5
 GCM=GCMs[4]
 rcp=rcps[2]
 proj.year=proj.years[3]
-par(plt = as.vector(rbind(x1, x2, y1, y2)[,4]), new = TRUE)
+par(plt = as.vector(rbind(x1, x2, y1, y2)[,3]), new = TRUE)
 
 BGC.pred <- get(paste("BGC.pred", GCM, rcp, proj.year, sep="."))
 zone.pred <- rep(NA, length(BGC.pred))
@@ -443,7 +422,7 @@ values(X)[-(1:length(zones))] <- NA # cover up the color bar
 image(X, add=T, col="white")
 values(X) <- factor(pred, levels=zones)[plotOrder] # restore the raster values
 plot(bdy.bc, add=T, lwd=0.4)
-mtext(paste("(", LETTERS[7], ") ", GCM, "\n      (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), side=3, line=-0.50, adj=0.05, cex=0.8, font=2)
+mtext(paste("(", LETTERS[6], ") ", GCM, "\n      (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), side=3, line=-0.50, adj=0.05, cex=0.8, font=2)
 
 bgcs <- names(exotic)
 for(bgc in bgcs){
@@ -451,9 +430,37 @@ for(bgc in bgcs){
   q=0.5
   pt <- xyFromCell(X, pts[min(which(pts >= quantile(pts, q)))])
   points(pt, pch=21, bg=as.character(ColScheme[which(BGCcolors$classification==bgc)]), cex=0.8, lwd=0.8)
-  text(pt-c(0, 0), bgc, pos=4, cex=0.6, font=1, offset=0.3)
+  text(pt-c(0, 0), bgc, pos=4, cex=0.75, font=1, offset=0.3)
   # print(q)
 }
+
+
+#=============================
+## exotic units
+rcp=rcp.focal
+proj.year=proj.year.focal
+
+par(plt = as.vector(rbind(x1, x2, y1, y2)[,4]), new = TRUE)
+exotic <- get(paste("BGC.pred.exotic", rcp, proj.year, sep="."))
+
+values(X) <- NA
+values(X) <- exotic[plotOrder]
+breakpoints <- seq(0,1,1/length(GCMs)); length(breakpoints)
+# ColScheme <- c("white", colorRampPalette(brewer.pal(9,"YlOrBr"))(length(breakpoints)-2)); length(ColScheme)
+# ColScheme <- c("white", colorRampPalette(brewer.pal(9,"YlOrBr"))(length(breakpoints)-7), rep(rev(brewer.pal(9,"YlOrBr"))[1], 5)); length(ColScheme)
+ColScheme <- c("white", colorRampPalette(brewer.pal(9,"Greys"))(length(breakpoints)-4), rep(rev(brewer.pal(9,"Greys"))[1], 2)); length(ColScheme)
+
+plot(X, xaxt="n", yaxt="n", col=alpha(ColScheme, 1), legend=FALSE, legend.mar=0, maxpixels=ncell(X), bty="n", box=FALSE) 
+# box(col="white", lwd=1.5)
+plot(bdy.bc, add=T, lwd=0.4)
+xl <- 1500000; yb <- 1000000; xr <- 1570000; yt <- 1650000
+rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme, border = NA)
+rect(xl,  yb,  xr,  yt)
+text(rep(xr-40000,length(breakpoints))[seq(1, length(breakpoints), 3)],seq(yb,yt,(yt-yb)/(length(breakpoints)-1))[seq(1, length(breakpoints), 3)],paste(round(breakpoints*100),"%", sep="")[seq(1, length(breakpoints), 3)],pos=4,cex=0.8,font=1)
+# text(xl-40000, mean(c(yb,yt))-30000, paste("% Non-BC climates\nin GCM ensemble"), srt=90, pos=3, cex=0.8, font=2)
+# mtext(paste(rcp, proj.year, sep="\n"), side=1, line=-3.5, adj=0.05, cex=1, font=2)
+mtext(paste("(", LETTERS[7], ") % Non-BC climates in\nGCM ensemble (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), side=3, line=-0.50, adj=0.05, cex=0.8, font=2)
+
 
 #=============================
 ## plot of displacement vs MAT change
@@ -467,14 +474,14 @@ axis(1, at=0:8, labels = 0:8, tck=0, cex.axis=0.8)
 axis(2, at=seq(0,1,0.2), labels = paste(seq(0,1,0.2)*100, "%", sep=""), las=2, tck=0, cex.axis=0.8)
 mtext(paste("(H) ", sep=""), side=3, line=-1.5, adj=0.05, cex=1, font=2)
 
-select <- c(4,7,8)
+select <- c(4,7,15)
 int.y <- 0.07
 start.y <- 0.03
 pos.y <- seq(start.y,start.y+int.y*3, int.y)
 offset.y <- 6
 ColScheme=c("dodgerblue", "red")
-for(rcp in rcps){
-  for(proj.year in proj.years){
+for(rcp in rev(rcps)){
+  for(proj.year in rev(proj.years)){
     temp.bgc <- rep(NA, length(GCMs))
     temp.zone <- rep(NA, length(GCMs))
     for(GCM in GCMs){
@@ -487,19 +494,19 @@ for(rcp in rcps){
     y2 <- temp.zone
     
     points(x, y1, pch=16)
-    points(x, y2, pch=1)
+    points(x, y2, pch=16, col="gray")
     
     if(rcp==rcp.focal){
       if(proj.year==proj.year.focal){
         points(x[select], y2[select], pch=21, cex=1.4, lwd=2, bg="gray")
-        text(x[select], y2[select], paste(GCMs[select], " (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), font=2, cex=0.5, pos=4)
+        text(x[select], y2[select], paste(GCMs[select], " (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), font=2, cex=0.7, pos=4)
       }
     }
     
     if(rcp==rcps[2]){
       if(proj.year==proj.years[3]){
         points(x[select[1]], y2[select[1]], pch=21, cex=1.4, lwd=2, bg="gray")
-        text(x[select[1]], y2[select[1]]-0.02, paste(GCMs[select[1]], "\n(", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), font=2, cex=0.5, pos=1)
+        text(x[select[1]], y2[select[1]]-0.01, paste(GCMs[select[1]], "\n(", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), font=2, cex=0.7, pos=1)
         # text(x[select[1]]+0.6, y2[select[1]]+0.025, paste(GCMs[select[1]], " (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), font=2, cex=0.5, pos=2)
       }
     }
@@ -522,11 +529,205 @@ for(hist.year in hist.years[c(2,4)]){
   text(x,y2, hist.year.name[which(hist.years==hist.year)], pos=4, cex=0.7, font=2)
 }
 
-if(proj.year.focal==proj.years[1]){ legend(3.2, 0.48, cex=0.8, legend=c("BGC unit displacement", "BGC zone displacement", "Observed climates", ""), y.intersp = 1, pch=c(16,1,2, 1), col=c(1,1,1,"white"), pt.cex=c(1.2,1.2,1.5, 1), bty="n")
+if(proj.year.focal==proj.years[1]){ legend(3.2, 0.44, cex=0.8, legend=c("BGC unit displacement", "BGC zone displacement", "Observed climates", ""), y.intersp = 1, pch=c(16,1,2, 1), col=c(1,1,1,"white"), pt.cex=c(1.2,1.2,1.5, 1), bty="n")
 } else legend("right", cex=0.8, legend=c("BGC unit displacement", "BGC zone displacement", "Observed climates", ""), y.intersp = 1, pch=c(16,1,2, 1), col=c(1,1,1,"white"), pt.cex=c(1.2,1.2,1.5, 1), bty="n")
 
 
 dev.off()
+
+
+
+#===============================================================================
+#===============================================================================
+# Alternate layout
+#===============================================================================
+#===============================================================================
+
+# x11(width=6.5, height=6.5, pointsize=10)
+png(filename=paste("Results\\CCISS.manu.BGCprojections.ALT",proj.year.focal,"png",sep="."), type="cairo", units="in", width=6.5, height=6.5, pointsize=10, res=600)
+# mat <- matrix(c(1,2,3,6,6,4,6,6,5),3, byrow=T)   #define the plotting order
+# layout(mat, widths=c(1,1,1), heights=c(1,1,1))   #set up the multipanel plot
+par(mar=c(0.1,0.1,3,0.1), mgp=c(2,0.25,0))
+
+x1 <- c(0.00, 0.30, 0.60, 0.65, 0.65, 0.075)
+x2 <- c(0.40, 0.70, 1.00, 1.00, 1.00, 0.63)
+y1 <- c(0.65, 0.65, 0.65, 0.325, 0.00, 0.075)
+y2 <- c(0.96, 0.96, 0.96, 0.60, 0.275, 0.625)
+
+#BGC zone color scheme
+BGCcolors$colour <- as.character(BGCcolors$colour)
+BGCcolors$colour[match(BGCcolors.BC$zone, BGCcolors$classification)] <- as.character(BGCcolors.BC$HEX)
+ColScheme <- factor(BGCcolors$colour, levels=BGCcolors$colour)
+zones <- factor(BGCcolors$classification, levels=BGCcolors$classification)
+
+#=============================
+## Base plot
+par(plt=c(0,1,0,1), bg=NA)
+plot(0, col="white", xaxt="n", yaxt="n", xlab="", ylab="")
+box(col="white")
+
+#=============================
+## Mapped BGC zones
+
+par(plt = as.vector(rbind(x1, x2, y1, y2)[,1]), new = TRUE)
+
+zones.bc <- c("BG", "BWBS", "CDF", "CWH", "ESSF", "ICH", "IDF", "MH", "MS", "PP", "SBPS", "SBS", "SWB" )
+ColScheme.bc <- as.character(BGCcolors[match(zones.bc,BGCcolors[,1]),2])
+
+zone.bc <- rep(NA, length(BGC))
+for(i in BGCcolors$classification){ zone.bc[grep(i,BGC)] <- i }
+table(zone.bc)
+
+pred <- zone.bc
+pred[grep("IMA|CMA|BAFA", pred)] <- NA
+X <- dem
+values(X) <- NA
+values(X) <- as.numeric(factor(pred))[plotOrder]
+plot(X, xaxt="n", yaxt="n", col=alpha(ColScheme.bc, 1), legend=FALSE, legend.mar=0, maxpixels=ncell(X), bty="n", box=FALSE) 
+plot(bdy.bc, add=T, lwd=0.4)
+par(xpd=T) 
+mtext("(A) BGC zone map (1961-1990)", side=3, line=0.2, adj=0.05, cex=0.8, font=2)
+legend("bottomleft", legend=c(zones.bc, "Alpine"), fill=c(ColScheme.bc, "white"), bty="n", cex=0.75, inset=-0.02)
+# box()
+
+
+#=============================
+## Recent Period
+par(plt = as.vector(rbind(x1, x2, y1, y2)[,2]), new = TRUE)
+hist.year <- 2009
+BGC.pred <- get(paste("BGC.pred", hist.year, sep="."))
+zone.pred <- rep(NA, length(BGC.pred))
+for(i in zones){ zone.pred[grep(i,BGC.pred)] <- i }
+# exotic <- table(zone.pred[-which(zone.pred%in%BGCcolors$zone)])
+# exotic <- exotic[exotic>20]
+# exotic <- exotic[rev(order(exotic))]
+# as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#"))
+pred <- zone.pred
+values(X) <- NA
+values(X) <- factor(pred, levels=zones)[plotOrder]
+values(X)[1:length(zones)] <- 1:length(zones) # this is a patch that is necessary to get the color scheme right.
+
+plot(X, xaxt="n", yaxt="n", col=alpha(ColScheme, 1), legend=FALSE, legend.mar=0, maxpixels=ncell(X), bty="n", box=FALSE)
+values(X)[-(1:length(zones))] <- NA # cover up the color bar
+image(X, add=T, col="white")
+plot(bdy.bc, add=T, lwd=0.4)
+mtext(paste("(", LETTERS[2], ") Observed change (", hist.year.name[which(hist.years==hist.year)],")", sep=""), side=3, line=0.2, adj=0.05, cex=0.8, font=2)
+
+# exotic.pct <- round(as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#")),2)
+# legend("topright", cex=0.8, title="Exotic zones", legend=paste(names(exotic), " (", exotic.pct, "%)", sep=""), fill=alpha(ColScheme[as.numeric(factor(names(exotic), zone))], 1), bty="n")
+
+
+
+#=============================
+## single GCMs
+
+
+select <- c(4,15,7)
+for(i in 1:length(select)){
+  GCM=GCMs[select[i]]
+  rcp=rcps[1]
+  proj.year=proj.year.focal
+
+  BGC.pred <- get(paste("BGC.pred", GCM, rcp, proj.year, sep="."))
+  zone.pred <- rep(NA, length(BGC.pred))
+  for(j in zones){ zone.pred[grep(j,BGC.pred)] <- j }
+  # exotic <- table(zone.pred[-which(zone.pred%in%BGCcolors$zone)])
+  # exotic <- exotic[exotic>20]
+  # exotic <- exotic[rev(order(exotic))]
+  # as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#"))
+  pred <- zone.pred
+  values(X) <- NA
+  values(X) <- factor(pred, levels=zones)[plotOrder]
+  values(X)[1:length(zones)] <- 1:length(zones) # this is a patch that is necessary to get the color scheme right.
+  
+  par(plt = as.vector(rbind(x1, x2, y1, y2)[,i+2]), new = TRUE)
+  plot(X, xaxt="n", yaxt="n", col=alpha(ColScheme, 1), legend=FALSE, legend.mar=0, maxpixels=ncell(X), bty="n", box=FALSE)
+  values(X)[-(1:length(zones))] <- NA # cover up the color bar
+  image(X, add=T, col="white")
+  plot(bdy.bc, add=T, lwd=0.4)
+  mtext(paste("(", LETTERS[3:5][i], ") ", GCM, " (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), side=3, line=0.2, adj=0.05, cex=0.8, font=2)
+  
+  # exotic.pct <- round(as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#")),2)
+  # legend("topright", cex=0.8, title="Exotic zones", legend=paste(names(exotic), " (", exotic.pct, "%)", sep=""), fill=alpha(ColScheme[as.numeric(factor(names(exotic), zone))], 1), bty="n")
+  
+  
+  print(GCM)
+}
+
+
+#=============================
+## plot of displacement vs MAT change
+
+# png(filename=paste("Results\\CCISS.BGCEDA.BGCchangeVsMATchange.png",sep="."), type="cairo", units="in", width=3.5, height=3.5, pointsize=9, res=300)
+par(mar=c(2.25,3.25,0.1,0.1), mgp=c(1.75,0.25,0), plt = as.vector(rbind(x1, x2, y1, y2)[,6]), new = TRUE)
+plot(0, xlim=c(0,7.2), ylim=c(0,1.01), xaxs="i", yaxs="i", col="white", xaxt="n", yaxt="n",
+     xlab=list(bquote(Projected~temperature~change~relative~to~"1961-90"~"("*degree*C*")"), cex=0.8), 
+     ylab=list("Projected displacement of modeled BGC unit", cex=0.8))
+axis(1, at=0:8, labels = 0:8, tck=0, cex.axis=0.8)
+axis(2, at=seq(0,1,0.2), labels = paste(seq(0,1,0.2)*100, "%", sep=""), las=2, tck=0, cex.axis=0.8)
+mtext(paste("(F) ", sep=""), side=3, line=-1.5, adj=0.05, cex=1, font=2)
+
+select <- c(4,7,15)
+int.y <- 0.07
+start.y <- 0.03
+pos.y <- seq(start.y,start.y+int.y*3, int.y)
+offset.y <- 6
+ColScheme=c("dodgerblue", "red")
+for(rcp in rev(rcps)){
+  for(proj.year in rev(proj.years)){
+    temp.bgc <- rep(NA, length(GCMs))
+    temp.zone <- rep(NA, length(GCMs))
+    for(GCM in GCMs){
+      temp.bgc[which(GCMs==GCM)] <- mean(get(paste("BGC.change.pred", GCM, rcp, proj.year, sep=".")) )
+      temp.zone[which(GCMs==GCM)] <- mean(get(paste("zone.change.pred", GCM, rcp, proj.year, sep=".")) )
+    }
+    
+    x <- get(paste("MAT.change", rcp, proj.year, sep="."))
+    y1 <- temp.bgc
+    y2 <- temp.zone
+    
+    points(x, y1, pch=16)
+    points(x, y2, pch=16, col="gray")
+    
+    if(rcp==rcp.focal){
+      if(proj.year==proj.year.focal){
+        points(x[select], y2[select], pch=21, cex=1.4, lwd=2, bg="gray")
+        text(x[select], y2[select], paste(GCMs[select], " (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), font=2, cex=0.7, pos=4)
+      }
+    }
+    
+    if(rcp==rcps[2]){
+      if(proj.year==proj.years[3]){
+        points(x[select[1]], y2[select[1]], pch=21, cex=1.4, lwd=2, bg="gray")
+        text(x[select[1]], y2[select[1]]-0.01, paste(GCMs[select[1]], "\n(", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), font=2, cex=0.7, pos=1)
+        # text(x[select[1]]+0.6, y2[select[1]]+0.025, paste(GCMs[select[1]], " (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), font=2, cex=0.5, pos=2)
+      }
+    }
+    
+    boxplot(x, add=T, horizontal=TRUE, axes=FALSE, range=0, boxwex = 0.04, col=ColScheme[which(rcps==rcp)], at= if(rcp==rcps[1]) pos.y[which(proj.years==proj.year)]-int.y/offset.y else pos.y[which(proj.years==proj.year)]+int.y/offset.y)
+    # text(max(x), ylim[1], paste(rcp.name[which(rcps==rcp)], ", ", proj.year.name[which(proj.years==proj.year)], sep=""), pos=4, cex=0.8)
+    text(0, pos.y[which(proj.years==proj.year)], proj.year.name[which(proj.years==proj.year)], pos=4, cex=0.8)
+    if(proj.year==proj.years[1]) text(max(x), if(rcp==rcps[1]) pos.y[which(proj.years==proj.year)]-int.y/offset.y*1.25 else pos.y[which(proj.years==proj.year)]+int.y/offset.y*1.25, 
+                                      rcp.name[which(rcps==rcp)], pos=4, col=ColScheme[which(rcps==rcp)], cex=0.85, font=2)
+  }
+}
+
+for(hist.year in hist.years[c(2,4)]){
+  x <- get(paste("MAT.change", hist.year, sep="."))
+  y1 <- mean(get(paste("BGC.change.pred", hist.year, sep=".")) )
+  y2 <- mean(get(paste("zone.change.pred", hist.year, sep=".")) )
+  points(x,y1, cex=1.7, pch=17)
+  # text(x,y1, c("1991-\n2000", "2001-\n2010","2011-\n2018", "2018")[which(hist.years==hist.year)], pos=c(2,2,2,2)[which(hist.years==hist.year)], cex=0.7, font=2)
+  points(x,y2, cex=1.4, pch=2)
+  text(x,y2, hist.year.name[which(hist.years==hist.year)], pos=4, cex=0.7, font=2)
+}
+
+if(proj.year.focal==proj.years[1]){ legend(3.2, 0.44, cex=0.8, legend=c("BGC unit displacement", "BGC zone displacement", "Observed climates", ""), y.intersp = 1, pch=c(16,1,2, 1), col=c(1,1,1,"white"), pt.cex=c(1.2,1.2,1.5, 1), bty="n")
+} else legend("right", cex=0.8, legend=c("BGC unit displacement", "BGC zone displacement", "Observed climates", ""), y.intersp = 1, pch=c(16,1,2, 1), col=c(1,1,1,"white"), pt.cex=c(1.2,1.2,1.5, 1), bty="n")
+
+
+dev.off()
+
 
 
 
