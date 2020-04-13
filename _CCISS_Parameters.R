@@ -30,4 +30,5 @@ BGCcolors.subzone <- read.csv("lookup/WNAv11_Subzone_Colours.csv")
 treesuit <- read.csv("lookup/ESuit_CCISSPaper_new.csv")
 SiteSeries_Use <-read.csv("lookup/SiteSeries_Use_CCISSpaper_24Mar2020.csv",stringsAsFactors=FALSE,na.strings=".")
 spps.lookup <- read.csv("lookup/Tree speciesand codes_2.0_2May2019.csv")
+BGCs_notin_THLB <- read.csv("lookup/BGCs_notin_THLB.csv")
 

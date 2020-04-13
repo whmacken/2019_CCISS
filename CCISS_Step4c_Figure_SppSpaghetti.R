@@ -9,75 +9,34 @@
 # 778-288-4008
 # July 21, 2019
 
-require (RGtk2)
-require(plyr)
-require (rChoiceDialogs)
-require (data.table)
-require(doBy)
-require (utils)
-require(labdsv)
-require(tools )
-require(svDialogs)
-require(tcltk)
-require(randomForest)
-require(foreach)
-require(dplyr)
-require(reshape2)
-require(reshape)
-library(doParallel)
-require(data.table)
-library(MASS)   
-library(scales)
-library(stats)
-library(rgl)
-library(RColorBrewer)
-library(FNN)
-library(igraph)
-library(raster)
-library(maps)
-library(mapdata)
-library(maptools)
-library(sp)
-library(colorRamps)
-library(rgeos)
-library(rgdal)
-library(foreign)
+
 
 #===============================================================================
 # Set analysis Parameters
 #===============================================================================
 
-setwd("C:\\Colin\\Projects\\2019_CCISS")
-
-grid <- "BC2kmGrid"
-
-GCMs <-  c("ACCESS1-0","CanESM2","CCSM4","CESM1-CAM5","CNRM-CM5","CSIRO-Mk3-6-0", "GFDL-CM3","GISS-E2R", "HadGEM2-ES", "INM-CM4", "IPSL-CM5A-MR", "MIROC-ESM", "MIROC5", "MPI-ESM-LR","MRI-CGCM3")
-rcps <- c("rcp45", "rcp85")
-proj.years <- c(2025, 2055, 2085)
-hist.years <- c(1995, 2004, 2005, 2009, 2014, 2017)
-edatopes<- c("B2", "C4", "D6")
-edatope.name <- c("nutrient poor, subxeric", "nutrient-medium, mesic", "nutrient-rich, hygric")
-proj.year.name=c("2020s", "2050s", "2080s")
-rcp.name=c("RCP4.5", "RCP8.5")
+source("./_CCISS_Packages.R") ## packages required
+source("./_CCISS_Functions.R") ## common functions
+source("./_CCISS_Parameters.R") ## settings used through all scripts
 
 ## non-THLB BGCs for exclusion from results
-points <- read.csv(paste("InputData\\",grid,".csv", sep=""))
+points <- read.csv(paste("inputs\\",grid,".csv", sep=""))
 BGC <- points$ID2
 BGC <- gsub(" ","",BGC)
-BGCs_notin_THLB <- read.csv("InputData\\BGCs_notin_THLB.csv")
 BGCs_notin_THLB <- BGCs_notin_THLB$BGC[which(BGCs_notin_THLB$Exlude=="x")]
 exclude <- which(BGC%in%BGCs_notin_THLB)
 
-spps.lookup <- read.csv("InputData\\Tree speciesand codes_2.0_2May2019.csv")
+native <- spps.lookup$Native[match(spps,spps.lookup$TreeCode)]
+spps.native <- c("Ra", "Pl", "Pj", "Fd", "Cw", "Ba", "Sx", "Bl", "Bg", "Yc", "Pa", "Hm", "Lw", "La", "Lt", "Hw", "Py", "Dr", "Ep", "At", "Acb", "Pw", "Ss", "Sb", "Qg", "Act", "Mb")
 
 #===============================================================================
 # Import suitability tables
 #===============================================================================
-wd="InputData"
-treesuit="TreeSpp_ESuit_v11_18"
-treesuit2=paste(wd,"/",treesuit,".csv",sep="")
-S1 <- read.csv(treesuit2,stringsAsFactors=F,na.strings=".")
+S1 <- treesuit
+S1 <- unique(S1)[,-5]
+dim(S1)
 S1 <- unique(S1)
+dim(S1)
 
 # select a subset of species to run the analysis on
 spps <- unique(S1$Spp)
@@ -91,28 +50,33 @@ spps <- spps[which(spps%in%spps.candidate)]
 #===============================================================================
 
 
-fplot=paste("InputData\\", grid, "_Normal_1961_1990MSY.csv", sep="")
+#===============================================================================
+# calculate mean MAT change for each model prediction
+#===============================================================================
+
+fplot=paste("inputs\\", grid, "_Normal_1961_1990MSY.csv", sep="")
 Y0 <- fread(fplot, select = "MAT", stringsAsFactors = FALSE, data.table = FALSE) #fread is faster than read.csv
 MAT.ref <- Y0$MAT
 MAT.mean.ref <- mean(MAT.ref, na.rm=T)
 
 for(hist.year in hist.years){
-  Y0 <- fread(paste("InputData\\", grid, "_", hist.year, "_BioVars.csv", sep=""), select = "MAT", stringsAsFactors = FALSE, data.table = FALSE) #fread is faster than read.csv
+  Y0 <- fread(paste("inputs\\", grid, "_", hist.year, "_BioVars.csv", sep=""), select = "MAT", stringsAsFactors = FALSE, data.table = FALSE) #fread is faster than read.csv
   assign(paste("MAT", hist.year, sep="."), Y0$MAT)
   assign(paste("MAT.change", hist.year, sep="."), mean(Y0$MAT, na.rm=T)-MAT.mean.ref)
   print(hist.year)
 }
 
 for(GCM in GCMs){
-  Y1 <- fread(paste("InputData\\", grid, "_", GCM, "_BioVars.csv", sep=""), select = c("GCM", "MAT"), stringsAsFactors = FALSE, data.table = FALSE)
+  Y1 <- fread(paste("inputs\\", grid, "_", GCM, ".csv", sep=""), select = c("Year", "MAT"), stringsAsFactors = FALSE, data.table = FALSE)
   ## assign single vectors to RCPs and proj.years
   Ystr <- strsplit(Y1[,1], "_")
   Y4 <- matrix(unlist(Ystr), ncol=3, byrow=TRUE)
+  Y4[,3] <- gsub(".gcm","",Y4[,3])
   for(rcp in rcps){
     for(proj.year in proj.years){
       assign(paste("MAT", GCM, rcp, proj.year, sep="."), Y1$MAT[which(Y4[,2]==rcp & Y4[,3]==proj.year)])
     }
-    print(rcp)
+    # print(rcp)
   }
   print(GCM)
 }
@@ -132,6 +96,7 @@ for(rcp in rcps){
   print(rcp)
 }
 
+
 # Compile the MAT for all time periods/scenarios into a single vector
 MAT.change <- vector()
 for(rcp in rcps){
@@ -147,7 +112,7 @@ for(rcp in rcps){
 
 for(spp in spps){
   for(edatope in edatopes){
-    Suit <- read.csv(paste("OutputData\\Suit.ref", grid, spp, edatope, "csv", sep="."))[-exclude,1]
+    Suit <- read.csv(paste("outputs\\Suit.ref", grid, spp, edatope, "csv", sep="."))[-exclude,1]
     Suit[is.na(Suit)] <- 5
     Suit <- 1-(Suit-1)/4
     assign(paste("SuitCells.ref", spp, edatope, sep="."), sum(Suit))
@@ -167,7 +132,7 @@ for(spp in spps){
         SppCells <- rep(NA, length(GCMs))
         for(GCM in GCMs){
           
-          Suit.proj <- read.csv(paste("OutputData\\Suit", grid, GCM, rcp, proj.year, spp, edatope, "csv", sep="."))[-exclude,1]
+          Suit.proj <- read.csv(paste("outputs\\Suit", grid, GCM, rcp, proj.year, spp, edatope, "csv", sep="."))[-exclude,1]
           Suit.proj[is.na(Suit.proj)] <- 5
           Suit.proj <- 1-(Suit.proj-1)/4
           
@@ -259,12 +224,10 @@ exotic.table <- exotic.table[rev(order(exotic.table$area.pct)),]
 ############################
 ## two-panel plot of species trends relative to MAT change, log and raw scaled
 ############################
-native <- spps.lookup$Native[match(spps,spps.lookup$TreeCode)]
-spps.native <- c("Ra", "Pl", "Pj", "Fd", "Cw", "Ba", "Sx", "Bl", "Bg", "Yc", "Pa", "Hm", "Lw", "La", "Lt", "Hw", "Py", "Dr", "Ep", "At", "Acb", "Pw", "Ss", "Sb", "Qg", "Act", "Mb")
 
 for(edatope in edatopes){
 
-  png(filename=paste("Results\\CCISS_manu_SppSpaghetti", edatope, "png",sep="."), type="cairo", units="in", width=6.5, height=5, pointsize=8, res=400)
+  png(filename=paste("results\\CCISS_manu_SppSpaghetti", edatope, "png",sep="."), type="cairo", units="in", width=6.5, height=5, pointsize=8, res=400)
   
   for(spp in spps){
     x <- c(0,MAT.change)
@@ -365,11 +328,9 @@ for(edatope in edatopes){
 ############################
 ## Three panel plot of species trends relative to MAT change, by edatope
 ############################
-native <- spps.lookup$Native[match(spps,spps.lookup$TreeCode)]
-spps.native <- c("Ra", "Pl", "Pj", "Fd", "Cw", "Ba", "Sx", "Bl", "Bg", "Yc", "Pa", "Hm", "Lw", "La", "Lt", "Hw", "Py", "Dr", "Ep", "At", "Acb", "Pw", "Ss", "Sb", "Qg", "Act", "Mb")
 
   
-  png(filename=paste("Results\\ManuscriptFigures\\Manu_Spaghetti\\CCISS_manu_SppSpaghetti.png",sep="."), type="cairo", units="in", width=6.5, height=5, pointsize=10, res=400)
+  png(filename=paste("results\\Manu_Spaghetti\\CCISS_manu_SppSpaghetti.png",sep="."), type="cairo", units="in", width=6.5, height=5, pointsize=10, res=400)
   mat <- matrix(c(1,2,3,4, 6, 5,5,5),2, byrow=T)   #define the plotting order
   layout(mat, widths=c(0.25,1,1,1), heights=c(1, 0.05))   #set up the multipanel plot
   
@@ -388,8 +349,8 @@ spps.native <- c("Ra", "Pl", "Pj", "Fd", "Cw", "Ba", "Sx", "Bl", "Bg", "Yc", "Pa
       transform=T
   # for(transform in c(T, F)){
     
-    par(mar=c(3.1,0,0,0.2), mgp=c(4, 0.2, 0))
-    ylim=if(transform==T) c(2.4,5.9) else c(0,47000)
+    par(mar=c(2.7,0,0,0.2), mgp=c(4, 0.2, 0))
+    ylim=if(transform==T) c(2.9,5.9) else c(0,47000)
     plot(0, xlim=c(-2.5,9.5), ylim=ylim, yaxs="i", xaxs="i", col="white", xaxt="n", yaxt="n", 
          xlab="", 
          ylab="")
@@ -422,10 +383,24 @@ spps.native <- c("Ra", "Pl", "Pj", "Fd", "Cw", "Ba", "Sx", "Bl", "Bg", "Yc", "Pa
     }
     
     spplist <- spps[which(spps%in%spps.native)][order(suit.native.initial)]
-    colors = grDevices::colors()[grep('gr(a|e)y', grDevices::colors(), invert = T)][-1]
-    colors = colors[-grep("yellow", colors)]
-    set.seed(5)
-    ColScheme <- c(brewer.pal(n=12, "Paired")[-11],sample(colors,length(spps)-11))
+
+    # #Color scheme for individual species
+    # colors = grDevices::colors()[grep('gr(a|e)y', grDevices::colors(), invert = T)][-1]
+    # colors = colors[-grep("yellow", colors)]
+    # set.seed(5)
+    # ColScheme <- c(brewer.pal(n=12, "Paired")[-11],sample(colors,length(spps)-11))
+    
+    # #Color scheme for species groups
+    boreal <- c("Pl", "Sx", "Bl", "Sb", "At", "Ep", "Pj", "Acb")
+    temperate <- c("Fd", "Lw", "Pw", "Py", "Bg", "Act")
+    rainforest <- c("Hw", "Cw", "Ba", "Ss", "Dr", "Mb")
+    montane <- c("Hm", "Yc")
+    ColScheme <- rep(NA, length(spplist))
+    ColScheme[which(spplist%in%boreal)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="SBS")])
+    ColScheme[which(spplist%in%temperate)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="IDF")])
+    ColScheme[which(spplist%in%rainforest)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="CWH")])
+    ColScheme[which(spplist%in%montane)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="MS")])
+    
     for(spp in spplist){
       i <- which(spplist==spp)
       line <- get(paste("line",spp, sep="."))
@@ -461,24 +436,22 @@ spps.native <- c("Ra", "Pl", "Pj", "Fd", "Cw", "Ba", "Sx", "Bl", "Bg", "Yc", "Pa
     
     
     # boxplot for focal period
-    if(edatope==edatopes[2]){
     par(xpd=T)
-    rcp.focal <- "rcp45"
-    for(proj.year.focal in proj.years){
+      proj.year.focal <- proj.years[which(edatopes==edatope)]
+    for(rcp.focal in rcps){
       x <- c(0,MAT.change)
       x.focal <- MAT.change[which(seq.rcp==rcp.focal & seq.proj.year==proj.year.focal)]
-      position <- ylim[1] - diff(ylim)/50 - diff(ylim)/60*which(proj.years==proj.year.focal)
-      boxplot(x.focal, add=T, horizontal=TRUE, axes=FALSE, range=0, at=position, boxwex = diff(ylim)/50)
-      text(max(x.focal), position, paste(rcp.name[which(rcps==rcp.focal)], ", ", proj.year.name[which(proj.years==proj.year.focal)], sep=""), pos=4, cex=0.9)
+      position <- ylim[1] - diff(ylim)/40 - diff(ylim)/60*which(rcps==rcp.focal)
+      boxplot(x.focal, add=T, col=c("dodgerblue", "red")[which(rcps==rcp.focal)], horizontal=TRUE, axes=FALSE, range=0, at=position, boxwex = diff(ylim)/50)
+      text(max(x.focal), position, paste(rcp.name[which(rcps==rcp.focal)], ", ", proj.year.name[which(proj.years==proj.year.focal)], sep=""), pos=if(rcp.focal=="rcp85" & proj.year.focal==2085) 2 else 4, cex=0.9)
     }
     par(xpd=F)
-  }
-    
+
     mtext(paste("(", LETTERS[which(edatopes==edatope)],") ", edatope, " sites", sep=""), side=3, line=-1.5, adj=0.325, cex=0.8, font=2)
     mtext("Native", side=3, line=-1.5, adj=0.025, cex=0.8, font=2)
     mtext("Exotic", side=3, line=-1.5, adj=0.975, cex=0.8, font=2)
     
-  # }
+     # }
   print(edatope)
   
   
