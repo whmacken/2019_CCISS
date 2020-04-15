@@ -62,7 +62,7 @@ bdy.bc <- readOGR("inputs\\shapes\\ProvincialOutline.shp")
 #===============================================================================
 
 S1 <- treesuit
-S1 <- unique(S1)
+S1 <- unique(S1[,1:4])
 
 # select the species to run the analysis on
 spps <- unique(S1$Spp)
@@ -73,7 +73,6 @@ spps <- spps[which(spps%in%spps.candidate)]
 ## non-THLB BGCs for exclusion from results
 BGC <- points$ID2
 BGC <- gsub(" ","",BGC)
-BGCs_notin_THLB <- read.csv("inputs\\BGCs_notin_THLB.csv")
 BGCs_notin_THLB <- BGCs_notin_THLB$BGC[which(BGCs_notin_THLB$Exlude=="x")]
 exclude <- which(BGC%in%BGCs_notin_THLB)
 
