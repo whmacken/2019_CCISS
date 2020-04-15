@@ -539,7 +539,7 @@ dev.off()
 
 #===============================================================================
 #===============================================================================
-# Alternate layout
+# Alternative layout
 #===============================================================================
 #===============================================================================
 
@@ -594,7 +594,7 @@ legend("bottomleft", legend=c(zones.bc, "Alpine"), fill=c(ColScheme.bc, "white")
 #=============================
 ## Recent Period
 par(plt = as.vector(rbind(x1, x2, y1, y2)[,2]), new = TRUE)
-hist.year <- 2009
+hist.year <- 2004
 BGC.pred <- get(paste("BGC.pred", hist.year, sep="."))
 zone.pred <- rep(NA, length(BGC.pred))
 for(i in zones){ zone.pred[grep(i,BGC.pred)] <- i }
@@ -611,7 +611,7 @@ plot(X, xaxt="n", yaxt="n", col=alpha(ColScheme, 1), legend=FALSE, legend.mar=0,
 values(X)[-(1:length(zones))] <- NA # cover up the color bar
 image(X, add=T, col="white")
 plot(bdy.bc, add=T, lwd=0.4)
-mtext(paste("(", LETTERS[2], ") Observed change (", hist.year.name[which(hist.years==hist.year)],")", sep=""), side=3, line=0.2, adj=0.05, cex=0.8, font=2)
+mtext(paste("(", LETTERS[2], ") Observed climate (", hist.year.name[which(hist.years==hist.year)],")", sep=""), side=3, line=0.2, adj=0.05, cex=0.8, font=2)
 
 # exotic.pct <- round(as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#")),2)
 # legend("topright", cex=0.8, title="Exotic zones", legend=paste(names(exotic), " (", exotic.pct, "%)", sep=""), fill=alpha(ColScheme[as.numeric(factor(names(exotic), zone))], 1), bty="n")
@@ -667,7 +667,6 @@ axis(1, at=0:8, labels = 0:8, tck=0, cex.axis=0.8)
 axis(2, at=seq(0,1,0.2), labels = paste(seq(0,1,0.2)*100, "%", sep=""), las=2, tck=0, cex.axis=0.8)
 mtext(paste("(F) ", sep=""), side=3, line=-1.5, adj=0.05, cex=1, font=2)
 
-select <- c(4,7,15)
 int.y <- 0.07
 start.y <- 0.03
 pos.y <- seq(start.y,start.y+int.y*3, int.y)
@@ -692,17 +691,17 @@ for(rcp in rev(rcps)){
     if(rcp==rcp.focal){
       if(proj.year==proj.year.focal){
         points(x[select], y2[select], pch=21, cex=1.4, lwd=2, bg="gray")
-        text(x[select], y2[select], paste(GCMs[select], " (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), font=2, cex=0.7, pos=4)
+        text(x[select], y2[select], paste(GCMs[select], " (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), font=2, cex=0.7, pos=4)
       }
     }
     
-    if(rcp==rcps[2]){
-      if(proj.year==proj.years[3]){
-        points(x[select[1]], y2[select[1]], pch=21, cex=1.4, lwd=2, bg="gray")
-        text(x[select[1]], y2[select[1]]-0.01, paste(GCMs[select[1]], "\n(", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), font=2, cex=0.7, pos=1)
-        # text(x[select[1]]+0.6, y2[select[1]]+0.025, paste(GCMs[select[1]], " (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), font=2, cex=0.5, pos=2)
-      }
-    }
+    # if(rcp==rcps[2]){
+    #   if(proj.year==proj.years[3]){
+    #     points(x[select[1]], y2[select[1]], pch=21, cex=1.4, lwd=2, bg="gray")
+    #     text(x[select[1]], y2[select[1]]-0.01, paste(GCMs[select[1]], "\n(", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), font=2, cex=0.7, pos=1)
+    #     # text(x[select[1]]+0.6, y2[select[1]]+0.025, paste(GCMs[select[1]], " (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), font=2, cex=0.5, pos=2)
+    #   }
+    # }
     
     boxplot(x, add=T, horizontal=TRUE, axes=FALSE, range=0, boxwex = 0.04, col=ColScheme[which(rcps==rcp)], at= if(rcp==rcps[1]) pos.y[which(proj.years==proj.year)]-int.y/offset.y else pos.y[which(proj.years==proj.year)]+int.y/offset.y)
     # text(max(x), ylim[1], paste(rcp.name[which(rcps==rcp)], ", ", proj.year.name[which(proj.years==proj.year)], sep=""), pos=4, cex=0.8)
@@ -722,8 +721,8 @@ for(hist.year in hist.years[c(2,4)]){
   text(x,y2, hist.year.name[which(hist.years==hist.year)], pos=4, cex=0.7, font=2)
 }
 
-if(proj.year.focal==proj.years[1]){ legend(3.2, 0.44, cex=0.8, legend=c("BGC unit displacement", "BGC zone displacement", "Observed climates", ""), y.intersp = 1, pch=c(16,1,2, 1), col=c(1,1,1,"white"), pt.cex=c(1.2,1.2,1.5, 1), bty="n")
-} else legend("right", cex=0.8, legend=c("BGC unit displacement", "BGC zone displacement", "Observed climates", ""), y.intersp = 1, pch=c(16,1,2, 1), col=c(1,1,1,"white"), pt.cex=c(1.2,1.2,1.5, 1), bty="n")
+if(proj.year.focal==proj.years[1]){ legend(3.2, 0.42, cex=0.8, legend=c("BGC subzone-variant displacement", "BGC zone displacement", "Observed climates", ""), y.intersp = 1, pch=c(16,16,2, 1), col=c(1,"gray",1,"white"), pt.cex=c(1.2,1.2,1.5, 1), bty="n")
+} else legend("right", cex=0.8, legend=c("BGC subzone-variant displacement", "BGC zone displacement", "Observed climates", ""), y.intersp = 1, pch=c(16,16,2, 1), col=c(1,"gray",1,"white"), pt.cex=c(1.2,1.2,1.5, 1), bty="n")
 
 
 dev.off()
