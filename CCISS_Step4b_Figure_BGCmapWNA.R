@@ -113,14 +113,23 @@ par(mar=c(0.1,0.1,0.1,0.1))
 # image(hill, xlim=c(-135, -108), ylim=c(39, 60), col=alpha(grey(0:100/100), 1), xaxt="n", yaxt="n", maxpixels= ncell(hill))
 image(X, xlim=c(-135, -108), ylim=c(39, 60), xaxt="n", yaxt="n", col=alpha(ColScheme.zone, 1), maxpixels=ncell(X))
 # plot(mask.NA, add=T, col="white", border=F)
-plot(bdy.usa1, add=T, lwd=0.8)
-plot(bdy.can1, add=T, lwd=0.8)
+# plot(bdy.usa1, add=T, lwd=0.8)
+# plot(bdy.can1, add=T, lwd=0.8)
 
 bgcs <- levels(zone.pred.ref)
+quantile.lat <- rep(0.5, length(bgcs))
+quantile.lat[which(bgcs=="CWH")] <- 0.6
+quantile.lat[which(bgcs=="CVG")] <- 0.6
+quantile.lat[which(bgcs=="MHRF")] <- 0.6
+quantile.lat[which(bgcs=="CWF")] <- 0.48
+quantile.lat[which(bgcs=="CMA")] <- 0.22
+quantile.lat[which(bgcs=="CRF")] <- 0.55
+
 for(bgc in bgcs){
+  i=which(bgcs==bgc)
   temp <- grid.data[which(zone.pred.ref==bgc),]
-  median.lat <- temp$lat[max(which(temp$lat >= median(temp$lat)))]
-  pt <- round(median(which(temp$lat==median.lat)))
+  select.lat <- temp$lat[max(which(temp$lat >= quantile(temp$lat, quantile.lat[i])))]
+  pt <- round(quantile(which(temp$lat==select.lat), 0.5))
   points(temp[pt,4:3], pch=21, bg=alpha(ColScheme.zone[which(bgcs==bgc)], 1), cex=1.5)
   text(temp[pt,4:3]-c(0,0), bgc, pos=4, cex=1, font=2)
   print(paste(which(bgcs==bgc), "-", bgc))
@@ -157,10 +166,17 @@ image(X, xaxt="n", yaxt="n", xlim=xlim, ylim=ylim, col=alpha(ColScheme.subzone, 
 mtext(paste("(B) ", sep=""), side=1, line=-1.5, adj=0.02, cex=1.5, font=2)
 
 bgcs <- subzones
+quantile.lat <- rep(0.5, length(bgcs))
+quantile.lat[which(bgcs=="CWHvh_WA")] <- 0.35
+quantile.lat[which(bgcs=="CWHxm2")] <- 0.89
+quantile.lat[which(bgcs=="CDFmm")] <- 0.6
+quantile.lat[which(bgcs=="MHmm1")] <- 0.6
+
 for(bgc in bgcs){
+  i=which(bgcs==bgc)
   temp <- grid.data.crop[which(BGC.pred.ref.inset[select.crop]==bgc),]
-  median.lat <- temp$lat[max(which(temp$lat >= median(temp$lat)))]
-  pt <- round(quantile(which(temp$lat==median.lat), 0.2))
+  median.lat <- temp$lat[max(which(temp$lat >= quantile(temp$lat, quantile.lat[i])))]
+  pt <- round(quantile(which(temp$lat==median.lat), 0.25))
   points(temp[pt,4:3], pch=21, bg=alpha(ColScheme.subzone[which(bgcs==bgc)], 1), cex=1.5)
   text(temp[pt,4:3]-c(0,0), bgc, pos=4, cex=.8, font=2)
   print(paste(which(bgcs==bgc), "-", bgc))
@@ -169,3 +185,4 @@ for(bgc in bgcs){
 box()
 dev.off()
 
+bgc="CWHvh_WA"
