@@ -156,36 +156,34 @@ GCM=GCMs[1]
 rcp=rcps[1]
 proj.year=proj.years[1]
 
-Columns <- c("Year",  Columns)
-##===============
-###Option if one big all GCM file
-Y0 <- fread("./inputs/BC2kmGrid_90 GCMsMSY.csv", select = Columns, stringsAsFactors = FALSE, data.table = FALSE)
-
-
-for(GCM in GCMs){
-
-Y0 <- fread(paste0("./inputs/",grid,"_",GCM,".csv", sep = ""), select = c("Year", "ID1","ID2", Columns), data.table = F)   ##
-
-Y0 <- separate(Y0, Year, into = c("GCM","rcp","proj.year"), sep = "_", remove = T)
-Y0$proj.year <- gsub(".gcm","",Y0$proj.year)
-
-Y0 <- addVars(Y0)
-
-
-Y0 <- Y0 %>% dplyr::select(GCM, rcp,proj.year, vars)
-
-##=======================
-##Option 2 if folder with individual GCM outputs
-
-#for(GCM in GCMs){
-
-#Y0 <- fread(paste0("./inputs/",grid,"_",GCM,".csv", sep = ""), select = c("Year", "ID1","ID2", Columns), data.table = F)   ##
+# ##===============
+# ###Option if one big all GCM file
+# Columns <- c("Year",  Columns)
+# Y0 <- fread("./inputs/BC2kmGrid_90 GCMsMSY.csv", select = Columns, stringsAsFactors = FALSE, data.table = FALSE)
+# 
+# 
+# for(GCM in GCMs){
+# 
+# Y0 <- fread(paste0("./inputs/",grid,"_",GCM,".csv", sep = ""), select = c("Year", "ID1","ID2", Columns), data.table = F)   ##
+# 
 # Y0 <- separate(Y0, Year, into = c("GCM","rcp","proj.year"), sep = "_", remove = T)
 # Y0$proj.year <- gsub(".gcm","",Y0$proj.year)
 # 
 # Y0 <- addVars(Y0)
 # 
-# Y0 <- Y0 %>% select(GCM, rcp,proj.year, vars)
+# 
+# Y0 <- Y0 %>% dplyr::select(GCM, rcp,proj.year, vars)
+
+##=======================
+##Option 2 if folder with individual GCM outputs
+
+for(GCM in GCMs){
+Y0 <- fread(paste0("./inputs/",grid,"_",GCM,".csv", sep = ""), select = c("Year", "ID1","ID2", Columns), data.table = F)   ##
+Y0 <- separate(Y0, Year, into = c("GCM","rcp","proj.year"), sep = "_", remove = T)
+Y0$proj.year <- gsub(".gcm","",Y0$proj.year)
+
+Y0 <- addVars(Y0)
+
 ##======================
 
 require(doParallel)
@@ -208,6 +206,3 @@ out <- foreach(rcp = rcps, .combine = rbind) %:%
 }
 stopCluster(cl)
 
-# ===============================================================================
-# BGC Projections for future periods
-# ===============================================================================
