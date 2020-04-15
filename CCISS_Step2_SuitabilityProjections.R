@@ -89,7 +89,7 @@ str(SiteLookup)
 
 # Import suitability tables
 S1 <- treesuit
-S1 <- unique(S1)[,-5]
+S1 <- unique(S1)[,1:4]
 dim(S1)
 S1 <- unique(S1)
 dim(S1)
