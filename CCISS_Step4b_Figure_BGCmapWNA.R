@@ -113,16 +113,16 @@ par(mar=c(0.1,0.1,0.1,0.1))
 # image(hill, xlim=c(-135, -108), ylim=c(39, 60), col=alpha(grey(0:100/100), 1), xaxt="n", yaxt="n", maxpixels= ncell(hill))
 image(X, xlim=c(-135, -108), ylim=c(39, 60), xaxt="n", yaxt="n", col=alpha(ColScheme.zone, 1), maxpixels=ncell(X))
 # plot(mask.NA, add=T, col="white", border=F)
-# plot(bdy.usa1, add=T, lwd=0.8)
-# plot(bdy.can1, add=T, lwd=0.8)
+plot(bdy.usa1, add=T, lwd=0.4)
+plot(bdy.can1, add=T, lwd=0.4)
 
 bgcs <- levels(zone.pred.ref)
 quantile.lat <- rep(0.5, length(bgcs))
-quantile.lat[which(bgcs=="CWH")] <- 0.6
+quantile.lat[which(bgcs=="CWH")] <- 0.7
 quantile.lat[which(bgcs=="CVG")] <- 0.6
 quantile.lat[which(bgcs=="MHRF")] <- 0.6
 quantile.lat[which(bgcs=="CWF")] <- 0.48
-quantile.lat[which(bgcs=="CMA")] <- 0.22
+quantile.lat[which(bgcs=="CMA")] <- 0.3
 quantile.lat[which(bgcs=="CRF")] <- 0.55
 
 for(bgc in bgcs){
@@ -161,8 +161,8 @@ rect(xlim[1],  ylim[1],  xlim[2],  ylim[2],  col=(alpha("white", 0)), lwd=1.5)
 par(plt = c(0.01, 0.375, 0.01, 0.45), new = TRUE)
 image(X, xaxt="n", yaxt="n", xlim=xlim, ylim=ylim, col=alpha(ColScheme.subzone, 1), maxpixels=ncell(X)) 
 # plot(mask.NA, add=T, col="white", border=F)
-# plot(bdy.usa1, add=T, lwd=0.8)
-# plot(bdy.can1, add=T, lwd=0.8)
+plot(bdy.usa1, add=T, lwd=0.4)
+plot(bdy.can1, add=T, lwd=0.4)
 mtext(paste("(B) ", sep=""), side=1, line=-1.5, adj=0.02, cex=1.5, font=2)
 
 bgcs <- subzones
