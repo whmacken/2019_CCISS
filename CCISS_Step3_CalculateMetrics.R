@@ -54,6 +54,7 @@ spps <- spps[which(spps%in%spps.candidate)]
 #===============================================================================
 # assemble the species mix for the reference period
 #===============================================================================
+
 for(edatope in edatopes){
   comm.ref <- as.data.frame(matrix(rep(NA, dim(points)[1]*length(spps)), dim(points)[1], length(spps)))
   for(spp in spps){
@@ -125,6 +126,22 @@ for(edatope in edatopes){
     write.csv(SppPersistence, paste("outputs\\SppPersistence", grid, hist.year, edatope, "csv", sep="."), row.names = F)
     
     print(hist.year)
+  }
+  print(edatope)
+}
+
+
+# read in metrics for reference period and historical decades
+for(edatope in edatopes){
+  assign(paste("SuitRichness.ref", edatope, sep="."), read.csv(paste("outputs\\SuitRichness.ref", grid, edatope, "csv", sep="."))[,1])
+  assign(paste("SppRichness.ref", edatope, sep="."), read.csv(paste("outputs\\SppRichness.ref", grid, edatope, "csv", sep="."))[,1])
+  for(hist.year in hist.years){
+    assign(paste("SuitRichness", hist.year, edatope, sep="."), read.csv(paste("outputs\\SuitTurnover", grid, hist.year, edatope, "csv", sep="."))[,1])
+    assign(paste("SppRichness", hist.year, edatope, sep="."), read.csv(paste("outputs\\SppRichness", grid, hist.year, edatope, "csv", sep="."))[,1])
+    assign(paste("SuitTurnover", hist.year, edatope, sep="."), read.csv(paste("outputs\\SuitTurnover", grid, hist.year, edatope, "csv", sep="."))[,1])
+    assign(paste("SppTurnover", hist.year, edatope, sep="."), read.csv(paste("outputs\\SppTurnover", grid, hist.year, edatope, "csv", sep="."))[,1])
+    assign(paste("SuitPersistence", hist.year, edatope, sep="."), read.csv(paste("outputs\\SuitPersistence", grid, hist.year, edatope, "csv", sep="."))[,1])
+    assign(paste("SppPersistence", hist.year, edatope, sep="."), read.csv(paste("outputs\\SppPersistence", grid, hist.year, edatope, "csv", sep="."))[,1])
   }
   print(edatope)
 }
