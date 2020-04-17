@@ -195,6 +195,43 @@ for(GCM in GCMs){
   print(GCM)
 }
 
+# calculate ensemble mean for future periods (takes a while, so I wrote this to file)
+for(edatope in edatopes){
+  for(rcp in rcps){
+    for(proj.year in proj.years){
+      SuitRichness <- matrix(rep(NA, length(GCMs)*length(BGC)), length(BGC))
+      SppRichness <- matrix(rep(NA, length(GCMs)*length(BGC)), length(BGC))
+      SuitRichnessChange <- matrix(rep(NA, length(GCMs)*length(BGC)), length(BGC))
+      SppRichnessChange <- matrix(rep(NA, length(GCMs)*length(BGC)), length(BGC))
+      SuitTurnover <- matrix(rep(NA, length(GCMs)*length(BGC)), length(BGC))
+      SppTurnover <- matrix(rep(NA, length(GCMs)*length(BGC)), length(BGC))
+      SuitPersistence <- matrix(rep(NA, length(GCMs)*length(BGC)), length(BGC))
+      SppPersistence <- matrix(rep(NA, length(GCMs)*length(BGC)), length(BGC))
+      for(GCM in GCMs){
+        SuitRichness[,which(GCMs==GCM)] <- read.csv(paste("outputs\\SuitRichness", grid, GCM, rcp, proj.year, edatope, "csv", sep="."))[,1]
+        SuitRichnessChange[,which(GCMs==GCM)] <- SuitRichness[,which(GCMs==GCM)]-get(paste("SuitRichness.ref", edatope, sep="."))
+        SppRichness[,which(GCMs==GCM)] <- read.csv(paste("outputs\\SppRichness", grid, GCM, rcp, proj.year, edatope, "csv", sep="."))[,1]
+        SppRichnessChange[,which(GCMs==GCM)] <- SuitRichness[,which(GCMs==GCM)]-get(paste("SppRichness.ref", edatope, sep="."))
+        SuitTurnover[,which(GCMs==GCM)] <- read.csv(paste("outputs\\SuitTurnover", grid, GCM, rcp, proj.year, edatope, "csv", sep="."))[,1]
+        SppTurnover[,which(GCMs==GCM)] <- read.csv(paste("outputs\\SppTurnover", grid, GCM, rcp, proj.year, edatope, "csv", sep="."))[,1]
+        SuitPersistence[,which(GCMs==GCM)] <- read.csv(paste("outputs\\SuitPersistence", grid, GCM, rcp, proj.year, edatope, "csv", sep="."))[,1]
+        SppPersistence[,which(GCMs==GCM)] <- read.csv(paste("outputs\\SppPersistence", grid, GCM, rcp, proj.year, edatope, "csv", sep="."))[,1]
+      }
+      write.csv(apply(SuitRichness,1,mean, na.rm=T), paste("outputs\\SuitRichness", grid, rcp, proj.year, edatope, "csv", sep="."), row.names = F)
+      write.csv(apply(SuitRichnessChange,1,mean, na.rm=T), paste("outputs\\SuitRichnessChange", grid, rcp, proj.year, edatope, "csv", sep="."), row.names = F)
+      write.csv(apply(SppRichness,1,mean, na.rm=T), paste("outputs\\SppRichness", grid, rcp, proj.year, edatope, "csv", sep="."), row.names = F)
+      write.csv(apply(SppRichnessChange,1,mean, na.rm=T), paste("outputs\\SppRichnessChange", grid, rcp, proj.year, edatope, "csv", sep="."), row.names = F)
+      write.csv(apply(SuitTurnover,1,mean, na.rm=T), paste("outputs\\SuitTurnover", grid, rcp, proj.year, edatope, "csv", sep="."), row.names = F)
+      write.csv(apply(SppTurnover,1,mean, na.rm=T), paste("outputs\\SppTurnover", grid, rcp, proj.year, edatope, "csv", sep="."), row.names = F)
+      write.csv(apply(SuitPersistence,1,mean, na.rm=T), paste("outputs\\SuitPersistence", grid, rcp, proj.year, edatope, "csv", sep="."), row.names = F)
+      write.csv(apply(SppPersistence,1,mean, na.rm=T), paste("outputs\\SppPersistence", grid, rcp, proj.year, edatope, "csv", sep="."), row.names = F)
+      print(proj.year)
+    }
+    print(rcp)
+  }
+  print(edatope)
+}
+
 ## Note that species turnover can either be lower or higher than suitability turnover.
 par(mar=c(4,4,1,1))
 sample <- sample(1:length(BGC), 1000)
