@@ -246,7 +246,7 @@ for(edatope in edatopes){
          ylab="")
     axis(1, at=0:7, labels = 0:7, tck=0)
     par(mgp=c(3, 0.2, 0))
-    if(transform==T) title(ylab="Suitable area (sq. km)")
+    if(transform==T) title(ylab="Feasible area (sq. km)")
     axis(2, at=if(transform==T) 0:7 else seq(0,50000,10000), labels = if(transform==T) format(10^(0:7), scientific = FALSE, big.mark=",") else format(seq(0,50000,10000), scientific = FALSE, big.mark=","), tck=0, las=2)
     # rect(-9,0,0, 60000, col="lightgray", border=F)
     # rect(max(MAT.change),0,9, ylim[2]*1.1, col="lightgray", border=F)
@@ -336,7 +336,7 @@ for(edatope in edatopes){
   
   par(mar=c(0,0,0,0))
   plot(1, type="n", axes=F, xlab="", ylab="")  
-  text(0.75,1,"Suitable area (sq. km)", srt=90, cex=1.2)
+  text(0.75,1,"Feasible area (sq. km)", srt=90, cex=1.2)
   
   for(edatope in edatopes){
     for(spp in spps){
@@ -401,6 +401,13 @@ for(edatope in edatopes){
     ColScheme[which(spplist%in%rainforest)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="CWH")])
     ColScheme[which(spplist%in%montane)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="MS")])
     
+    if(edatope==edatopes[2]){
+    text(-2.4, ylim[1]+0.02, "Boreal species", cex=1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%boreal)]))
+    text(-1.8, ylim[1]+0.02, "Dry temperate species", cex=1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%temperate)]))
+    text(-1.2, ylim[1]+0.02, "Wet temperate species", cex=1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%rainforest)]))
+    text(-0.6, ylim[1]+0.02, "Coast subalpine species", cex=1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%montane)]))
+    }
+    
     for(spp in spplist){
       i <- which(spplist==spp)
       line <- get(paste("line",spp, sep="."))
@@ -445,11 +452,12 @@ for(edatope in edatopes){
       boxplot(x.focal, add=T, col=c("dodgerblue", "red")[which(rcps==rcp.focal)], horizontal=TRUE, axes=FALSE, range=0, at=position, boxwex = diff(ylim)/50)
       text(max(x.focal), position, paste(rcp.name[which(rcps==rcp.focal)], ", ", proj.year.name[which(proj.years==proj.year.focal)], sep=""), pos=if(rcp.focal=="rcp85" & proj.year.focal==2085) 2 else 4, cex=0.9)
     }
-    par(xpd=F)
 
     mtext(paste("(", LETTERS[which(edatopes==edatope)],") ", edatope, " sites", sep=""), side=3, line=-1.5, adj=0.325, cex=0.8, font=2)
     mtext("Native", side=3, line=-1.5, adj=0.025, cex=0.8, font=2)
     mtext("Exotic", side=3, line=-1.5, adj=0.975, cex=0.8, font=2)
+    
+    par(xpd=F)
     
      # }
   print(edatope)
