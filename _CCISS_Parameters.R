@@ -32,3 +32,8 @@ SiteSeries_Use <-read.csv("lookup/SiteSeries_Use_CCISSpaper_13Apr2020.csv",strin
 spps.lookup <- read.csv("lookup/Tree speciesand codes_2.0_2May2019.csv")
 BGCs_notin_THLB <- read.csv("lookup/BGCs_notin_THLB.csv")
 
+#BGC zone color scheme
+BGCcolors$colour <- as.character(BGCcolors$colour)
+BGCcolors$colour[match(BGCcolors.BC$zone, BGCcolors$classification)] <- as.character(BGCcolors.BC$HEX)
+ColScheme.zone <- factor(BGCcolors$colour, levels=BGCcolors$colour)
+zones <- factor(BGCcolors$classification, levels=BGCcolors$classification)
