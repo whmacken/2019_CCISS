@@ -9,68 +9,17 @@
 # 778-288-4008
 # July 21, 2019
 
-require (RGtk2)
-require(plyr)
-require (rChoiceDialogs)
-require (data.table)
-require(doBy)
-require (utils)
-require(labdsv)
-require(tools )
-require(svDialogs)
-require(tcltk)
-require(randomForest)
-require(foreach)
-require(dplyr)
-require(reshape2)
-require(reshape)
-library(doParallel)
-require(data.table)
-library(MASS)   
-library(scales)
-library(stats)
-library(rgl)
-library(RColorBrewer)
-library(FNN)
-library(igraph)
-library(raster)
-library(maps)
-library(mapdata)
-library(maptools)
-library(sp)
-library(colorRamps)
-library(rgeos)
-library(rgdal)
-library(foreign)
 
-#===============================================================================
-# Set analysis Parameters
-#===============================================================================
-
-setwd("C:\\Colin\\Projects\\2019_CCISS")
-
-grid <- "BC2kmGrid"
-
-GCMs <-  c("ACCESS1-0","CanESM2","CCSM4","CESM1-CAM5","CNRM-CM5","CSIRO-Mk3-6-0", "GFDL-CM3","GISS-E2R", "HadGEM2-ES", "INM-CM4", "IPSL-CM5A-MR", "MIROC-ESM", "MIROC5", "MPI-ESM-LR","MRI-CGCM3")
-rcps <- c("rcp45", "rcp85")
-proj.years <- c(2025, 2055, 2085)
-hist.years <- c(1995, 2004, 2005, 2009, 2014, 2017)
-edatopes<- c("B2", "C4", "D6")
-edatope.name <- c("nutrient poor, subxeric", "nutrient-medium, mesic", "nutrient-rich, hygric")
-proj.year.name=c("2020s", "2050s", "2080s")
-rcp.name=c("RCP4.5", "RCP8.5")
-
-# Knowledge Tables
-treesuit="TreeSpp_ESuit_v11_18"
-SiteSeries_Use <-read.csv(paste("InputData/","SiteSeries_Use_5",".csv",sep=""),stringsAsFactors=FALSE,na.strings=".")
-spps.lookup <- read.csv("InputData\\Tree speciesand codes_2.0_2May2019.csv")
+source("./_CCISS_Packages.R") ## packages required
+source("./_CCISS_Functions.R") ## common functions
+source("./_CCISS_Parameters.R") ## settings used through all scripts
 
 #===============================================================================
 # create a dem from the climateBC input data
 #===============================================================================
 
 ## create a dem from the climateBC input data
-points <- read.csv(paste("InputData\\",grid,".csv", sep=""))
+points <- read.csv(paste("inputs\\",grid,".csv", sep=""))
 dim(points)
 
 # points <- points[order(points$lon, points$lat),]
@@ -107,15 +56,14 @@ values(X) <- points$el[df$z]
 plot(X)
 
 #===============================================================================
-# generate the vector of predicted referencc BGCs 
+# generate the vector of predicted reference BGCs 
 #===============================================================================
 
-BGC <- as.character(read.csv(paste("OutputData\\BGC.pred", grid, "ref.csv", sep="."))[,1])
+BGC <- as.character(read.csv(paste("outputs\\BGC.pred", grid, "ref", model, "csv", sep="."), header=F)[,1])
 
 #BGC zones
-BGCcolors <- read.csv("C:\\Colin\\Projects\\2019_CCISS\\InputData\\BGCzone_Colorscheme.csv")
 zone <- rep(NA, length(BGC))
-for(i in BGCcolors$zone){ zone[grep(i,BGC)] <- i }
+for(i in BGCcolors$classification){ zone[grep(i,BGC)] <- i }
 table(zone)
 zone <- factor(zone, levels=c("CDF", "CWH", "MH", "ESSF", "MS", "IDF", "PP", "BG", "ICH", "SBPS", "SBS", "BWBS", "SWB", "CMA", "IMA", "BAFA"))
 
@@ -124,20 +72,14 @@ zone <- factor(zone, levels=c("CDF", "CWH", "MH", "ESSF", "MS", "IDF", "PP", "BG
 # generic spatial data
 #===============================================================================
 ### admin boundaries
-bdy.bc <- readOGR("InputData\\BC_AB_US_Shp\\ProvincialOutline.shp")
+bdy.bc <- readOGR("inputs\\shapes\\ProvincialOutline.shp")
 
 
 #===============================================================================
 # Import suitability tables
 #===============================================================================
-wd="InputData"
-treesuit2=paste(wd,"/",treesuit,".csv",sep="")
-S1 <- read.csv(treesuit2,stringsAsFactors=F,na.strings=".")
-S1 <- unique(S1)
-
-S1[grep("CRF", S1$BGC),]
-S1[which(S1$BGC=="CRFdhz"),]
-S1[which(S1$BGC=="CWHxmz"),]
+S1 <- treesuit
+S1 <- unique(S1[,1:4])
 
 # select the species to run the analysis on
 spps <- unique(S1$Spp)
@@ -146,27 +88,27 @@ spps.candidate <- spps.lookup$TreeCode[-which(spps.lookup$Exclude=="x")]
 spps <- spps[which(spps%in%spps.candidate)] 
 
 #===============================================================================
-# calculate mean optionality and turnover for each edatope/year/rcp
+# import mean optionality and turnover for each edatope/year/rcp
 #===============================================================================
 
 # read in metrics for reference period and historical decades
 for(edatope in edatopes){
-  assign(paste("SuitRichness.ref", edatope, sep="."), read.csv(paste("OutputData\\SuitRichness.ref", grid, edatope, "csv", sep="."))[,1])
-  assign(paste("SppRichness.ref", edatope, sep="."), read.csv(paste("OutputData\\SppRichness.ref", grid, edatope, "csv", sep="."))[,1])
+  assign(paste("SuitRichness.ref", edatope, sep="."), read.csv(paste("outputs\\SuitRichness.ref", grid, edatope, "csv", sep="."))[,1])
+  assign(paste("SppRichness.ref", edatope, sep="."), read.csv(paste("outputs\\SppRichness.ref", grid, edatope, "csv", sep="."))[,1])
   print(edatope)
 }
 
 for(edatope in edatopes){
   for(rcp in rcps){
     for(proj.year in proj.years){
-      assign(paste("SuitRichness", rcp, proj.year, edatope, sep="."), read.csv(paste("OutputData\\SuitRichness", grid, rcp, proj.year, edatope, "csv", sep="."))[,1])
-      assign(paste("SuitRichnessChange", rcp, proj.year, edatope, sep="."), read.csv(paste("OutputData\\SuitRichnessChange", grid, rcp, proj.year, edatope, "csv", sep="."))[,1])
-      assign(paste("SppRichness", rcp, proj.year, edatope, sep="."), read.csv(paste("OutputData\\SppRichness", grid, rcp, proj.year, edatope, "csv", sep="."))[,1])
-      assign(paste("SppRichnessChange", rcp, proj.year, edatope, sep="."), read.csv(paste("OutputData\\SppRichnessChange", grid, rcp, proj.year, edatope, "csv", sep="."))[,1])
-      assign(paste("SuitTurnover", rcp, proj.year, edatope, sep="."), read.csv(paste("OutputData\\SuitTurnover", grid, rcp, proj.year, edatope, "csv", sep="."))[,1])
-      assign(paste("SppTurnover", rcp, proj.year, edatope, sep="."), read.csv(paste("OutputData\\SppTurnover", grid, rcp, proj.year, edatope, "csv", sep="."))[,1])
-      assign(paste("SuitPersistence", rcp, proj.year, edatope, sep="."), read.csv(paste("OutputData\\SuitPersistence", grid, rcp, proj.year, edatope, "csv", sep="."))[,1])
-      assign(paste("SppPersistence", rcp, proj.year, edatope, sep="."), read.csv(paste("OutputData\\SppPersistence", grid, rcp, proj.year, edatope, "csv", sep="."))[,1])
+      assign(paste("SuitRichness", rcp, proj.year, edatope, sep="."), read.csv(paste("outputs\\SuitRichness", grid, rcp, proj.year, edatope, "csv", sep="."))[,1])
+      assign(paste("SuitRichnessChange", rcp, proj.year, edatope, sep="."), read.csv(paste("outputs\\SuitRichnessChange", grid, rcp, proj.year, edatope, "csv", sep="."))[,1])
+      assign(paste("SppRichness", rcp, proj.year, edatope, sep="."), read.csv(paste("outputs\\SppRichness", grid, rcp, proj.year, edatope, "csv", sep="."))[,1])
+      assign(paste("SppRichnessChange", rcp, proj.year, edatope, sep="."), read.csv(paste("outputs\\SppRichnessChange", grid, rcp, proj.year, edatope, "csv", sep="."))[,1])
+      assign(paste("SuitTurnover", rcp, proj.year, edatope, sep="."), read.csv(paste("outputs\\SuitTurnover", grid, rcp, proj.year, edatope, "csv", sep="."))[,1])
+      assign(paste("SppTurnover", rcp, proj.year, edatope, sep="."), read.csv(paste("outputs\\SppTurnover", grid, rcp, proj.year, edatope, "csv", sep="."))[,1])
+      assign(paste("SuitPersistence", rcp, proj.year, edatope, sep="."), read.csv(paste("outputs\\SuitPersistence", grid, rcp, proj.year, edatope, "csv", sep="."))[,1])
+      assign(paste("SppPersistence", rcp, proj.year, edatope, sep="."), read.csv(paste("outputs\\SppPersistence", grid, rcp, proj.year, edatope, "csv", sep="."))[,1])
       print(proj.year)
     }
     print(rcp)
@@ -185,7 +127,7 @@ PredSum <- data.frame()
 for(rcp in rcps){
   for(proj.year in proj.years){
     for(GCM in GCMs){
-      BGC.pred <- as.character(read.csv(paste("OutputData\\BGC.pred",grid, GCM, rcp, proj.year,".csv", sep=""))[,1])
+      BGC.pred <- as.character(read.csv(paste("outputs\\BGC.pred",grid, GCM, rcp, proj.year,model,"csv", sep="."), header=F)[,1])
       assign(paste("BGC.pred", GCM, rcp, proj.year, sep="."), BGC.pred) #bgc projection
       PredSum <- rbind(PredSum, as.data.frame(table(BGC.pred)))
       # print(GCM)
@@ -200,30 +142,29 @@ for(rcp in rcps){
 # calculate mean MAT change for each model prediction
 #===============================================================================
 
-setwd("C:\\Colin\\Projects\\2019_CCISS")
-
-fplot=paste("InputData\\", grid, "_Normal_1961_1990MSY.csv", sep="")
+fplot=paste("inputs\\", grid, "_Normal_1961_1990MSY.csv", sep="")
 Y0 <- fread(fplot, select = "MAT", stringsAsFactors = FALSE, data.table = FALSE) #fread is faster than read.csv
 MAT.ref <- Y0$MAT
 MAT.mean.ref <- mean(MAT.ref, na.rm=T)
 
 for(hist.year in hist.years){
-  Y0 <- fread(paste("InputData\\", grid, "_", hist.year, "_BioVars.csv", sep=""), select = "MAT", stringsAsFactors = FALSE, data.table = FALSE) #fread is faster than read.csv
+  Y0 <- fread(paste("inputs\\", grid, "_", hist.year, "_BioVars.csv", sep=""), select = "MAT", stringsAsFactors = FALSE, data.table = FALSE) #fread is faster than read.csv
   assign(paste("MAT", hist.year, sep="."), Y0$MAT)
   assign(paste("MAT.change", hist.year, sep="."), mean(Y0$MAT, na.rm=T)-MAT.mean.ref)
   print(hist.year)
 }
 
 for(GCM in GCMs){
-  Y1 <- fread(paste("InputData\\", grid, "_", GCM, "_BioVars.csv", sep=""), select = c("GCM", "MAT"), stringsAsFactors = FALSE, data.table = FALSE)
+  Y1 <- fread(paste("inputs\\", grid, "_", GCM, ".csv", sep=""), select = c("Year", "MAT"), stringsAsFactors = FALSE, data.table = FALSE)
   ## assign single vectors to RCPs and proj.years
   Ystr <- strsplit(Y1[,1], "_")
   Y4 <- matrix(unlist(Ystr), ncol=3, byrow=TRUE)
+  Y4[,3] <- gsub(".gcm","",Y4[,3])
   for(rcp in rcps){
     for(proj.year in proj.years){
       assign(paste("MAT", GCM, rcp, proj.year, sep="."), Y1$MAT[which(Y4[,2]==rcp & Y4[,3]==proj.year)])
     }
-    print(rcp)
+    # print(rcp)
   }
   print(GCM)
 }
@@ -261,10 +202,10 @@ for(rcp in rcps){
 
 for(edatope in edatopes){
   for(hist.year in hist.years){
-    SuitPersistence <- read.csv(paste("OutputData\\SuitPersistence", grid, hist.year, edatope, "csv", sep="."))[,1]
+    SuitPersistence <- read.csv(paste("outputs\\SuitPersistence", grid, hist.year, edatope, "csv", sep="."))[,1]
     SuitPersistence[SuitPersistence==99] <- NA # remove grid cells with no current suitability
     SuitPersistence.mean <- mean(SuitPersistence, na.rm=T)
-    SppPersistence <- read.csv(paste("OutputData\\SppPersistence", grid, hist.year, edatope, "csv", sep="."))[,1]
+    SppPersistence <- read.csv(paste("outputs\\SppPersistence", grid, hist.year, edatope, "csv", sep="."))[,1]
     SppPersistence[SppPersistence==99] <- NA # remove grid cells with no current suitability
     SppPersistence.mean <- mean(SppPersistence, na.rm=T)
     assign(paste("SuitPersistence.mean", hist.year, edatope, sep="."), SuitPersistence.mean)
@@ -280,10 +221,10 @@ for(edatope in edatopes){
       SuitPersistence.mean <- rep(NA, length(GCMs))
       SppPersistence.mean <- rep(NA, length(GCMs))
       for(GCM in GCMs){
-        SuitPersistence <- read.csv(paste("OutputData\\SuitPersistence", grid, GCM, rcp, proj.year, edatope, "csv", sep="."))[,1]
+        SuitPersistence <- read.csv(paste("outputs\\SuitPersistence", grid, GCM, rcp, proj.year, edatope, "csv", sep="."))[,1]
         SuitPersistence[SuitPersistence==99] <- NA # remove grid cells with no current suitability
         SuitPersistence.mean[which(GCMs==GCM)] <- mean(SuitPersistence, na.rm=T)
-        SppPersistence <- read.csv(paste("OutputData\\SppPersistence", grid, GCM, rcp, proj.year, edatope, "csv", sep="."))[,1]
+        SppPersistence <- read.csv(paste("outputs\\SppPersistence", grid, GCM, rcp, proj.year, edatope, "csv", sep="."))[,1]
         SppPersistence[SppPersistence==99] <- NA # remove grid cells with no current suitability
         SppPersistence.mean[which(GCMs==GCM)] <- mean(SppPersistence, na.rm=T)
       }
@@ -361,11 +302,11 @@ for(proj.year in proj.years){
     SuitPersistence <- get(paste("SuitPersistence", rcp, proj.year, edatope, sep="."))
     SppPersistence <- get(paste("SppPersistence", rcp, proj.year, edatope, sep="."))
     
-    metric <- "SppPersistence"
+    metric <- "SuitPersistence"
     
     # x11(width=6.5, height=5, pointsize=8)
-    png(filename=paste("Results\\Manu_Persistence\\CCISS_manu_", metric, edatope, rcp, proj.year,"png",sep="."), type="cairo", units="in", width=6.5, height=4.55, pointsize=8, res=400)
-    # pdf(file=paste("Results\\CCISS_SummaryByBGC_", metric,".pdf",sep=""),  width=7.5, height=5.625, pointsize=15)
+    png(filename=paste("results\\Manu_Persistence\\CCISS_manu_", metric, edatope, rcp, proj.year,"png",sep="."), type="cairo", units="in", width=6.5, height=4.55, pointsize=8, res=400)
+    # pdf(file=paste("results\\CCISS_SummaryByBGC_", metric,".pdf",sep=""),  width=7.5, height=5.625, pointsize=15)
     
     ylim <- c(0,1.4)
     y <- get(metric)
@@ -396,27 +337,27 @@ for(proj.year in proj.years){
     rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
     text(rep(xr,length(labels)),seq(yb,yt,(yt-yb)/(length(labels)-1)),labels,pos=4,cex=1,font=1)
     # text(rep(xl,2),c(yb,yt)+c(-10000, 10000),c("No change", "Full turnover"),pos=c(1,3),cex=1,font=1)
-    text(xl-40000, mean(c(yb,yt))-30000, paste("Suitability persistence\n(", proj.year.name[which(proj.years==proj.year)], ", ", c("RCP4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), srt=90, pos=3, cex=1, font=2)
+    text(xl-40000, mean(c(yb,yt))-30000, paste("Feasibility persistence\n(", proj.year.name[which(proj.years==proj.year)], ", ", c("RCP4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), srt=90, pos=3, cex=1, font=2)
     # rect(xl,  yt+20000,  xr,  yt+60000,  col=ColScheme[length(ColScheme)])
     # text(xr,  yt+40000,  bquote(">"*.(breakseq[3])*sigma),pos=4,cex=1,font=1)  
     par(xpd=F)
-    mtext(paste(edatope, " edatope (", edatope.name[which(edatopes==edatope)], " sites)", sep=""), side=3, line=-1.5, adj=0.35, cex=1, font=2)
+    mtext(paste(edatope.name[which(edatopes==edatope)], " sites (", edatope, ")", sep=""), side=3, line=-1.5, adj=0.35, cex=1, font=2)
     
     ##==============================
     ## Callout box for Location 1
     bgc.select <- "MSdk"
-    q.select <- 0.9 # 0.90 is good
+    q.select <- 0.91 # 0.90 is good
     focal.bgc <- which(BGC==bgc.select)
-    # pt <- focal.bgc[which(SuitTurnover[focal.bgc]==min(SuitTurnover[focal.bgc][SuitTurnover[focal.bgc]>quantile(SuitTurnover[focal.bgc], q.select, na.rm=T)], na.rm=T))[1]] #select the grid point
-    # pt <- pt[1]
-    pt <- 96923
+    pt <- focal.bgc[which(SuitTurnover[focal.bgc]==min(SuitTurnover[focal.bgc][SuitTurnover[focal.bgc]>quantile(SuitTurnover[focal.bgc], q.select, na.rm=T)], na.rm=T))[1]] #select the grid point
+    pt <- pt[1]
+    # pt <- 96923
     lines(c(pts.df[pt,1], pts.df[pt,1]+200000), c(pts.df[pt,2], pts.df[pt,2]+0), lwd=1.5)
     points(pts.df[pt,], pch=21, cex=1.75, lwd=1.5, bg=ColScheme[cut(y[pt],breaks=breakpoints)])
     
     # assemble the species mix for the reference period
     comm.ref.pt <- rep(NA, length(spps))
     for(spp in spps){
-      Suit <- read.csv(paste("OutputData\\Suit.ref", grid, spp, edatope, "csv", sep="."))[pt,1]
+      Suit <- read.csv(paste("outputs\\Suit.ref", grid, spp, edatope, "csv", sep="."))[pt,1]
       Suit[is.na(Suit)] <- 5  #XXX note this is different from the equivalent line for the other time periods.
       Suit <- 1-(Suit-1)/4
       comm.ref.pt[which(spps==spp)] <- Suit
@@ -430,7 +371,7 @@ for(proj.year in proj.years){
     for(GCM in GCMs){
       comm.proj <- rep(NA, length(spps))
       for(spp in spps){
-        Suit <- read.csv(paste("OutputData\\Suit", grid, GCM, rcp, proj.year, spp, edatope, "csv", sep="."))[pt,1]
+        Suit <- read.csv(paste("outputs\\Suit", grid, GCM, rcp, proj.year, spp, edatope, "csv", sep="."))[pt,1]
         Suit[Suit==5] <- 5
         Suit <- 1-(Suit-1)/4
         comm.proj[which(spps==spp)] <- Suit
@@ -471,9 +412,9 @@ for(proj.year in proj.years){
     text(0, pos1-0.05, bgc.select, pos=4, cex=0.8, offset=0.1)
     text(-0.025, pos1-.125, paste("Projected bioclimates"), pos=4, cex=0.8, font=2, offset=0.1)
     pos2 <- 0.44
-    text(-.025, pos2-0, "Historical suitabilities", pos=4, cex=0.8, font=2, offset=0.1)
+    text(-.025, pos2-0, "Historical feasibilities", pos=4, cex=0.8, font=2, offset=0.1)
     text(0.0, pos2-0.05, std.ref, pos=4, cex=0.8, offset=0.1)
-    text(-.025, pos2-0.125, paste("Projected suitabilities", sep=""), pos=4, cex=0.8, font=2, offset=0.1)
+    text(-.025, pos2-0.125, paste("Projected feasibilities", sep=""), pos=4, cex=0.8, font=2, offset=0.1)
     for(i in 1:length(unique(BGC.list))){
       BGC.i <- names(rev(sort(table(BGC.list))))[i]
       comm.proj.pt.i <- comm.proj.pt[which(BGC.list==BGC.i)[1],]
@@ -485,11 +426,11 @@ for(proj.year in proj.years){
     
     text(-.025, 0, paste("Mean persistence: ", round(SuitPersistence[pt]*100), "%", sep=""), pos=4, cex=0.8, offset=0.1, font=2)
     
-    par(mar=c(3,0,1,0), plt = c(0.855, 0.99, 0.29, 0.355), new = TRUE, mgp=c(0.5,0.2,0))
+    par(mar=c(3,0,1,0), plt = c(0.855, 0.99, 0.305, 0.36), new = TRUE, mgp=c(0.5,0.2,0))
     bar.bgc <- names(rev(sort(table(BGC.list))))
     bar.zone <- rep(NA, length(bar.bgc))
-    for(i in BGCcolors$zone){ bar.zone[grep(i,bar.bgc)] <- i }
-    barplot(rev(sort(table(BGC.list))), col=as.character(BGCcolors$HEX[match(bar.zone, BGCcolors$zone)]), horiz=F, las=2, ylab=list("# GCMs", cex=0.7), yaxt="n", cex.names=0.7)
+    for(i in BGCcolors$classification){ bar.zone[grep(i,bar.bgc)] <- i }
+    barplot(rev(sort(table(BGC.list))), col=as.character(BGCcolors$colour[match(bar.zone, BGCcolors$classification)]), horiz=F, las=2, ylab=list("# GCMs", cex=0.7), yaxt="n", cex.names=0.7)
     par(mgp=c(1,0,0))
     axis(2, at=seq(0,12,4), labels=seq(0,12,4), las=1, tck=0, cex.axis=0.8, lwd=0)
     
@@ -513,8 +454,8 @@ for(proj.year in proj.years){
     }
     bxp(z, ylim=ylim, xlim=xlim, xaxt="n", yaxt="n", xaxs="i", ylab="", pch=0,outline=FALSE)
     lines(c(-99,99), c(1,1), lwd=2, col="darkgrey")
-    bxp(z, add=T, boxfill = as.character(BGCcolors$HEX[match(levels(droplevels(zone[-grep("BAFA|CMA|IMA",zone)])), BGCcolors$zone)]), xaxt="n", yaxt="n",xaxs="i", 
-        ylab=paste("Suitability persistence\n(", proj.year.name[which(proj.years==proj.year)], ", ", c("RCP4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""),  pch=0,outline=FALSE)
+    bxp(z, add=T, boxfill = as.character(BGCcolors$colour[match(levels(droplevels(zone[-grep("BAFA|CMA|IMA",zone)])), BGCcolors$classification)]), xaxt="n", yaxt="n",xaxs="i", 
+        ylab=paste("Feasibility persistence\n(", proj.year.name[which(proj.years==proj.year)], ", ", c("RCP4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""),  pch=0,outline=FALSE)
     axis(1, at=1:length(levels(zone)), levels(zone), tick=F, las=2, cex=0.8)
     axis(2, seq(ylim[1],ylim[2],.25), paste(seq(ylim[1],ylim[2],.25)*100, "%", sep=""), tick=F, las=2)
     # lines(range(grep("CWH|MH|CDF", levels(zone)))+c(-0.6,0.6), if(scenario=="6variable") rep(2.7,2) else rep(3.2,2), col=alpha("red", 0.5), lwd=3, lty=1)
@@ -530,14 +471,13 @@ for(proj.year in proj.years){
     lines(rep(x2, each=2), bracketpos*c(0.95, 1,1,0.95))
     # lines(rep(x3, each=2), bracketpos*c(0.95, 1,1,0.95))
     par(xpd=F)  
-    mtext("(B)", side=3, line=-0.25, adj=-0.15, cex=1, font=2)
+    mtext("(B)", side=3, line=0.25, adj=-0.15, cex=1, font=2)
     
     
     #===============================================================================
     # Suitability Persistence relative to temperature change (predicted baseline)
     #===============================================================================
     library(msir)
-    hist.periods <- c("1991-2000", "1991-2017", "2001-2010", "2001-\n2017","2011-2017", "2017")
     ColScheme=c(2,1,3)
     
     plt=c(0.665, 0.995, 0.525, 0.99)
@@ -549,7 +489,7 @@ for(proj.year in proj.years){
     axis(1, at=0:8, labels = 0:8, tck=0)
     axis(2, at=seq(0,1.2,0.2), labels = paste(seq(0,1.2,0.2)*100, "%", sep=""), las=2, tck=0)
     par(mgp=c(2,0.25,0), plt = plt, new = TRUE)
-    title(ylab="BC mean suitability persistence             ")
+    title(ylab="BC mean feasibility persistence             ")
     mtext("(C)", side=3, line=-0.75, adj= -0.1, cex=1, font=2)
     lines(c(-99,99), c(1,1), lwd=2, col="darkgrey")
     
@@ -586,7 +526,7 @@ for(proj.year in proj.years){
       # y <- get(paste("SuitPersistence.mean", hist.year, edatope, sep="."))
       y <- get(paste(metric, "mean", hist.year, edatope, sep="."))
       points(x,y, cex=1.4, pch=2)
-      text(x,y-0.01, paste(hist.periods[which(hist.years==hist.year)], ""), pos=1, cex=0.8, font=2)
+      text(x,y-0.01, paste(hist.year.name[which(hist.years==hist.year)], ""), pos=1, cex=0.8, font=2)
       # print(y)
     }
     
@@ -606,9 +546,3 @@ for(proj.year in proj.years){
 }
 
 
-
-
-
- 
- 
- 
