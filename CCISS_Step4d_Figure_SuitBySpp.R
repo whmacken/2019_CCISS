@@ -215,7 +215,7 @@ for(spp in spps){
     plot(bdy.bc, border="black", lwd=0.4)
     image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, maxpixels= ncell(X))
     legend(1400000, 1600000, legend=c("Expand", "Persist", "Retreat"), 
-           fill=rev(ColScheme), bty="n", cex=0.9, title="Recent Period\n(2001-2018)", inset=0.015)
+           fill=rev(ColScheme), bty="n", cex=0.9, title=paste("Observed climate\n(",hist.year.name[which(hist.years==hist.year)],")", sep=""), inset=0.015)
     mtext(paste("(", LETTERS[c(3,7,11)][which(spps==spp)],")", sep=""), side=3, line=-3.25, adj=0.1, cex=0.8, font=2)
     
   
@@ -392,7 +392,7 @@ for(spp in spps){
     plot(bdy.bc, border="black", lwd=0.4)
     image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, maxpixels= ncell(X))
     legend(1400000, 1600000, legend=c("Expand", "Persist", "Retreat"), 
-           fill=rev(ColScheme), bty="n", cex=0.9, title="Recent Period\n(2001-2018)", inset=0.015)
+           fill=rev(ColScheme), bty="n", cex=0.9, title=paste("Observed climate\n(",hist.year.name[which(hist.years==hist.year)],")", sep=""), inset=0.015)
     mtext(paste("(", LETTERS[c(3,7,11)][which(edatopes==edatope)],")", sep=""), side=3, line=-3.25, adj=0.1, cex=0.8, font=2)
 
     # ##=================================
