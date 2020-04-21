@@ -88,7 +88,7 @@ zone <- factor(zone, levels=c("CDF", "CWH", "MH", "ESSF", "MS", "IDF", "PP", "BG
 #===============================================================================
 rcp=rcps[1]
 hist.year=hist.years[2]
-proj.year=proj.years[1]
+proj.year=proj.years[2]
 
 edatope="C4"
 # for(edatope in edatopes){
@@ -200,45 +200,45 @@ for(spp in spps){
   # }
     mtext(paste("(", LETTERS[c(1,5,9)][which(spps==spp)],")", sep=""), side=3, line=-3.75, adj=0.05, cex=0.8, font=2)
     
-    ##=================================
-    # recent period binary change
-    binary <- rep(0, length(RefSuit))
-    binary[outRange.base==T] <- NA
-    binary[outRange.base==T][HistSuit[outRange.base==T] < 4] <- 1   
-    binary[outRange.base==F][HistSuit[outRange.base==F] == 4] <- -1
-
-    values(X) <- binary[plotOrder]
-    
-    ColScheme <- c(brewer.pal(11,"RdBu")[2], "grey90", brewer.pal(11,"RdBu")[10]); length(ColScheme)
-    
-    par(plt = c(0.6, 0.95, 0.3, 1), new = TRUE)
-    plot(bdy.bc, border="black", lwd=0.4)
-    image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, maxpixels= ncell(X))
-    legend(1400000, 1600000, legend=c("Expand", "Persist", "Retreat"), 
-           fill=rev(ColScheme), bty="n", cex=0.9, title=paste("Observed climate\n(",hist.year.name[which(hist.years==hist.year)],")", sep=""), inset=0.015)
-    mtext(paste("(", LETTERS[c(3,7,11)][which(spps==spp)],")", sep=""), side=3, line=-3.25, adj=0.1, cex=0.8, font=2)
-    
-  
     # ##=================================
-    # # ALTERNATE: map of suitability change
-    # breakpoints <- seq(-3,3,0.5); length(breakpoints)
-    # labels <- c("-3","-2", "-1", "no change", "+1","+2","+3")
-    # ColScheme <- c(brewer.pal(11,"RdBu")[c(1,2,3,4,4)], "grey80", brewer.pal(11,"RdBu")[c(7,8,8,9,10,11)]); length(ColScheme)
+    # # recent period binary change
+    # binary <- rep(0, length(RefSuit))
+    # binary[outRange.base==T] <- NA
+    # binary[outRange.base==T][HistSuit[outRange.base==T] < 4] <- 1   
+    # binary[outRange.base==F][HistSuit[outRange.base==F] == 4] <- -1
+    # 
+    # values(X) <- binary[plotOrder]
+    # 
+    # ColScheme <- c(brewer.pal(11,"RdBu")[2], "grey90", brewer.pal(11,"RdBu")[10]); length(ColScheme)
     # 
     # par(plt = c(0.6, 0.95, 0.3, 1), new = TRUE)
-    # values(X) <- ChangeSuit.mean[plotOrder]
     # plot(bdy.bc, border="black", lwd=0.4)
-    # image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, breaks=breakpoints, maxpixels= ncell(X))
-    # plot(bdy.bc, add=T, border="black", lwd=0.4)
-    # # if(spp==spps[1]){
-    # par(xpd=T)
-    # xl <- 1600000; yb <- 1000000; xr <- 1700000; yt <- 1700000
-    # rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
-    # text(rep(xr-10000,length(labels)),seq(yb,yt,(yt-yb)/(length(labels)-1)),labels,pos=4,cex=0.8,font=1)
-    # text(xl-30000, mean(c(yb,yt))-30000, paste("Mean change\nin suitability (", proj.year.name[which(proj.years==proj.year)], ")", sep=""), srt=90, pos=3, cex=0.9, font=2)
-    # # }
-    # par(xpd=F)
+    # image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, maxpixels= ncell(X))
+    # legend(1400000, 1550000, legend=c("Expand", "Persist", "Retreat"), 
+    #        fill=rev(ColScheme), bty="n", cex=0.9, title=paste("Observed\nclimate\n(",hist.year.name[which(hist.years==hist.year)],")", sep=""), inset=0.015)
     # mtext(paste("(", LETTERS[c(3,7,11)][which(spps==spp)],")", sep=""), side=3, line=-3.25, adj=0.1, cex=0.8, font=2)
+    
+  
+    ##=================================
+    # ALTERNATE: map of suitability change
+    breakpoints <- seq(-3,3,0.5); length(breakpoints)
+    labels <- c("-3","-2", "-1", "no change", "+1","+2","+3")
+    ColScheme <- c(brewer.pal(11,"RdBu")[c(1,2,3,4,4)], "grey80", brewer.pal(11,"RdBu")[c(7,8,8,9,10,11)]); length(ColScheme)
+
+    par(plt = c(0.6, 0.95, 0.3, 1), new = TRUE)
+    values(X) <- ChangeSuit.mean[plotOrder]
+    plot(bdy.bc, border="black", lwd=0.4)
+    image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, breaks=breakpoints, maxpixels= ncell(X))
+    plot(bdy.bc, add=T, border="black", lwd=0.4)
+    # if(spp==spps[1]){
+    par(xpd=T)
+    xl <- 1600000; yb <- 1000000; xr <- 1700000; yt <- 1700000
+    rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
+    text(rep(xr-10000,length(labels)),seq(yb,yt,(yt-yb)/(length(labels)-1)),labels,pos=4,cex=0.8,font=1)
+    text(xl-30000, mean(c(yb,yt))-30000, paste("Mean change\nin feasibility (", proj.year.name[which(proj.years==proj.year)], ")", sep=""), srt=90, pos=3, cex=0.9, font=2)
+    # }
+    par(xpd=F)
+    mtext(paste("(", LETTERS[c(3,7,11)][which(spps==spp)],")", sep=""), side=3, line=-3.25, adj=0.1, cex=0.8, font=2)
 
     ##=================================
     ## Summary by zone
@@ -278,7 +278,7 @@ spps <- spps[-which(spps=="X")]
 spps.candidate <- spps.lookup$TreeCode[-which(spps.lookup$Exclude=="x")]
 spps <- spps[which(spps%in%spps.candidate)] 
 
-spp="Sx"
+spp="Pa"
 
 for(spp in spps){
 
@@ -331,7 +331,7 @@ for(spp in spps){
     box()
     
     ##=================================
-    # map of binary appearance/disappearance
+    # FUTURE MAP of binary appearance/disappearance
     Suit.ensemble <- as.matrix(ProjSuit)
     Suit.ensemble[Suit.ensemble==5] <- 4
     binary <- rep(0, length(RefSuit))
@@ -377,44 +377,44 @@ for(spp in spps){
     # }
     mtext(paste("(", LETTERS[c(1,5,9)][which(edatopes==edatope)],")", sep=""), side=3, line=-3.75, adj=0.05, cex=0.8, font=2)
     
-    ##=================================
-    # recent period binary change
-    binary <- rep(0, length(RefSuit))
-    binary[outRange.base==T] <- NA
-    binary[outRange.base==T][HistSuit[outRange.base==T] < 4] <- 1   
-    binary[outRange.base==F][HistSuit[outRange.base==F] == 4] <- -1
-    
-    values(X) <- binary[plotOrder]
-    
-    ColScheme <- c(brewer.pal(11,"RdBu")[2], "grey90", brewer.pal(11,"RdBu")[10]); length(ColScheme)
-    
-    par(plt = c(0.6, 0.95, 0.3, 1), new = TRUE)
-    plot(bdy.bc, border="black", lwd=0.4)
-    image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, maxpixels= ncell(X))
-    legend(1400000, 1600000, legend=c("Expand", "Persist", "Retreat"), 
-           fill=rev(ColScheme), bty="n", cex=0.9, title=paste("Observed climate\n(",hist.year.name[which(hist.years==hist.year)],")", sep=""), inset=0.015)
-    mtext(paste("(", LETTERS[c(3,7,11)][which(edatopes==edatope)],")", sep=""), side=3, line=-3.25, adj=0.1, cex=0.8, font=2)
-
     # ##=================================
-    # # ALTERNATE: map of suitability change
-    # breakpoints <- seq(-3,3,0.5); length(breakpoints)
-    # labels <- c("-3","-2", "-1", "no change", "+1","+2","+3")
-    # ColScheme <- c(brewer.pal(11,"RdBu")[c(1,2,3,4,4)], "grey80", brewer.pal(11,"RdBu")[c(7,8,8,9,10,11)]); length(ColScheme)
+    # # RECENT PERIOD binary change
+    # binary <- rep(0, length(RefSuit))
+    # binary[outRange.base==T] <- NA
+    # binary[outRange.base==T][HistSuit[outRange.base==T] < 4] <- 1   
+    # binary[outRange.base==F][HistSuit[outRange.base==F] == 4] <- -1
+    # 
+    # values(X) <- binary[plotOrder]
+    # 
+    # ColScheme <- c(brewer.pal(11,"RdBu")[2], "grey90", brewer.pal(11,"RdBu")[10]); length(ColScheme)
     # 
     # par(plt = c(0.6, 0.95, 0.3, 1), new = TRUE)
-    # values(X) <- ChangeSuit.mean[plotOrder]
     # plot(bdy.bc, border="black", lwd=0.4)
-    # image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, breaks=breakpoints, maxpixels= ncell(X))
-    # plot(bdy.bc, add=T, border="black", lwd=0.4)
-    # # if(spp==spps[1]){
-    # par(xpd=T)
-    # xl <- 1600000; yb <- 1000000; xr <- 1700000; yt <- 1700000
-    # rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
-    # text(rep(xr-10000,length(labels)),seq(yb,yt,(yt-yb)/(length(labels)-1)),labels,pos=4,cex=0.8,font=1)
-    # text(xl-30000, mean(c(yb,yt))-30000, paste("Mean change\nin feasibility (", proj.year.name[which(proj.years==proj.year)], ")", sep=""), srt=90, pos=3, cex=0.9, font=2)
-    # # }
-    # par(xpd=F)
+    # image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, maxpixels= ncell(X))
+    # legend(1400000, 1550000, legend=c("Expand", "Persist", "Retreat"), 
+    #        fill=rev(ColScheme), bty="n", cex=0.9, title=paste("Observed\nclimate\n(",hist.year.name[which(hist.years==hist.year)],")", sep=""), inset=0.015)
     # mtext(paste("(", LETTERS[c(3,7,11)][which(edatopes==edatope)],")", sep=""), side=3, line=-3.25, adj=0.1, cex=0.8, font=2)
+
+    ##=================================
+    # ALTERNATE: map of suitability change
+    breakpoints <- seq(-3,3,0.5); length(breakpoints)
+    labels <- c("-3","-2", "-1", "no change", "+1","+2","+3")
+    ColScheme <- c(brewer.pal(11,"RdBu")[c(1,2,3,4,4)], "grey80", brewer.pal(11,"RdBu")[c(7,8,8,9,10,11)]); length(ColScheme)
+
+    par(plt = c(0.6, 0.95, 0.3, 1), new = TRUE)
+    values(X) <- ChangeSuit.mean[plotOrder]
+    plot(bdy.bc, border="black", lwd=0.4)
+    image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, breaks=breakpoints, maxpixels= ncell(X))
+    plot(bdy.bc, add=T, border="black", lwd=0.4)
+    # if(spp==spps[1]){
+    par(xpd=T)
+    xl <- 1600000; yb <- 1000000; xr <- 1700000; yt <- 1700000
+    rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
+    text(rep(xr-10000,length(labels)),seq(yb,yt,(yt-yb)/(length(labels)-1)),labels,pos=4,cex=0.8,font=1)
+    text(xl-30000, mean(c(yb,yt))-30000, paste("Mean change\nin feasibility (", proj.year.name[which(proj.years==proj.year)], ")", sep=""), srt=90, pos=3, cex=0.9, font=2)
+    # }
+    par(xpd=F)
+    mtext(paste("(", LETTERS[c(3,7,11)][which(edatopes==edatope)],")", sep=""), side=3, line=-3.25, adj=0.1, cex=0.8, font=2)
     
     ##=================================
     ## Summary by zone
