@@ -599,10 +599,11 @@ BGC.pred <- get(paste("BGC.pred", hist.year, sep="."))
 zone.pred <- rep(NA, length(BGC.pred))
 for(i in zones){ zone.pred[grep(i,BGC.pred)] <- i }
 # exotic <- table(zone.pred[-which(zone.pred%in%BGCcolors$zone)])
-# exotic <- exotic[exotic>20]
+# exotic <- exotic[exotic>100]
 # exotic <- exotic[rev(order(exotic))]
 # as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#"))
 pred <- zone.pred
+pred[grep("IMA|CMA|BAFA", pred)] <- NA
 values(X) <- NA
 values(X) <- factor(pred, levels=zones)[plotOrder]
 values(X)[1:length(zones)] <- 1:length(zones) # this is a patch that is necessary to get the color scheme right.
@@ -622,7 +623,7 @@ mtext(paste("(", LETTERS[2], ") Observed climate (", hist.year.name[which(hist.y
 ## single GCMs
 
 
-select <- c(4,15,7)
+select <- c(4,15,2)
 for(i in 1:length(select)){
   GCM=GCMs[select[i]]
   rcp=rcps[1]
@@ -631,11 +632,12 @@ for(i in 1:length(select)){
   BGC.pred <- get(paste("BGC.pred", GCM, rcp, proj.year, sep="."))
   zone.pred <- rep(NA, length(BGC.pred))
   for(j in zones){ zone.pred[grep(j,BGC.pred)] <- j }
-  # exotic <- table(zone.pred[-which(zone.pred%in%BGCcolors$zone)])
-  # exotic <- exotic[exotic>20]
-  # exotic <- exotic[rev(order(exotic))]
+  exotic <- table(zone.pred[-which(zone.pred%in%BGCcolors.BC$zone)])
+  exotic <- exotic[exotic>150]
+  exotic <- exotic[rev(order(exotic))]
   # as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#"))
   pred <- zone.pred
+  pred[grep("IMA|CMA|BAFA", pred)] <- NA
   values(X) <- NA
   values(X) <- factor(pred, levels=zones)[plotOrder]
   values(X)[1:length(zones)] <- 1:length(zones) # this is a patch that is necessary to get the color scheme right.
@@ -644,12 +646,23 @@ for(i in 1:length(select)){
   plot(X, xaxt="n", yaxt="n", col=alpha(ColScheme, 1), legend=FALSE, legend.mar=0, maxpixels=ncell(X), bty="n", box=FALSE)
   values(X)[-(1:length(zones))] <- NA # cover up the color bar
   image(X, add=T, col="white")
+  values(X) <- factor(pred, levels=zones)[plotOrder]
   plot(bdy.bc, add=T, lwd=0.4)
-  mtext(paste("(", LETTERS[3:5][i], ") ", GCM, " (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), side=3, line=0.2, adj=0.05, cex=0.8, font=2)
+  mtext(paste("(", LETTERS[3:5][i], ") ", GCM, " (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), side=3, line=0.2, adj=0.05, cex=0.8, font=2)
   
-  # exotic.pct <- round(as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#")),2)
-  # legend("topright", cex=0.8, title="Exotic zones", legend=paste(names(exotic), " (", exotic.pct, "%)", sep=""), fill=alpha(ColScheme[as.numeric(factor(names(exotic), zone))], 1), bty="n")
+  exotic.pct <- round(as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#")),2)
+  # legend(250000, 1500000, cex=0.8, title="Exotic zones", legend=paste(names(exotic), " (", exotic.pct, "%)", sep=""), fill=alpha(ColScheme.zone[as.numeric(factor(names(exotic), zone))], 1), bty="n")
+  # legend("bottomright", cex=0.8, title="Non-BC zones\n(% of BC)", legend=paste(names(exotic), " (", exotic.pct, "%)", sep=""), fill=alpha(ColScheme[as.numeric(factor(names(exotic), zones))], 1), bty="n")
   
+  bgcs <- names(exotic)
+  for(bgc in bgcs){
+    pts <- which(zones[values(X)]==bgc)
+    q=0.5
+    pt <- xyFromCell(X, pts[min(which(pts >= quantile(pts, q)))])
+    points(pt, pch=21, bg=as.character(ColScheme[which(BGCcolors$classification==bgc)]), cex=1, lwd=0.8)
+    text(pt-c(0, 0), bgc, pos=if(bgc=="FG") 2 else 4, cex=0.7, font=2, offset=0.3)
+    # print(q)
+  }
   
   print(GCM)
 }
