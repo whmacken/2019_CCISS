@@ -190,7 +190,7 @@ for(rcp in rcps){
 ############################
 ## analysis of exotic species suitable area
 ############################
-rcp.focal <- "rcp4.5"
+rcp.focal <- "rcp45"
 proj.year.focal <- 2085
 
 length(BGC[-exclude])
@@ -200,21 +200,21 @@ exotic.table <- data.frame(spp=NA,
                            area.pct=NA, 
                            EnglishName=NA, 
                            ScientificName=NA
-                           )
+)
 for(edatope in edatopes){
   exotic.area.pct <- vector()
-spps.exotic <- spps[-which(spps%in%spps.native)]
-for(spp in spps.exotic){
-  temp <- get(paste("SuitCells", spp, edatope, sep="."))[which(seq.rcp==rcp.focal & seq.proj.year==proj.year.focal)]
-  exotic.area.pct[which(spps.exotic==spp)] <- mean(temp)/length(BGC[-exclude])
-}
-temp <- data.frame(spp=spps.exotic[rev(order(exotic.area.pct))], 
-                   edatope=rep(edatope, length(spps.exotic)),
-           area.pct=paste(round(exotic.area.pct[rev(order(exotic.area.pct))]*100,2), "%", sep=""), 
-           EnglishName=spps.lookup$EnglishName[match(spps.exotic[rev(order(exotic.area.pct))], spps.lookup$TreeCode)], 
-           ScientificName=spps.lookup$ScientificName[match(spps.exotic[rev(order(exotic.area.pct))], spps.lookup$TreeCode)])
-exotic.table <- rbind(exotic.table, temp)
-print(edatope)
+  spps.exotic <- spps[-which(spps%in%spps.native)]
+  for(spp in spps.exotic){
+    temp <- get(paste("SuitCells", spp, edatope, sep="."))[which(seq.rcp==rcp.focal & seq.proj.year==proj.year.focal)]
+    exotic.area.pct[which(spps.exotic==spp)] <- mean(temp)/length(BGC[-exclude])
+  }
+  temp <- data.frame(spp=spps.exotic[rev(order(exotic.area.pct))], 
+                     edatope=rep(edatope, length(spps.exotic)),
+                     area.pct=paste(round(exotic.area.pct[rev(order(exotic.area.pct))]*100,2), "%", sep=""), 
+                     EnglishName=spps.lookup$EnglishName[match(spps.exotic[rev(order(exotic.area.pct))], spps.lookup$TreeCode)], 
+                     ScientificName=spps.lookup$ScientificName[match(spps.exotic[rev(order(exotic.area.pct))], spps.lookup$TreeCode)])
+  exotic.table <- rbind(exotic.table, temp)
+  print(edatope)
 }
 exotic.table <- exotic.table[rev(order(exotic.table$area.pct)),]
 
