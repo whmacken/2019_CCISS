@@ -8,7 +8,7 @@ GCMs <- c("ACCESS1-0", "CanESM2", "CCSM4", "CESM1-CAM5", "CNRM-CM5", "CSIRO-Mk3-
           "MIROC5", "MPI-ESM-LR", "MRI-CGCM3")
 
 edatopes <- c("B2", "C4", "D6")
-edatope.name <- c("Subxeric-poor", "Mesic-medium", "Hygric-rich")
+edatope.name <- c("Poor-subxeric", "Medium-mesic", "Rich-hygric")
 
 rcps <- c("rcp45", "rcp85")
 rcp.name=c("RCP4.5", "RCP8.5")
@@ -31,6 +31,7 @@ treesuit <- read.csv("lookup/ESuitv11_21.csv")
 SiteSeries_Use <-read.csv("lookup/SiteSeries_Use_CCISSpaper_13Apr2020.csv",stringsAsFactors=FALSE,na.strings=".")
 spps.lookup <- read.csv("lookup/Tree speciesand codes_2.0_2May2019.csv")
 BGCs_notin_THLB <- read.csv("lookup/BGCs_notin_THLB.csv")
+variable.names <- read.csv("lookup/Variables_ClimateBC.csv")
 
 #BGC zone color scheme
 BGCcolors$colour <- as.character(BGCcolors$colour)
