@@ -1,0 +1,16 @@
+Model Name,Modeling Center (or Group) ,# runs,Code
+ACCESS1.0,"Commonwealth Scientific and Industrial Research Organization (CSIRO) and Bureau of Meteorology (BOM), Australia",1,ACC
+CanESM2,Canadian Centre for Climate Modelling and Analysis,5,CAN
+CCSM4,National Center for Atmospheric Research,5,CCSM
+CESM1(CAM5),Community Earth System Model Contributors,3,CESM
+CNRM-CM5,Centre National de Recherches Météorologiques / Centre Européen de Recherche et Formation Avancée en Calcul Scientifique,1,CNRM
+CSIRO-Mk3.6.0,Commonwealth Scientific and Industrial Research Organization in collaboration with Queensland Climate Change Centre of Excellence,10,CSIR
+GFDL-CM3,NOAA Geophysical Fluid Dynamics Laboratory,1,GFDL
+GISS-E2-R,NASA Goddard Institute for Space Studies,5,GISS
+HadGEM2-ES,Met Office Hadley Centre (additional HadGEM2-ES realizations contributed by Instituto Nacional de Pesquisas Espaciais),4,HAD
+INM-CM4,Institute for Numerical Mathematics,1,INM
+IPSL-CM5A-LR ,Institut Pierre-Simon Laplace,1,IPSL
+MIROC-ESM,"Japan Agency for Marine-Earth Science and Technology, Atmosphere and Ocean Research Institute (The University of Tokyo), and National Institute for Environmental Studies",1,MIR5
+MIROC5,"Atmosphere and Ocean Research Institute (The University of Tokyo), National Institute for Environmental Studies, and Japan Agency for Marine-Earth Science and Technology",3,MIRE
+MPI-ESM-LR,Max-Planck-Institut für Meteorologie (Max Planck Institute for Meteorology),3,MPI
+MRI-CGCM3,Meteorological Research Institute,1,MRI
