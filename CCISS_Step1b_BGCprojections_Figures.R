@@ -11,6 +11,14 @@ source("./_CCISS_Packages.R") ## packages required
 source("./_CCISS_Functions.R") ## common functions
 source("./_CCISS_Parameters.R") ## settings used through all scripts
 
+#===============================================================================
+# Output zone names table
+#===============================================================================
+
+All_BGCs <- read.csv("lookup/All_BGCs_v11_21.csv", strip.white = T)
+str(All_BGCs)
+All_zones <- unique(All_BGCs[,c(2,5)])
+write.csv(All_zones, "results/All_zones.csv", row.names = F)
 
 #===============================================================================
 # Set analysis Parameters
@@ -186,8 +194,11 @@ X <- dem
 # BGC projections (Majority vote)
 #===============================================================================
 
-zones <- c("BG", "BWBS", "CDF", "CWH", "ESSF", "ICH", "IDF", "MH", "MS", "PP", "SBPS", "SBS", "SWB" )
-ColScheme <- as.character(BGCcolors.BC[match(zones,BGCcolors.BC[,1]),5])
+ColScheme <- factor(BGCcolors$colour, levels=BGCcolors$colour)
+zones <- factor(BGCcolors$classification, levels=BGCcolors$classification)
+
+zones.BC <- c("BG", "BWBS", "CDF", "CWH", "ESSF", "ICH", "IDF", "MH", "MS", "PP", "SBPS", "SBS", "SWB" )
+ColScheme.BC <- as.character(BGCcolors.BC[match(zones.BC,BGCcolors.BC[,1]),5])
 
 
 png(filename=paste("results/CCISS.BGCEDA.BGCprojections.ensembleVote", model,"png",sep="."), type="cairo", units="in", width=6.5, height=8.5, pointsize=11, res=600)
@@ -204,11 +215,15 @@ table(zone)
 pred <- zone
 pred[grep("IMA|CMA|BAFA", pred)] <- NA
 values(X) <- NA
-values(X) <- as.numeric(factor(pred))[plotOrder]
-plot(X, xaxt="n", yaxt="n", col=ColScheme, legend=FALSE, legend.mar=0, maxpixels=ncell(X), bty="n", box=FALSE) 
+values(X) <- factor(pred, levels=zones)[plotOrder]
+values(X)[1:length(zones)] <- 1:length(zones) # this is a patch that is necessary to get the color scheme right.
+plot(X, xaxt="n", yaxt="n", col=alpha(ColScheme, 1), legend=FALSE, legend.mar=0, maxpixels=ncell(X), bty="n", box=FALSE) 
+values(X)[-(1:length(zones))] <- NA # cover up the color bar
+image(X, add=T, col="white") # cover up the color bar
+values(X) <- factor(pred, levels=zones)[plotOrder] # restore the raster values
 plot(bdy.bc, add=T, lwd=0.4)
-mtext("(a) BGCv10 Map", side=1, line=-1.5, adj=0.05, cex=1, font=2)
-legend("left", legend=c(zones, "Alpine", "Exotic"), fill=c(ColScheme, "white", "black"), bty="n", cex=1.1, inset=-0.01)
+mtext("(a) BGCv11 Map", side=1, line=-1.5, adj=0.05, cex=1, font=2)
+legend("left", legend=c(zones.BC, "Alpine"), fill=c(ColScheme.BC, "white"), bty="n", cex=1.1, inset=-0.01)
 # box()
 
 #predicted BGC zones (ref period)
@@ -218,8 +233,12 @@ zone.pred.ref[-which(BGC.pred.ref%in%unique(BGC))] <- "Exotic"
 pred <- zone.pred.ref
 pred[grep("IMA|CMA|BAFA", pred)] <- NA
 values(X) <- NA
-values(X) <- as.numeric(factor(pred, levels=c(zones, "Exotic")))[plotOrder]
-plot(X, xaxt="n", yaxt="n", col=c(ColScheme, "black"), legend=FALSE, legend.mar=0, maxpixels=ncell(X), bty="n", box=FALSE)
+values(X) <- factor(pred, levels=zones)[plotOrder]
+values(X)[1:length(zones)] <- 1:length(zones) # this is a patch that is necessary to get the color scheme right.
+plot(X, xaxt="n", yaxt="n", col=alpha(ColScheme, 1), legend=FALSE, legend.mar=0, maxpixels=ncell(X), bty="n", box=FALSE)
+values(X)[-(1:length(zones))] <- NA # cover up the color bar
+image(X, add=T, col="white") # cover up the color bar
+values(X) <- factor(pred, levels=zones)[plotOrder] # restore the raster values
 plot(bdy.bc, add=T, lwd=0.4)
 mtext("(b) Predicted (1970s)", side=1, line=-1.5, adj=0.05, cex=1, font=2)
 
@@ -231,16 +250,31 @@ for(j in 1:4){
   BGC.pred <- get(paste("BGC.pred.ensemble", rcp, proj.year, sep="."))
   zone.pred <- rep(NA, length(BGC.pred))
   for(i in BGCcolors$classification){ zone.pred[grep(i,BGC.pred)] <- i }
-  zone.pred[-which(BGC.pred%in%unique(BGC))] <- "Exotic"
+  exotic <- table(zone.pred[-which(zone.pred%in%BGCcolors.BC$zone)])
+  exotic <- exotic[exotic>100]
+  exotic <- exotic[rev(order(exotic))]
   pred <- zone.pred
-  pred[grep("IMA|CMA|BAFA", pred)] <- NA
   values(X) <- NA
-  values(X) <- as.numeric(factor(pred, levels=c(zones, "Exotic")))[plotOrder]
-  plot(X, xaxt="n", yaxt="n", col=c(ColScheme, "black"), legend=FALSE, legend.mar=0, maxpixels=ncell(X), bty="n", box=FALSE)
+  values(X) <- factor(pred, levels=zones)[plotOrder]
+  values(X)[1:length(zones)] <- 1:length(zones) # this is a patch that is necessary to get the color scheme right.
+  plot(X, xaxt="n", yaxt="n", col=alpha(ColScheme, 1), legend=FALSE, legend.mar=0, maxpixels=ncell(X), bty="n", box=FALSE)
+  values(X)[-(1:length(zones))] <- NA # cover up the color bar
+  image(X, add=T, col="white") # cover up the color bar
+  values(X) <- factor(pred, levels=zones)[plotOrder] # restore the raster values
   plot(bdy.bc, add=T, lwd=0.4)
-  mtext(paste("(", letters[j+2], ") ", rcp, " ",proj.year, sep=""), side=1, line=-1.5, adj=0.05, cex=1, font=2)
+  mtext(paste("(", letters[j+2], ") ", rcp.name[which(rcps==rcp)], ", ", proj.year.name[which(proj.years==proj.year)], sep=""), side=1, line=-1.5, adj=0.05, cex=1, font=2)
   
-}
+  bgcs <- names(exotic)
+  for(bgc in bgcs){
+    pts <- which(zones[values(X)]==bgc)
+    q=0.5
+    pt <- xyFromCell(X, pts[min(which(pts >= quantile(pts, q)))])
+    points(pt, pch=21, bg=as.character(ColScheme[which(BGCcolors$classification==bgc)]), cex=1, lwd=0.8)
+    text(pt-c(0, 0), bgc, pos=if(bgc%in%c("FG", "CWF", "MSSD")) 2 else 4, cex=1, font=1, offset=0.3)
+    # print(q)
+  }
+  
+  }
 dev.off()
 
 
@@ -249,12 +283,6 @@ dev.off()
 #===============================================================================
 
 
-#BGC zone color scheme
-BGCcolors$colour <- as.character(BGCcolors$colour)
-BGCcolors$colour[match(BGCcolors.BC$zone, BGCcolors$classification)] <- as.character(BGCcolors.BC$HEX)
-
-ColScheme <- factor(BGCcolors$colour, levels=BGCcolors$colour)
-zones <- factor(BGCcolors$classification, levels=BGCcolors$classification)
 
 ################# 4-panel maps of all time periods for one model. 
 GCM=GCMs[1]
@@ -303,6 +331,44 @@ proj.year=proj.years[2]
 
 png(filename=paste("results\\CCISS.BGCEDA.BGCprojections", rcp, proj.year, model,"png",sep="."), type="cairo", units="in", width=12.75, height=6.5, pointsize=10, res=600)
 par(mar=c(0.1,0.1, 0.1,0.1), mgp=c(2,0.25,0), mfrow=c(3,5))
+
+for(GCM in GCMs){
+  
+  BGC.pred <- get(paste("BGC.pred", GCM, rcp, proj.year, sep="."))
+  zone.pred <- rep(NA, length(BGC.pred))
+  for(i in zones){ zone.pred[grep(i,BGC.pred)] <- i }
+  exotic <- table(zone.pred[-which(zone.pred%in%BGCcolors.BC$zone)])
+  exotic <- exotic[exotic>100]
+  exotic <- exotic[rev(order(exotic))]
+  as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#"))
+  pred <- zone.pred
+  values(X) <- NA
+  values(X) <- factor(pred, levels=zones)[plotOrder]
+  values(X)[1:length(zones)] <- 1:length(zones) # this is a patch that is necessary to get the color scheme right.
+  
+  plot(X, xaxt="n", yaxt="n", col=alpha(ColScheme, 1), legend=FALSE, legend.mar=0, maxpixels=ncell(X), bty="n", box=FALSE)
+  values(X)[-(1:length(zones))] <- NA # cover up the color bar
+  image(X, add=T, col="white") # cover up the color bar
+  values(X) <- factor(pred, levels=zones)[plotOrder] # restore the raster values
+  plot(bdy.bc, add=T, lwd=0.4)
+  mtext(GCM, side=1, line=-1.5, adj=0.1, cex=1, font=2)
+  
+  exotic.pct <- round(as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#")),2)
+  legend("topright", legend=paste(names(exotic), " (", exotic.pct, "%)", sep=""), fill=alpha(ColScheme[as.numeric(factor(names(exotic), zones))], 1), bty="n")
+  
+  
+  print(GCM)
+}
+
+dev.off()
+
+################# 15-panel maps of all models for one time period
+GCM=GCMs[1]
+rcp=rcps[1]
+proj.year=proj.years[1]
+
+png(filename=paste("results\\CCISS.BGCEDA.BGCprojections.vert", rcp, proj.year, model,"png",sep="."), type="cairo", units="in", width=6.5, height=8, pointsize=10, res=600)
+par(mar=c(0.1,0.1,0.1,0.1), mgp=c(2,0.25,0), mfrow=c(5,3))
 
 for(GCM in GCMs){
   
