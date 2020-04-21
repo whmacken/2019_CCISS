@@ -546,3 +546,53 @@ for(proj.year in proj.years){
 }
 
 
+
+
+
+################################
+## Supplemental figure of edatopes and time periods
+###################################
+
+rcp=rcps[1]
+
+# x11(width=6.5, height=5, pointsize=8)
+png(filename=paste("results\\Manu_Persistence\\CCISS_manu_", metric,"png",sep="."), type="cairo", units="in", width=6.5, height=8.5, pointsize=11, res=400)
+# pdf(file=paste("results\\CCISS_SummaryByBGC_", metric,".pdf",sep=""),  width=7.5, height=5.625, pointsize=15)
+par(mar=c(0.1,0.1, 0.1,0.1), mgp=c(2,0.25,0), mfrow=c(3,2))
+
+for(edatope in edatopes){
+  for(proj.year in proj.years[1:2]){
+    SuitPersistence <- get(paste("SuitPersistence", rcp, proj.year, edatope, sep="."))
+    SppPersistence <- get(paste("SppPersistence", rcp, proj.year, edatope, sep="."))
+    
+    metric <- "SuitPersistence"
+    
+    y <- get(metric)
+    values(X) <- y[plotOrder]
+    
+    breakpoints <- seq(0,2,0.2); length(breakpoints)
+    labels <- c("0%", "50%", "No change", "150%", "200%")
+    ColScheme <- c(brewer.pal(11,"RdBu")[1:4], rep("gray90", 2), brewer.pal(11,"RdBu")[8:11]); length(ColScheme)
+    # ColScheme <- brewer.pal(11,"RdBu")[-6]; length(ColScheme)
+    
+    plot(bdy.bc, border="black", lwd=0.4)
+    image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, breaks=breakpoints, maxpixels= ncell(X))
+    par(xpd=T)
+    xl <- 1550000; yb <- 1000000; xr <- 1650000; yt <- 1700000
+    # xl <- 2025000; yb <- 500000; xr <- 2100000; yt <- 950000
+    rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
+    text(rep(xr,length(labels)),seq(yb,yt,(yt-yb)/(length(labels)-1)),labels,pos=4,cex=1,font=1)
+    # text(rep(xl,2),c(yb,yt)+c(-10000, 10000),c("No change", "Full turnover"),pos=c(1,3),cex=1,font=1)
+    text(xl-40000, mean(c(yb,yt))-30000, paste("Feasibility persistence\n(", proj.year.name[which(proj.years==proj.year)], ", ", c("RCP4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), srt=90, pos=3, cex=1, font=2)
+    # rect(xl,  yt+20000,  xr,  yt+60000,  col=ColScheme[length(ColScheme)])
+    # text(xr,  yt+40000,  bquote(">"*.(breakseq[3])*sigma),pos=4,cex=1,font=1)  
+    par(xpd=F)
+    mtext(paste("(", if(proj.year==proj.years[1]) LETTERS[c(1,3,5)[which(edatopes==edatope)]] else LETTERS[c(2,4,6)[which(edatopes==edatope)]], ")\n", proj.year.name[which(proj.years==proj.year)], "\n", edatope.name[which(edatopes==edatope)], " (", edatope, ")", sep=""), side=1, line=-1.5, adj=0.01, cex=1, font=2)
+    
+    print(proj.year)
+  }
+  print(edatope)
+}
+dev.off()
+
+

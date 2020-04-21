@@ -143,11 +143,11 @@ for(rcp in rcps){
  ################################
  ## Manuscript figure
  ################################
-edatope=edatopes[3]
+edatope=edatopes[2]
 rcp=rcps[1]
 proj.year=proj.years[2]
 for(proj.year in proj.years){
-  # for(edatope in edatopes){
+  for(edatope in edatopes){
 
  #===============================================================================
  # assemble the species mix for the reference period
@@ -240,7 +240,8 @@ for(proj.year in proj.years){
  SuitRichnessChangePct.truncate[!is.finite(SuitRichnessChangePct.truncate)] <- NA
  
 
- metric <- "SuitRichnessChangePct"
+ # metric <- "SuitRichnessChangePct"
+ metric <- "SuitRichnessChangePct.truncate"
  
  
  # x11(width=6.5, height=5, pointsize=8)
@@ -289,16 +290,16 @@ for(proj.year in proj.years){
  #select a single gridpoint within a specified BGC
  focal.bgcs <- c("ICHxw", "SBSwk1", "ESSFmv4", "SBSmc2")
  q.selects <- c(0.955, 0.96, 0.96, 0.97) #quantile of turnover to select the example grid point from 
- # pts.select <- c(106160, 129584, 202644, 50260) # use this if you have already selected the points
+ pts.select <- c(106160, 129584, 202644, 50260) # use this if you have already selected the points
  line.x <- c(0, 300000, 500000, -400000)
  line.y <- c(-200000, 300000, 400000, 300000)
- pts.select <- NA
+ # pts.select <- NA
  for(i in 1:4){
  focal.bgc <- which(BGC==focal.bgcs[i])
- pt <- focal.bgc[which(SuitTurnover[focal.bgc]==min(SuitTurnover[focal.bgc][SuitTurnover[focal.bgc]>quantile(SuitTurnover[focal.bgc], q.selects[i], na.rm=T)], na.rm=T))[1]] #select the grid point
- pt <- pt[1]
- # pt <- pts.select[i]
- pts.select[i] <- pt
+ # pt <- focal.bgc[which(SuitTurnover[focal.bgc]==min(SuitTurnover[focal.bgc][SuitTurnover[focal.bgc]>quantile(SuitTurnover[focal.bgc], q.selects[i], na.rm=T)], na.rm=T))[1]] #select the grid point
+ # pt <- pt[1]
+ pt <- pts.select[i]
+ # pts.select[i] <- pt
  lines(c(pts.df[pt,1], pts.df[pt,1]+line.x[i]), c(pts.df[pt,2], pts.df[pt,2]+line.y[i]), lwd=1.5)
  points(pts.df[pt,], pch=21, cex=1.75, lwd=1.5, bg=ColScheme[cut(y[pt],breaks=breakpoints)])
  # print(y[pt])
@@ -584,7 +585,125 @@ for(proj.year in proj.years){
   print(proj.year)
 }
 
- 
+################################
+## Supplemental figure of edatopes and time periods
+###################################
+
+rcp=rcps[1]
+
+# x11(width=6.5, height=5, pointsize=8)
+png(filename=paste("results\\Manu_Richness\\CCISS_manu_", metric,".png",sep=""), type="cairo", units="in", width=6.5, height=8.5, pointsize=11, res=400)
+# pdf(file=paste("results\\CCISS_SummaryByBGC_", metric,".pdf",sep=""),  width=7.5, height=5.625, pointsize=15)
+par(mar=c(0.1,0.1, 0.1,0.1), mgp=c(2,0.25,0), mfrow=c(3,2))
+
+for(edatope in edatopes){
+   for(proj.year in proj.years[1:2]){
+
+      #===============================================================================
+      # assemble the species mix for the reference period
+      #===============================================================================
+      # for(edatope in edatopes){
+      comm.ref <- as.data.frame(matrix(rep(NA, dim(points)[1]*length(spps)), dim(points)[1], length(spps)))
+      for(spp in spps){
+         Suit <- read.csv(paste("outputs\\Suit.ref", grid, spp, edatope, "csv", sep="."))[,1]
+         Suit[is.na(Suit)] <- 5  #XXX note this is different from the equivalent line for the other time periods. 
+         Suit <- 1-(Suit-1)/4
+         comm.ref[,which(spps==spp)] <- Suit
+      }
+      names(comm.ref) <- spps
+      assign(paste("comm.ref", edatope, sep="."), comm.ref)
+      # Optionality <- apply(comm.ref, 1, sum)
+      # assign(paste("Optionality.ref", edatope, sep=""), Optionality)
+      # write.csv(Optionality, paste("outputs\\Optionality.ref", grid, edatope, "csv", sep="."), row.names = F)
+      #   print(edatope)
+      # }
+      
+      # ===============================================================================
+      # assemble the projected community
+      # ===============================================================================
+      
+      for(GCM in GCMs){
+         # for(edatope in edatopes){
+         #   for(rcp in rcps){
+         #     for(proj.year in proj.years){
+         
+         comm.proj <- as.data.frame(matrix(rep(NA, dim(points)[1]*length(spps)), dim(points)[1], length(spps)))
+         for(spp in spps){
+            Suit <- read.csv(paste("outputs\\Suit", grid, GCM, rcp, proj.year, spp, edatope, "csv", sep="."))[,1]
+            Suit[Suit==5] <- 5
+            Suit <- 1-(Suit-1)/4
+            comm.proj[,which(spps==spp)] <- Suit
+         }
+         names(comm.proj) <- spps
+         assign(paste("comm.proj", GCM, sep="."), comm.proj)
+         
+         #        # print(proj.year)
+         #     }
+         #     # print(rcp)
+         #   }
+         #   print(edatope)
+         # }
+         # print(GCM)
+      }
+      
+      SuitRichness.ref <- get(paste("SuitRichness.ref", edatope, sep="."))
+      SuitRichness.proj <- get(paste("SuitRichness", rcp, proj.year, edatope, sep="."))
+      SuitRichnessChange <- get(paste("SuitRichnessChange", rcp, proj.year, edatope, sep="."))
+      SuitRichnessChangePct <- SuitRichness.proj/SuitRichness.ref
+      SuitRichnessChangePct[!is.finite(SuitRichnessChangePct)] <- NA
+      
+      comm.proj.ensMean <- as.data.frame(matrix(rep(0, dim(points)[1]*length(spps)), dim(points)[1], length(spps)))
+      
+      for(GCM in GCMs){
+         comm.proj.ensMean <- comm.proj.ensMean+get(paste("comm.proj", GCM, sep="."))
+         # print(GCM)
+      }
+      comm.proj.ensMean <- comm.proj.ensMean/length(GCMs)
+      names(comm.proj.ensMean) <- spps
+      head(comm.proj.ensMean)
+      
+      comm.proj.ensMean.trunc <- as.matrix(comm.proj.ensMean)
+      comm.proj.ensMean.trunc[which(comm.proj.ensMean.trunc<0.375)] <- 0
+      comm.proj.ensMean.trunc <- as.data.frame(comm.proj.ensMean.trunc)
+      head(comm.proj.ensMean.trunc)
+      SuitRichness.proj.truncate <- apply(comm.proj.ensMean.trunc, 1, sum)
+      SuitRichnessChangePct.truncate <- SuitRichness.proj.truncate/SuitRichness.ref
+      SuitRichnessChangePct.truncate[!is.finite(SuitRichnessChangePct.truncate)] <- NA
+      
+      # metric <- "SuitRichnessChangePct"
+      metric <- "SuitRichnessChangePct.truncate"
+      
+      y <- get(metric)
+      values(X) <- y[plotOrder]
+      
+      breakpoints <- seq(0,2,0.2); length(breakpoints)
+      labels <- c("0%", "50%", "No change", "150%", "200%")
+      ColScheme <- c(brewer.pal(11,"RdBu")[1:4], rep("gray90", 2), brewer.pal(11,"RdBu")[8:11]); length(ColScheme)
+      # ColScheme <- brewer.pal(11,"RdBu")[-6]; length(ColScheme)
+      
+      plot(bdy.bc, border="black", lwd=0.4)
+      image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, breaks=breakpoints, maxpixels= ncell(X))
+      par(xpd=T)
+      xl <- 1550000; yb <- 1000000; xr <- 1650000; yt <- 1700000
+      rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
+      rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
+      text(rep(xr,length(labels)),seq(yb,yt,(yt-yb)/(length(breakpoints)-1))[c(2,4,6,8,10)],labels,pos=4,cex=1,font=1)
+      # text(rep(xl,2),c(yb,yt)+c(-10000, 10000),c("No change", "Full turnover"),pos=c(1,3),cex=1,font=1)
+      text(xl-40000, mean(c(yb,yt))-30000, paste("Relative feasibility richness"), srt=90, pos=3, cex=1, font=2)
+      # rect(xl,  yt+20000,  xr,  yt+60000,  col=ColScheme[length(ColScheme)])
+      # text(xr,  yt+40000,  bquote(">"*.(breakseq[3])*sigma),pos=4,cex=1,font=1)  
+      par(xpd=F)
+      mtext(paste("(", if(proj.year==proj.years[1]) LETTERS[c(1,3,5)[which(edatopes==edatope)]] else LETTERS[c(2,4,6)[which(edatopes==edatope)]], ")\n", proj.year.name[which(proj.years==proj.year)], "\n", edatope.name[which(edatopes==edatope)], " (", edatope, ")", sep=""), side=1, line=-1.5, adj=0.01, cex=1, font=2)
+      
+      print(proj.year)
+   }
+   print(edatope)
+}
+dev.off()
+
+
+
+
 #  # #####################
 #  # #### exploratory Suitability profile for individual locations
 #  # #####################
