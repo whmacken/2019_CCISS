@@ -285,7 +285,7 @@ library(plotrix)
     axis(2,at=seq(ylim[1], ylim[2], 0.5), labels=paste(seq(ylim[1], ylim[2], 0.5)*100,"%", sep=""), las=2, tck=0)
     Common <- as.character(spps.lookup$EnglishName[which(spps.lookup$TreeCode==spp.focal)])
     Latin <- as.character(spps.lookup$ScientificName[which(spps.lookup$TreeCode==spp.focal)])
-    panel <- paste("(", LETTERS[which(metrics==metric)],")", sep="")
+    panel <- paste("(", letters[which(metrics==metric)],")", sep="")
     mtext(panel, side=3, line=-1.25, adj=0.05, cex=0.7, font=1)
     mtext(bquote(.(Common)~"("*.(spp.focal)*")"), side=3, line=-1.45, adj=0.955, cex=0.7, font=1)
     
@@ -361,7 +361,7 @@ library(plotrix)
       # text(0.15, log2( 0.85), "Growing feasible range", pos=3, srt=-60/(ylim[2]/xlim[2])/2, col="darkgray", font=2)
       # text(0.15, log2( 0.85), "Shrinking feasible range", pos=1, srt=-60/(ylim[2]/xlim[2])/2, col="darkgray", font=2)
     }
-    panel <- paste("(", LETTERS[4:6][which(edatopes[c(2,1,3)]==edatope)],")", sep="")
+    panel <- paste("(", letters[4:6][which(edatopes[c(2,1,3)]==edatope)],")", sep="")
     mtext(paste(panel," ", edatope.name[which(edatopes==edatope)], " sites", " (", edatope, ")", sep=""), side=3, line=-1.25, adj= if(edatope=="C4") 0.025 else 0.075, cex=0.7, font=1)
     
     
@@ -500,7 +500,7 @@ library(plotrix)
     text(0.15, log2( 0.85), "Growing suit. range", pos=3, srt=-60/(ylim[2]/xlim[2])/2, col="darkgray", font=2)
     text(0.15, log2( 0.85), "Shrinking suit. range", pos=1, srt=-60/(ylim[2]/xlim[2])/2, col="darkgray", font=2)
   }
-  panel <- paste("(", LETTERS[4:6][which(edatopes[c(2,1,3)]==edatope)],")", sep="")
+  panel <- paste("(", letters[4:6][which(edatopes[c(2,1,3)]==edatope)],")", sep="")
   # mtext(paste(panel," ", edatope," edatope", " (", edatope.name[which(edatopes==edatope)], " sites)", sep=""), side=3, line=-1.25, adj= if(edatope=="C4") 0.025 else 0.075, cex=0.7, font=1)
   
   for(spp in spps){

@@ -283,7 +283,7 @@ for(proj.year in proj.years){
  # rect(xl,  yt+20000,  xr,  yt+60000,  col=ColScheme[length(ColScheme)])
  # text(xr,  yt+40000,  bquote(">"*.(breakseq[3])*sigma),pos=4,cex=1,font=1)  
  par(xpd=F)
- mtext("(A)", side=3, line=-3.5, adj=0.025, cex=1, font=2)
+ mtext("(a)", side=3, line=-3.5, adj=0.025, cex=1, font=2)
  mtext(paste(edatope.name[which(edatopes==edatope)], " sites (", edatope, ")", sep=""), side=3, line=-1.5, adj=0.35, cex=1, font=2)
  
 
@@ -343,7 +343,7 @@ for(proj.year in proj.years){
  par(mar=c(0,0,0,0), plt = c(0.6, 0.99, 0.01, 0.195), new = TRUE, mgp=c(2,0.1,0))
  plot(0, xlim=c(0,1), ylim=c(0,1), col="white", xlab="", ylab="", xaxt="n", yaxt="n", bty="n")
  rect(-9,-9,9,9, col="white", lwd=0)
- mtext("(E)", side=3, line=-1, adj=-0.08, cex=1, font=2)
+ mtext("(e)", side=3, line=-1, adj=-0.08, cex=1, font=2)
  box()
  
  par(mar=c(0,0,0,0), plt = c(0.6, 0.99, 0.01, 0.195), new = TRUE, mgp=c(2,0.1,0))
@@ -405,7 +405,7 @@ for(proj.year in proj.years){
  par(mar=c(0,0,0,0), plt = plt.callout, new = TRUE, mgp=c(2,0.1,0))
  plot(0, xlim=c(0,1), ylim=c(0,1), col="white", xlab="", ylab="", xaxt="n", yaxt="n", bty="n")
  rect(-9,-9,9,9, col="white", lwd=0)
- mtext("(D)", side=3, line=0.25, adj=0.01, cex=1, font=2)
+ mtext("(d)", side=3, line=0.25, adj=0.01, cex=1, font=2)
  box()
  
  par(mar=c(0,0,0,0), plt = plt.callout, new = TRUE, mgp=c(2,0.1,0))
@@ -466,7 +466,7 @@ for(proj.year in proj.years){
  par(mar=c(0,0,0,0), plt = plt.callout, new = TRUE, mgp=c(2,0.1,0))
  plot(0, xlim=c(0,1), ylim=c(0,1), col="white", xlab="", ylab="", xaxt="n", yaxt="n", bty="n")
  rect(-9,-9,9,9, col="white", lwd=0)
- mtext("(C)", side=3, line=-1, adj=-0.08, cex=1, font=2)
+ mtext("(c)", side=3, line=-1, adj=-0.08, cex=1, font=2)
  box()
  
  par(mar=c(0,0,0,0), plt = plt.callout, new = TRUE, mgp=c(2,0.1,0))
@@ -527,7 +527,7 @@ for(proj.year in proj.years){
  par(mar=c(0,0,0,0), plt = plt.callout, new = TRUE, mgp=c(2,0.1,0))
  plot(0, xlim=c(0,1), ylim=c(0,1), col="white", xlab="", ylab="", xaxt="n", yaxt="n", bty="n")
  rect(-9,-9,9,9, col="white", lwd=0)
- mtext("(B)", side=3, line=0.25, adj=0.025, cex=1, font=2)
+ mtext("(b)", side=3, line=0.25, adj=0.025, cex=1, font=2)
  box()
  
  par(mar=c(0,0,0,0), plt = plt.callout, new = TRUE, mgp=c(2,0.1,0))
@@ -575,7 +575,7 @@ for(proj.year in proj.years){
  lines(rep(x2, each=2), bracketpos*c(0.95, 1,1,0.95))
  # lines(rep(x3, each=2), bracketpos*c(0.95, 1,1,0.95))
  par(xpd=F)  
- mtext("(F)", side=3, line=0.5, adj=0.025, cex=1, font=2)
+ mtext("(f)", side=3, line=0.5, adj=0.025, cex=1, font=2)
  
  
  dev.off()
@@ -590,6 +590,8 @@ for(proj.year in proj.years){
 ###################################
 
 rcp=rcps[1]
+# metric <- "SuitRichnessChangePct"
+metric <- "SuitRichnessChangePct.truncate"
 
 # x11(width=6.5, height=5, pointsize=8)
 png(filename=paste("results\\Manu_Richness\\CCISS_manu_", metric,".png",sep=""), type="cairo", units="in", width=6.5, height=8.5, pointsize=11, res=400)
@@ -670,16 +672,17 @@ for(edatope in edatopes){
       SuitRichnessChangePct.truncate <- SuitRichness.proj.truncate/SuitRichness.ref
       SuitRichnessChangePct.truncate[!is.finite(SuitRichnessChangePct.truncate)] <- NA
       
-      # metric <- "SuitRichnessChangePct"
-      metric <- "SuitRichnessChangePct.truncate"
-      
+      ylim <- c(-3,3)
       y <- get(metric)
+      y[y<2^(ylim[1])] <- 2^(ylim[1])
+      y <- log2(y)
       values(X) <- y[plotOrder]
       
-      breakpoints <- seq(0,2,0.2); length(breakpoints)
-      labels <- c("0%", "50%", "No change", "150%", "200%")
-      ColScheme <- c(brewer.pal(11,"RdBu")[1:4], rep("gray90", 2), brewer.pal(11,"RdBu")[8:11]); length(ColScheme)
-      # ColScheme <- brewer.pal(11,"RdBu")[-6]; length(ColScheme)
+      breakpoints <- c(-99,seq(-2,2,0.5),99); length(breakpoints)
+      # breakpoints <- c(-99,-55,seq(-2,2,0.25),55,99); length(breakpoints)
+      labels <- c(paste(round(2^(breakpoints[c(2,4)])*100),"%", sep=""), "no change", paste(round(2^(breakpoints[length(breakpoints)-c(3,1)])*100),"%", sep=""))
+      ColScheme <- brewer.pal(11,"RdBu")[-6]; length(ColScheme)
+      # ColScheme <- c(rep(brewer.pal(11,"RdBu")[1:4], each=2), brewer.pal(11,"RdBu")[5],rep("gray90", 2),brewer.pal(11,"RdBu")[7], rep(brewer.pal(11,"RdBu")[8:11], each=2)); length(ColScheme)
       
       plot(bdy.bc, border="black", lwd=0.4)
       image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, breaks=breakpoints, maxpixels= ncell(X))
@@ -693,7 +696,7 @@ for(edatope in edatopes){
       # rect(xl,  yt+20000,  xr,  yt+60000,  col=ColScheme[length(ColScheme)])
       # text(xr,  yt+40000,  bquote(">"*.(breakseq[3])*sigma),pos=4,cex=1,font=1)  
       par(xpd=F)
-      mtext(paste("(", if(proj.year==proj.years[1]) LETTERS[c(1,3,5)[which(edatopes==edatope)]] else LETTERS[c(2,4,6)[which(edatopes==edatope)]], ")\n", proj.year.name[which(proj.years==proj.year)], "\n", edatope.name[which(edatopes==edatope)], " (", edatope, ")", sep=""), side=1, line=-1.5, adj=0.01, cex=1, font=2)
+      mtext(paste("(", if(proj.year==proj.years[1]) letters[c(1,3,5)[which(edatopes==edatope)]] else letters[c(2,4,6)[which(edatopes==edatope)]], ")\n", proj.year.name[which(proj.years==proj.year)], "\n", edatope.name[which(edatopes==edatope)], " (", edatope, ")", sep=""), side=1, line=-1.5, adj=0.01, cex=1, font=2)
       
       print(proj.year)
    }
@@ -701,7 +704,7 @@ for(edatope in edatopes){
 }
 dev.off()
 
-
+hist(y)
 
 
 #  # #####################

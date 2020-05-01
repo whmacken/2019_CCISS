@@ -352,7 +352,7 @@ plot(X, xaxt="n", yaxt="n", col=alpha(ColScheme, 1), legend=FALSE, legend.mar=0,
 values(X)[-(1:length(zones))] <- NA # cover up the color bar
 image(X, add=T, col="white")
 plot(bdy.bc, add=T, lwd=0.4)
-mtext(paste("(", LETTERS[3], ") Observed change (", hist.year.name[which(hist.years==hist.year)],")", sep=""), side=3, line=-1.1, adj=0.05, cex=0.8, font=2)
+mtext(paste("(", letters[3], ") Observed change (", hist.year.name[which(hist.years==hist.year)],")", sep=""), side=3, line=-1.1, adj=0.05, cex=0.8, font=2)
 
 # exotic.pct <- round(as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#")),2)
 # legend("topright", cex=0.8, title="Exotic zones", legend=paste(names(exotic), " (", exotic.pct, "%)", sep=""), fill=alpha(ColScheme[as.numeric(factor(names(exotic), zone))], 1), bty="n")
@@ -388,7 +388,7 @@ for(i in 1:2){
   values(X)[-(1:length(zones))] <- NA # cover up the color bar
   image(X, add=T, col="white")
   plot(bdy.bc, add=T, lwd=0.4)
-  mtext(paste("(", LETTERS[4:5][i], ") ", GCM, "\n      (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), side=3, line=-0.50, adj=0.05, cex=0.8, font=2)
+  mtext(paste("(", letters[4:5][i], ") ", GCM, "\n      (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), side=3, line=-0.50, adj=0.05, cex=0.8, font=2)
   
   # exotic.pct <- round(as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#")),2)
   # legend("topright", cex=0.8, title="Exotic zones", legend=paste(names(exotic), " (", exotic.pct, "%)", sep=""), fill=alpha(ColScheme[as.numeric(factor(names(exotic), zone))], 1), bty="n")
@@ -422,7 +422,7 @@ values(X)[-(1:length(zones))] <- NA # cover up the color bar
 image(X, add=T, col="white")
 values(X) <- factor(pred, levels=zones)[plotOrder] # restore the raster values
 plot(bdy.bc, add=T, lwd=0.4)
-mtext(paste("(", LETTERS[6], ") ", GCM, "\n      (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), side=3, line=-0.50, adj=0.05, cex=0.8, font=2)
+mtext(paste("(", letters[6], ") ", GCM, "\n      (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), side=3, line=-0.50, adj=0.05, cex=0.8, font=2)
 
 bgcs <- names(exotic)
 for(bgc in bgcs){
@@ -459,7 +459,7 @@ rect(xl,  yb,  xr,  yt)
 text(rep(xr-40000,length(breakpoints))[seq(1, length(breakpoints), 3)],seq(yb,yt,(yt-yb)/(length(breakpoints)-1))[seq(1, length(breakpoints), 3)],paste(round(breakpoints*100),"%", sep="")[seq(1, length(breakpoints), 3)],pos=4,cex=0.8,font=1)
 # text(xl-40000, mean(c(yb,yt))-30000, paste("% Non-BC climates\nin GCM ensemble"), srt=90, pos=3, cex=0.8, font=2)
 # mtext(paste(rcp, proj.year, sep="\n"), side=1, line=-3.5, adj=0.05, cex=1, font=2)
-mtext(paste("(", LETTERS[7], ") % Non-BC climates in\nGCM ensemble (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), side=3, line=-0.50, adj=0.05, cex=0.8, font=2)
+mtext(paste("(", letters[7], ") % Non-BC climates in\nGCM ensemble (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP.4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), side=3, line=-0.50, adj=0.05, cex=0.8, font=2)
 
 
 #=============================
@@ -586,7 +586,7 @@ values(X) <- as.numeric(factor(pred))[plotOrder]
 plot(X, xaxt="n", yaxt="n", col=alpha(ColScheme.bc, 1), legend=FALSE, legend.mar=0, maxpixels=ncell(X), bty="n", box=FALSE) 
 plot(bdy.bc, add=T, lwd=0.4)
 par(xpd=T) 
-mtext("(A) BGC zone map (1961-1990)", side=3, line=0.2, adj=0.05, cex=0.8, font=2)
+mtext(paste("(", letters[1], ") BGC zone map (1961-1990)", sep=""), side=3, line=0.2, adj=0.05, cex=0.8, font=2)
 legend("bottomleft", legend=c(zones.bc, "Alpine"), fill=c(ColScheme.bc, "white"), bty="n", cex=0.75, inset=-0.02)
 # box()
 
@@ -612,7 +612,7 @@ plot(X, xaxt="n", yaxt="n", col=alpha(ColScheme, 1), legend=FALSE, legend.mar=0,
 values(X)[-(1:length(zones))] <- NA # cover up the color bar
 image(X, add=T, col="white")
 plot(bdy.bc, add=T, lwd=0.4)
-mtext(paste("(", LETTERS[2], ") Observed climate (", hist.year.name[which(hist.years==hist.year)],")", sep=""), side=3, line=0.2, adj=0.05, cex=0.8, font=2)
+mtext(paste("(", letters[2], ") Observed climate (", hist.year.name[which(hist.years==hist.year)],")", sep=""), side=3, line=0.2, adj=0.05, cex=0.8, font=2)
 
 # exotic.pct <- round(as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#")),2)
 # legend("topright", cex=0.8, title="Exotic zones", legend=paste(names(exotic), " (", exotic.pct, "%)", sep=""), fill=alpha(ColScheme[as.numeric(factor(names(exotic), zone))], 1), bty="n")
@@ -648,7 +648,7 @@ for(i in 1:length(select)){
   image(X, add=T, col="white")
   values(X) <- factor(pred, levels=zones)[plotOrder]
   plot(bdy.bc, add=T, lwd=0.4)
-  mtext(paste("(", LETTERS[3:5][i], ") ", GCM, " (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), side=3, line=0.2, adj=0.05, cex=0.8, font=2)
+  mtext(paste("(", letters[3:5][i], ") ", GCM, " (", proj.year.name[which(proj.years==proj.year)], ", " , c("RCP4.5", "RCP8.5")[which(rcps==rcp)], ")", sep=""), side=3, line=0.2, adj=0.05, cex=0.8, font=2)
   
   exotic.pct <- round(as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#")),2)
   # legend(250000, 1500000, cex=0.8, title="Exotic zones", legend=paste(names(exotic), " (", exotic.pct, "%)", sep=""), fill=alpha(ColScheme.zone[as.numeric(factor(names(exotic), zone))], 1), bty="n")
@@ -678,7 +678,7 @@ plot(0, xlim=c(0,7.2), ylim=c(0,1.01), xaxs="i", yaxs="i", col="white", xaxt="n"
      ylab=list("Projected displacement of modeled BGC unit", cex=0.8))
 axis(1, at=0:8, labels = 0:8, tck=0, cex.axis=0.8)
 axis(2, at=seq(0,1,0.2), labels = paste(seq(0,1,0.2)*100, "%", sep=""), las=2, tck=0, cex.axis=0.8)
-mtext(paste("(F) ", sep=""), side=3, line=-1.5, adj=0.05, cex=1, font=2)
+mtext(paste("(f) ", sep=""), side=3, line=-1.5, adj=0.05, cex=1, font=2)
 
 int.y <- 0.07
 start.y <- 0.03

@@ -279,9 +279,9 @@ for(rcp in rcps){
 ## Manuscript figure
 ###################################
 
-edatope=edatopes[2]
+edatope=edatopes[1]
 rcp=rcps[1]
-proj.year=proj.years[2]
+proj.year=proj.years[1]
 
 for(proj.year in proj.years){
   for(edatope in edatopes){
@@ -330,7 +330,7 @@ for(proj.year in proj.years){
     
     plot(bdy.bc, border="black", lwd=0.4)
     image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, breaks=breakpoints, maxpixels= ncell(X))
-    mtext("(A)", side=3, line=-2.5, adj=0.0, cex=1, font=2)
+    mtext("(a)", side=3, line=-2.5, adj=0.0, cex=1, font=2)
     par(xpd=T)
     xl <- 250000; yb <- 1000000; xr <- 350000; yt <- 1500000
     # xl <- 2025000; yb <- 500000; xr <- 2100000; yt <- 950000
@@ -402,7 +402,7 @@ for(proj.year in proj.years){
     par(mar=c(0,0,0,0), plt = c(0.825, 0.995, 0.01, 0.445), new = TRUE, mgp=c(2,0.1,0))
     plot(0, xlim=c(0,1), ylim=c(0,1), col="white", xlab="", ylab="", xaxt="n", yaxt="n", bty="n")
     rect(-9,-9,9,9, col="white", lwd=0)
-    mtext("(D)", side=3, line=-1, adj=-0.2, cex=1, font=2)
+    mtext("(d)", side=3, line=-1, adj=-0.2, cex=1, font=2)
     box()
     
     # par(mar=c(0,0,0,0), plt = c(0.6, 0.99, 0.01, 0.175), new = TRUE, mgp=c(2,0.1,0))
@@ -471,7 +471,7 @@ for(proj.year in proj.years){
     lines(rep(x2, each=2), bracketpos*c(0.95, 1,1,0.95))
     # lines(rep(x3, each=2), bracketpos*c(0.95, 1,1,0.95))
     par(xpd=F)  
-    mtext("(B)", side=3, line=0.25, adj=-0.15, cex=1, font=2)
+    mtext("(b)", side=3, line=0.25, adj=-0.15, cex=1, font=2)
     
     
     #===============================================================================
@@ -490,7 +490,7 @@ for(proj.year in proj.years){
     axis(2, at=seq(0,1.2,0.2), labels = paste(seq(0,1.2,0.2)*100, "%", sep=""), las=2, tck=0)
     par(mgp=c(2,0.25,0), plt = plt, new = TRUE)
     title(ylab="BC mean feasibility persistence             ")
-    mtext("(C)", side=3, line=-0.75, adj= -0.1, cex=1, font=2)
+    mtext("(c)", side=3, line=-0.75, adj= -0.1, cex=1, font=2)
     lines(c(-99,99), c(1,1), lwd=2, col="darkgrey")
     
     for(edatope.temp in edatopes){
@@ -555,6 +555,8 @@ for(proj.year in proj.years){
 
 rcp=rcps[1]
 
+metric <- "SppPersistence"
+
 # x11(width=6.5, height=5, pointsize=8)
 png(filename=paste("results\\Manu_Persistence\\CCISS_manu_", metric,"png",sep="."), type="cairo", units="in", width=6.5, height=8.5, pointsize=11, res=400)
 # pdf(file=paste("results\\CCISS_SummaryByBGC_", metric,".pdf",sep=""),  width=7.5, height=5.625, pointsize=15)
@@ -564,9 +566,7 @@ for(edatope in edatopes){
   for(proj.year in proj.years[1:2]){
     SuitPersistence <- get(paste("SuitPersistence", rcp, proj.year, edatope, sep="."))
     SppPersistence <- get(paste("SppPersistence", rcp, proj.year, edatope, sep="."))
-    
-    metric <- "SuitPersistence"
-    
+
     y <- get(metric)
     values(X) <- y[plotOrder]
     
@@ -587,7 +587,7 @@ for(edatope in edatopes){
     # rect(xl,  yt+20000,  xr,  yt+60000,  col=ColScheme[length(ColScheme)])
     # text(xr,  yt+40000,  bquote(">"*.(breakseq[3])*sigma),pos=4,cex=1,font=1)  
     par(xpd=F)
-    mtext(paste("(", if(proj.year==proj.years[1]) LETTERS[c(1,3,5)[which(edatopes==edatope)]] else LETTERS[c(2,4,6)[which(edatopes==edatope)]], ")\n", proj.year.name[which(proj.years==proj.year)], "\n", edatope.name[which(edatopes==edatope)], " (", edatope, ")", sep=""), side=1, line=-1.5, adj=0.01, cex=1, font=2)
+    mtext(paste("(", if(proj.year==proj.years[1]) letters[c(1,3,5)[which(edatopes==edatope)]] else letters[c(2,4,6)[which(edatopes==edatope)]], ")\n", proj.year.name[which(proj.years==proj.year)], "\n", edatope.name[which(edatopes==edatope)], " (", edatope, ")", sep=""), side=1, line=-1.5, adj=0.01, cex=1, font=2)
     
     print(proj.year)
   }

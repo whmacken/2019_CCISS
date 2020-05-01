@@ -135,7 +135,7 @@ for(bgc in bgcs){
   print(paste(which(bgcs==bgc), "-", bgc))
 }
 box() 
-mtext(paste("(A) ", sep=""), side=3, line=-14.5, adj=0.02, cex=1.5, font=2)
+mtext(paste("(a) ", sep=""), side=3, line=-14.5, adj=0.02, cex=1.5, font=2)
 
 grid <- "Salish1"
 grid.dem <- "dem1_Salish"
@@ -163,7 +163,7 @@ image(X, xaxt="n", yaxt="n", xlim=xlim, ylim=ylim, col=alpha(ColScheme.subzone, 
 # plot(mask.NA, add=T, col="white", border=F)
 plot(bdy.usa1, add=T, lwd=0.4)
 plot(bdy.can1, add=T, lwd=0.4)
-mtext(paste("(B) ", sep=""), side=1, line=-1.5, adj=0.02, cex=1.5, font=2)
+mtext(paste("(b) ", sep=""), side=1, line=-1.5, adj=0.02, cex=1.5, font=2)
 
 bgcs <- subzones
 quantile.lat <- rep(0.5, length(bgcs))

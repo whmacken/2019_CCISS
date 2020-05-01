@@ -91,6 +91,7 @@ hist.year=hist.years[2]
 proj.year=proj.years[2]
 
 edatope="C4"
+# for(proj.year in proj.years[1:2]){
 # for(edatope in edatopes){
 
 spps.matrix <- matrix(c("Pl", "Fd", "Cw","Ba", "Bl", "Bg", "Yc", "Ss", "Hm", "Lw", "Hw", "Py", "Dr", "Ep", "At"), 5, byrow=T)  
@@ -145,7 +146,7 @@ for(spp in spps){
   plot(0, col="white", xaxt="n", yaxt="n", xlab="", ylab="")
   Common <- as.character(spps.lookup$EnglishName[which(spps.lookup$TreeCode==spp)])
   Latin <- as.character(spps.lookup$ScientificName[which(spps.lookup$TreeCode==spp)])
-  panel <- paste("(", LETTERS[which(spps==spp)],")", sep="")
+  panel <- paste("(", letters[which(spps==spp)],")", sep="")
   mtext(if(spp%in%spps.lookup$TreeCode) bquote(bold(.(spp))~"-"~.(Common)) else bquote(bold(.(spp))),
         side=3, line=-1.75, adj=0.01, cex=0.8, font=2)
   # mtext(if(spp%in%spps.lookup$TreeCode) bquote(.(panel)~bold(.(spp))~"-"~.(Common)~"("*italic(.(Latin)*")")) else bquote(.(panel)~bold(.(spp))),
@@ -177,7 +178,7 @@ for(spp in spps){
   text(rep(xr+10000,length(labels)),seq(yb,yt,(yt-yb)/(length(GCMs)-1))[c(3,9)],labels,pos=4,cex=0.9,font=0.8, srt=90)
   text(rep(xr-20000,length(labels)),seq(yb,yt,(yt-yb)/(length(GCMs)-1))[c(1,8,15)],c("100%", "0%", "100%"),pos=4,cex=0.8,font=1)
   text(xl-30000, mean(c(yb,yt))-30000, paste("Change in presence/absence\n(", proj.year.name[which(proj.years==proj.year)], "), % of GCMs", sep=""), srt=90, pos=3, cex=0.9, font=2)
-  mtext(paste("(", LETTERS[c(2,6,10)][which(spps==spp)],")", sep=""), side=3, line=-2.5, adj=0.22, cex=0.8, font=2)
+  mtext(paste("(", letters[c(2,6,10)][which(spps==spp)],")", sep=""), side=3, line=-2.5, adj=0.22, cex=0.8, font=2)
   # legend("bottomleft", legend=c(spp, paste("Edatope:", edatope), proj.year, rcp, " "), cex=1.4, bty="n", inset=-0.05)
   # }
   # box()
@@ -198,7 +199,7 @@ for(spp in spps){
     legend("bottomleft", legend=c("1 (primary)", "2 (secondary)", "3 (tertiary)"), 
          fill=ColScheme, bty="n", cex=0.9, title="Historical feasibility", inset=0.015)
   # }
-    mtext(paste("(", LETTERS[c(1,5,9)][which(spps==spp)],")", sep=""), side=3, line=-3.75, adj=0.05, cex=0.8, font=2)
+    mtext(paste("(", letters[c(1,5,9)][which(spps==spp)],")", sep=""), side=3, line=-3.75, adj=0.05, cex=0.8, font=2)
     
     # ##=================================
     # # recent period binary change
@@ -216,7 +217,7 @@ for(spp in spps){
     # image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, maxpixels= ncell(X))
     # legend(1400000, 1550000, legend=c("Expand", "Persist", "Retreat"), 
     #        fill=rev(ColScheme), bty="n", cex=0.9, title=paste("Observed\nclimate\n(",hist.year.name[which(hist.years==hist.year)],")", sep=""), inset=0.015)
-    # mtext(paste("(", LETTERS[c(3,7,11)][which(spps==spp)],")", sep=""), side=3, line=-3.25, adj=0.1, cex=0.8, font=2)
+    # mtext(paste("(", letters[c(3,7,11)][which(spps==spp)],")", sep=""), side=3, line=-3.25, adj=0.1, cex=0.8, font=2)
     
   
     ##=================================
@@ -238,7 +239,7 @@ for(spp in spps){
     text(xl-30000, mean(c(yb,yt))-30000, paste("Mean change\nin feasibility (", proj.year.name[which(proj.years==proj.year)], ")", sep=""), srt=90, pos=3, cex=0.9, font=2)
     # }
     par(xpd=F)
-    mtext(paste("(", LETTERS[c(3,7,11)][which(spps==spp)],")", sep=""), side=3, line=-3.25, adj=0.1, cex=0.8, font=2)
+    mtext(paste("(", letters[c(3,7,11)][which(spps==spp)],")", sep=""), side=3, line=-3.25, adj=0.1, cex=0.8, font=2)
 
     ##=================================
     ## Summary by zone
@@ -259,7 +260,7 @@ for(spp in spps){
     bxp(z, add=T, boxfill = as.character(BGCcolors.BC$HEX[match(levels(zone), BGCcolors.BC$zone)]), xaxt="n", yaxt="n", xaxs="i", ylab="", pch=0,outline=FALSE)
     axis(1, at=1:length(levels(zone)), levels(zone), tick=F, las=2, cex.axis=0.8)
     axis(2,at=seq(ylim[1], ylim[2], 3), seq(ylim[1], ylim[2], 3), las=2, tck=0)
-    mtext(paste("(", LETTERS[c(4,8,12)][which(spps==spp)],")", sep=""), side=3, line=1, adj=0.975, cex=0.8, font=2)
+    mtext(paste("(", letters[c(4,8,12)][which(spps==spp)],")", sep=""), side=3, line=1, adj=0.975, cex=0.8, font=2)
     mtext(paste("Mean feasibility change (", proj.year.name[which(proj.years==proj.year)], ")", sep=""), side=3, line=0.1, adj=.975, cex=0.5, font=2)
 
     print(spp)
@@ -325,7 +326,7 @@ for(spp in spps){
     plot(0, col="white", xaxt="n", yaxt="n", xlab="", ylab="")
     Common <- as.character(spps.lookup$EnglishName[which(spps.lookup$TreeCode==spp)])
     Latin <- as.character(spps.lookup$ScientificName[which(spps.lookup$TreeCode==spp)])
-    panel <- paste("(", LETTERS[which(spps==spp)],")", sep="")
+    panel <- paste("(", letters[which(spps==spp)],")", sep="")
     mtext(paste("Site type: ", edatope, " (", edatope.name[which(edatopes==edatope)], ")", sep=""), side=3, line=-1.55, adj=0.01, cex=0.8, font=2)
     mtext(if(spp%in%spps.lookup$TreeCode) bquote(bold(.(spp))~"-"~.(Common)) else bquote(bold(.(spp))), side=3, line=-2.75, adj=0.01, cex=0.7, font=1)
     box()
@@ -354,7 +355,7 @@ for(spp in spps){
     text(rep(xr+10000,length(labels)),seq(yb,yt,(yt-yb)/(length(GCMs)-1))[c(3,9)],labels,pos=4,cex=0.9,font=0.8, srt=90)
     text(rep(xr-20000,length(labels)),seq(yb,yt,(yt-yb)/(length(GCMs)-1))[c(1,8,15)],c("100%", "0%", "100%"),pos=4,cex=0.8,font=1)
     text(xl-30000, mean(c(yb,yt))-30000, paste("Change in presence/absence\n(", proj.year.name[which(proj.years==proj.year)], ") % of GCMs", sep=""), srt=90, pos=3, cex=0.9, font=2)
-    mtext(paste("(", LETTERS[c(2,6,10)][which(edatopes==edatope)],")", sep=""), side=3, line=-2.75, adj=0.22, cex=0.8, font=2)
+    mtext(paste("(", letters[c(2,6,10)][which(edatopes==edatope)],")", sep=""), side=3, line=-2.75, adj=0.22, cex=0.8, font=2)
     # legend("bottomleft", legend=c(spp, paste("Edatope:", edatope), proj.year, rcp, " "), cex=1.4, bty="n", inset=-0.05)
     # }
     # box()
@@ -375,7 +376,7 @@ for(spp in spps){
     legend("bottomleft", legend=c("1 (primary)", "2 (secondary)", "3 (tertiary)"), 
            fill=ColScheme, bty="n", cex=0.9, title="Historical feasibility", inset=0.015)
     # }
-    mtext(paste("(", LETTERS[c(1,5,9)][which(edatopes==edatope)],")", sep=""), side=3, line=-3.75, adj=0.05, cex=0.8, font=2)
+    mtext(paste("(", letters[c(1,5,9)][which(edatopes==edatope)],")", sep=""), side=3, line=-3.75, adj=0.05, cex=0.8, font=2)
     
     # ##=================================
     # # RECENT PERIOD binary change
@@ -393,7 +394,7 @@ for(spp in spps){
     # image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, maxpixels= ncell(X))
     # legend(1400000, 1550000, legend=c("Expand", "Persist", "Retreat"), 
     #        fill=rev(ColScheme), bty="n", cex=0.9, title=paste("Observed\nclimate\n(",hist.year.name[which(hist.years==hist.year)],")", sep=""), inset=0.015)
-    # mtext(paste("(", LETTERS[c(3,7,11)][which(edatopes==edatope)],")", sep=""), side=3, line=-3.25, adj=0.1, cex=0.8, font=2)
+    # mtext(paste("(", letters[c(3,7,11)][which(edatopes==edatope)],")", sep=""), side=3, line=-3.25, adj=0.1, cex=0.8, font=2)
 
     ##=================================
     # ALTERNATE: map of suitability change
@@ -414,7 +415,7 @@ for(spp in spps){
     text(xl-30000, mean(c(yb,yt))-30000, paste("Mean change\nin feasibility (", proj.year.name[which(proj.years==proj.year)], ")", sep=""), srt=90, pos=3, cex=0.9, font=2)
     # }
     par(xpd=F)
-    mtext(paste("(", LETTERS[c(3,7,11)][which(edatopes==edatope)],")", sep=""), side=3, line=-3.25, adj=0.1, cex=0.8, font=2)
+    mtext(paste("(", letters[c(3,7,11)][which(edatopes==edatope)],")", sep=""), side=3, line=-3.25, adj=0.1, cex=0.8, font=2)
     
     ##=================================
     ## Summary by zone
@@ -435,7 +436,7 @@ for(spp in spps){
     bxp(z, add=T, boxfill = as.character(BGCcolors.BC$HEX[match(levels(zone), BGCcolors.BC$zone)]), xaxt="n", yaxt="n", xaxs="i", ylab="", pch=0,outline=FALSE)
     axis(1, at=1:length(levels(zone)), levels(zone), tick=F, las=2, cex.axis=0.8)
     axis(2,at=seq(ylim[1], ylim[2], 3), seq(ylim[1], ylim[2], 3), las=2, tck=0)
-    mtext(paste("(", LETTERS[c(4,8,12)][which(edatopes==edatope)],")", sep=""), side=3, line=1, adj=0.975, cex=0.8, font=2)
+    mtext(paste("(", letters[c(4,8,12)][which(edatopes==edatope)],")", sep=""), side=3, line=1, adj=0.975, cex=0.8, font=2)
     mtext(paste("Mean feasibility change (", proj.year.name[which(proj.years==proj.year)], ")", sep=""), side=3, line=0.1, adj=.975, cex=0.55, font=2)
     
     print(edatope)
@@ -443,7 +444,8 @@ for(spp in spps){
   dev.off()
   print(spp)
 }
-
+print(proj.year)
+}
   
   
 # #===============================================================================
@@ -509,7 +511,7 @@ for(spp in spps){
 #       # box()
 #       Common <- as.character(spps.lookup$EnglishName[which(spps.lookup$TreeCode==spp)])
 #       Latin <- as.character(spps.lookup$ScientificName[which(spps.lookup$TreeCode==spp)])
-#       panel <- paste("(", LETTERS[which(spps==spp)],")", sep="")
+#       panel <- paste("(", letters[which(spps==spp)],")", sep="")
 #       mtext(if(spp%in%spps.lookup$TreeCode) bquote(bold(.(spp))~"-"~.(Common)) else bquote(.(panel)~bold(.(spp))),
 #             side=1, line=-1.75, adj=0.01, cex=0.8, font=2)
 #       # mtext(if(spp%in%spps.lookup$TreeCode) bquote(.(panel)~bold(.(spp))~"-"~.(Common)~"("*italic(.(Latin)*")")) else bquote(.(panel)~bold(.(spp))),

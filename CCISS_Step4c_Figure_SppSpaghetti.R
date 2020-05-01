@@ -45,10 +45,6 @@ spps <- spps[which(spps%in%spps.candidate)]
 
 
 
-#===============================================================================
-# calculate mean MAT change for each model prediction
-#===============================================================================
-
 
 #===============================================================================
 # calculate mean MAT change for each model prediction
@@ -313,7 +309,7 @@ for(edatope in edatopes){
     }
     par(xpd=F)
     
-    mtext(if(transform==T) "(A)" else "(B)", side=3, line=-1.5, adj=0.25, cex=1, font=2)
+    mtext(if(transform==T) "(a)" else "(b)", side=3, line=-1.5, adj=0.25, cex=1, font=2)
     mtext("Native", side=3, line=-1.5, adj=0.05, cex=1, font=2)
     mtext("Exotic", side=3, line=-1.5, adj=0.95, cex=1, font=2)
     
@@ -391,21 +387,21 @@ for(edatope in edatopes){
     # ColScheme <- c(brewer.pal(n=12, "Paired")[-11],sample(colors,length(spps)-11))
     
     # #Color scheme for species groups
-    boreal <- c("Pl", "Sx", "Bl", "Sb", "At", "Ep", "Pj", "Acb")
+    boreal <- c("Pl", "Sx", "Sb", "At", "Ep", "Pj", "Acb")
     temperate <- c("Fd", "Lw", "Pw", "Py", "Bg", "Act")
-    rainforest <- c("Hw", "Cw", "Ba", "Ss", "Dr", "Mb")
-    montane <- c("Hm", "Yc")
+    mesothermal <- c("Hw", "Cw", "Ba", "Ss", "Dr", "Mb")
+    subalpine <- c("Hm", "Yc", "Bl", "Ba")
     ColScheme <- rep(NA, length(spplist))
     ColScheme[which(spplist%in%boreal)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="SBS")])
     ColScheme[which(spplist%in%temperate)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="IDF")])
-    ColScheme[which(spplist%in%rainforest)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="CWH")])
-    ColScheme[which(spplist%in%montane)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="MS")])
+    ColScheme[which(spplist%in%mesothermal)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="CWH")])
+    ColScheme[which(spplist%in%subalpine)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="MS")])
     
     if(edatope==edatopes[2]){
     text(-2.4, ylim[1]+0.02, "Boreal species", cex=1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%boreal)]))
-    text(-1.8, ylim[1]+0.02, "Dry temperate species", cex=1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%temperate)]))
-    text(-1.2, ylim[1]+0.02, "Wet temperate species", cex=1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%rainforest)]))
-    text(-0.6, ylim[1]+0.02, "Coast subalpine species", cex=1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%montane)]))
+    text(-1.8, ylim[1]+0.02, "Temperate species", cex=1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%temperate)]))
+    text(-1.2, ylim[1]+0.02, "Mesothermal species", cex=1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%mesothermal)]))
+    text(-0.6, ylim[1]+0.02, "Subalpine species", cex=1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%subalpine)]))
     }
     
     for(spp in spplist){
@@ -453,9 +449,9 @@ for(edatope in edatopes){
       text(max(x.focal), position, paste(rcp.name[which(rcps==rcp.focal)], ", ", proj.year.name[which(proj.years==proj.year.focal)], sep=""), pos=if(rcp.focal=="rcp85" & proj.year.focal==2085) 2 else 4, cex=0.9)
     }
 
-    mtext(paste("(", LETTERS[which(edatopes==edatope)],") ", edatope, " sites", sep=""), side=3, line=-1.5, adj=0.325, cex=0.8, font=2)
+    mtext(paste("(", letters[which(edatopes==edatope)],") ", edatope, " sites", sep=""), side=3, line=-1.5, adj=0.325, cex=0.8, font=2)
     mtext("Native", side=3, line=-1.5, adj=0.025, cex=0.8, font=2)
-    mtext("Exotic", side=3, line=-1.5, adj=0.975, cex=0.8, font=2)
+    mtext("Non- \nnative", side=3, line=-2.65, adj=0.975, cex=0.8, font=2)
     
     par(xpd=F)
     
