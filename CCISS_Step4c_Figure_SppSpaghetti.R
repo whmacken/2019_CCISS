@@ -26,9 +26,6 @@ BGC <- gsub(" ","",BGC)
 BGCs_notin_THLB <- BGCs_notin_THLB$BGC[which(BGCs_notin_THLB$Exlude=="x")]
 exclude <- which(BGC%in%BGCs_notin_THLB)
 
-native <- spps.lookup$Native[match(spps,spps.lookup$TreeCode)]
-spps.native <- c("Ra", "Pl", "Pj", "Fd", "Cw", "Ba", "Sx", "Bl", "Bg", "Yc", "Pa", "Hm", "Lw", "La", "Lt", "Hw", "Py", "Dr", "Ep", "At", "Acb", "Pw", "Ss", "Sb", "Qg", "Act", "Mb")
-
 #===============================================================================
 # Import suitability tables
 #===============================================================================
@@ -42,6 +39,9 @@ dim(S1)
 spps <- unique(S1$Spp)
 spps.candidate <- spps.lookup$TreeCode[-which(spps.lookup$Exclude=="x")]
 spps <- spps[which(spps%in%spps.candidate)]
+
+native <- spps.lookup$Native[match(spps,spps.lookup$TreeCode)]
+spps.native <- c("Ra", "Pl", "Pj", "Fd", "Cw", "Ba", "Sx", "Bl", "Bg", "Yc", "Pa", "Hm", "Lw", "La", "Lt", "Hw", "Py", "Dr", "Ep", "At", "Acb", "Pw", "Ss", "Sb", "Qg", "Act", "Mb")
 
 
 
@@ -118,6 +118,7 @@ for(spp in spps){
   print(spp)
 }
 
+n.cells <- length(Suit)
 
 for(spp in spps){
   for(edatope in edatopes){
@@ -147,6 +148,7 @@ for(spp in spps){
   }
   print(paste(spp, " ",round(which(spps==spp)/length(spps)*100,1), "%", sep=""))
 }
+
 
 # Compile the metrics for all time periods/scenarios into a single vector
 for(edatope in edatopes){
@@ -181,6 +183,9 @@ for(rcp in rcps){
     }
   }
 }
+seq.rcp <- seq.rcp[-1]
+seq.proj.year <-  seq.proj.year[-1]
+seq.GCM <-  seq.GCM[-1]
 
 
 ############################
@@ -325,145 +330,150 @@ for(edatope in edatopes){
 ## Three panel plot of species trends relative to MAT change, by edatope
 ############################
 
-  
-  png(filename=paste("results\\Manu_Spaghetti\\CCISS_manu_SppSpaghetti.png",sep="."), type="cairo", units="in", width=6.5, height=5, pointsize=10, res=400)
-  mat <- matrix(c(1,2,3,4, 6, 5,5,5),2, byrow=T)   #define the plotting order
-  layout(mat, widths=c(0.25,1,1,1), heights=c(1, 0.05))   #set up the multipanel plot
-  
-  par(mar=c(0,0,0,0))
-  plot(1, type="n", axes=F, xlab="", ylab="")  
-  text(0.75,1,"Feasible area (sq. km)", srt=90, cex=1.2)
-  
-  for(edatope in edatopes){
-    for(spp in spps){
+
+png(filename=paste("results\\Manu_Spaghetti\\CCISS_manu_SppSpaghetti.png",sep="."), type="cairo", units="in", width=6.5, height=5, pointsize=10, res=400)
+mat <- matrix(c(1,2,3,4, 6, 5,5,5),2, byrow=T)   #define the plotting order
+layout(mat, widths=c(0.225,1,1,1), heights=c(1, 0.04))   #set up the multipanel plot
+
+par(mar=c(0,0,0,0))
+plot(1, type="n", axes=F, xlab="", ylab="")  
+text(0.75,1,"Feasible range (% of edatope area in BC)", srt=90, cex=1.2)
+
+for(edatope in edatopes){
+  for(spp in spps){
     x <- c(0,MAT.change)
-    y <- c(get(paste("SuitCells.ref", spp, edatope, sep=".")),get(paste("SuitCells", spp, edatope, sep=".")))*4 #times 4km^2 because they are 2km grid cells. 
+    # y <- c(get(paste("SuitCells.ref", spp, edatope, sep=".")),get(paste("SuitCells", spp, edatope, sep=".")))*4 #times 4km^2 because they are 2km grid cells. 
+    y <- c(get(paste("SuitCells.ref", spp, edatope, sep=".")),get(paste("SuitCells", spp, edatope, sep=".")))/n.cells #divided by number of cells in BC to get proportion of edatope area
     l <- loess(y[order(x)]~x[order(x)])
     assign(paste("line",spp, sep="."), predict(l, seq(0,max(MAT.change), 0.01)))
   }
   
-      transform=T
+  transform=T
   # for(transform in c(T, F)){
-    
-    par(mar=c(2.7,0,0,0.2), mgp=c(4, 0.2, 0))
-    ylim=if(transform==T) c(2.9,5.9) else c(0,47000)
-    plot(0, xlim=c(-2.5,9.5), ylim=ylim, yaxs="i", xaxs="i", col="white", xaxt="n", yaxt="n", 
-         xlab="", 
-         ylab="")
-    # if(edatope==edatopes[2]){
-    #   par(xpd=T)
-    #   title(xlab=list(bquote(BC~mean~temperature~change~relative~to~"1961-90"~"("*degree*C*")"), cex=1.2))
-    #   par(xpd=F)
-    # }
-    axis(1, at=0:7, labels = 0:7, tck=0)
-    if(edatope==edatopes[1]){
+  
+  par(mar=c(3.85,0,0,0.2), mgp=c(4, 0.2, 0))
+  ylim=if(transform==T) c(-3,0.1) else c(0,1)
+  plot(0, xlim=c(-2.5,9.5), ylim=ylim, yaxs="i", xaxs="i", col="white", xaxt="n", yaxt="n", 
+       xlab="", 
+       ylab="")
+  # if(edatope==edatopes[2]){
+  #   par(xpd=T)
+  #   title(xlab=list(bquote(BC~mean~temperature~change~relative~to~"1961-90"~"("*degree*C*")"), cex=1.2))
+  #   par(xpd=F)
+  # }
+  axis(1, at=0:7, labels = 0:7, tck=0)
+  if(edatope==edatopes[1]){
     par(mgp=c(1, 0.2, 0))
     par(xpd=T)
-    axis(2, lty=0, at=if(transform==T) log10(c(1000, 5000, 10000, 50000, 100000, 500000)) else seq(0,50000,10000), labels = if(transform==T) format(c(1000, 5000, 10000, 50000, 100000, 500000), scientific = FALSE, big.mark=",") else format(seq(0,50000,10000), scientific = FALSE, big.mark=","), tck=0, las=2)
+    axis(2, lty=0, at=if(transform==T) log10(c(0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5)) else seq(0,1,0.1), labels = if(transform==T) paste(c(0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.025, 0.5)*100, "%", sep="") else format(seq(0,1,0.1), scientific = FALSE, big.mark=","), tck=0, las=2)
     par(xpd=F)
-    }
-    # rect(-9,0,0, 60000, col="lightgray", border=F)
-    # rect(max(MAT.change),0,9, ylim[2]*1.1, col="lightgray", border=F)
-    
-    suit.exotic.final <- vector()
-    for(spp in spps[-which(spps%in%spps.native)]){
-      line <- get(paste("line",spp, sep="."))
-      if(transform==T) line[line<1] <- 1
-      if(transform==T) line <- log10(line)
-      suit.exotic.final[which(spps[-which(spps%in%spps.native)]==spp)] <- line[length(line)]
-    }
-    
-    suit.native.initial <- vector()
-    for(spp in spps[which(spps%in%spps.native)]){
-      suit.native.initial[which(spps[which(spps%in%spps.native)]==spp)] <- get(paste("SuitCells.ref", spp, edatope, sep="."))
-    }
-    
-    spplist <- spps[which(spps%in%spps.native)][order(suit.native.initial)]
-
-    # #Color scheme for individual species
-    # colors = grDevices::colors()[grep('gr(a|e)y', grDevices::colors(), invert = T)][-1]
-    # colors = colors[-grep("yellow", colors)]
-    # set.seed(5)
-    # ColScheme <- c(brewer.pal(n=12, "Paired")[-11],sample(colors,length(spps)-11))
-    
-    # #Color scheme for species groups
-    boreal <- c("Pl", "Sx", "Sb", "At", "Ep", "Pj", "Acb")
-    temperate <- c("Fd", "Lw", "Pw", "Py", "Bg", "Act")
-    mesothermal <- c("Hw", "Cw", "Ba", "Ss", "Dr", "Mb")
-    subalpine <- c("Hm", "Yc", "Bl", "Ba")
-    ColScheme <- rep(NA, length(spplist))
-    ColScheme[which(spplist%in%boreal)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="SBS")])
-    ColScheme[which(spplist%in%temperate)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="IDF")])
-    ColScheme[which(spplist%in%mesothermal)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="CWH")])
-    ColScheme[which(spplist%in%subalpine)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="MS")])
-    
-    if(edatope==edatopes[2]){
+  }
+  # rect(-9,0,0, 60000, col="lightgray", border=F)
+  # rect(max(MAT.change),0,9, ylim[2]*1.1, col="lightgray", border=F)
+  
+  suit.exotic.final <- vector()
+  for(spp in spps[-which(spps%in%spps.native)]){
+    line <- get(paste("line",spp, sep="."))
+    if(transform==T) line[line<10^(-5)] <- 10^(-10)
+    if(transform==T) line <- log10(line)
+    suit.exotic.final[which(spps[-which(spps%in%spps.native)]==spp)] <- line[length(line)]
+  }
+  
+  suit.native.initial <- vector()
+  for(spp in spps[which(spps%in%spps.native)]){
+    suit.native.initial[which(spps[which(spps%in%spps.native)]==spp)] <- get(paste("SuitCells.ref", spp, edatope, sep="."))
+  }
+  
+  spplist <- spps[which(spps%in%spps.native)][order(suit.native.initial)]
+  
+  # #Color scheme for individual species
+  # colors = grDevices::colors()[grep('gr(a|e)y', grDevices::colors(), invert = T)][-1]
+  # colors = colors[-grep("yellow", colors)]
+  # set.seed(5)
+  # ColScheme <- c(brewer.pal(n=12, "Paired")[-11],sample(colors,length(spps)-11))
+  
+  # #Color scheme for species groups
+  boreal <- c("Pl", "Sx", "Sb", "At", "Ep", "Pj", "Acb")
+  temperate <- c("Fd", "Lw", "Pw", "Py", "Bg", "Act")
+  mesothermal <- c("Hw", "Cw", "Ba", "Ss", "Dr", "Mb")
+  subalpine <- c("Hm", "Yc", "Bl", "Ba")
+  ColScheme <- rep(NA, length(spplist))
+  ColScheme[which(spplist%in%boreal)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="SBS")])
+  ColScheme[which(spplist%in%temperate)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="IDF")])
+  ColScheme[which(spplist%in%mesothermal)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="CWH")])
+  ColScheme[which(spplist%in%subalpine)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="MS")])
+  
+  if(edatope==edatopes[2]){
     text(-2.4, ylim[1]+0.02, "Boreal species", cex=1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%boreal)]))
     text(-1.8, ylim[1]+0.02, "Temperate species", cex=1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%temperate)]))
     text(-1.2, ylim[1]+0.02, "Mesothermal species", cex=1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%mesothermal)]))
     text(-0.6, ylim[1]+0.02, "Subalpine species", cex=1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%subalpine)]))
+  }
+  
+  for(spp in spplist){
+    i <- which(spplist==spp)
+    line <- get(paste("line",spp, sep="."))
+    if(transform==T) line[line<10^(-10)] <- 10^(-10)
+    if(transform==T) line <- log10(line)
+    if(line[1]> if(transform==T) ylim[1] else 100){
+      lines(seq(0,max(MAT.change), 0.01), line, col=ColScheme[i], lwd=2)
+      position <- rep(0:3, times=100)
+      text(0-position[i]*0.55, line[1], spp, pos=2, col=ColScheme[i], font=2, cex=0.9, offset=0.1)
+      lines(c(0-position[i]*0.55,0), rep(line[1],2), col=ColScheme[i], lty=2)
     }
-    
-    for(spp in spplist){
-      i <- which(spplist==spp)
-      line <- get(paste("line",spp, sep="."))
-      if(transform==T) line[line<1] <- 1
-      if(transform==T) line <- log10(line)
-      if(line[1]> if(transform==T) ylim[1] else 100){
-        lines(seq(0,max(MAT.change), 0.01), line, col=ColScheme[i], lwd=2)
-        position <- rep(0:3, times=100)
-        text(0-position[i]*0.55, line[1], spp, pos=2, col=ColScheme[i], font=2, cex=0.9, offset=0.1)
-        lines(c(0-position[i]*0.55,0), rep(line[1],2), col=ColScheme[i], lty=2)
+  }
+  
+  spplist <- spps[-which(spps%in%spps.native)][order(suit.exotic.final)]
+  for(spp in spplist){
+    i <- which(spplist==spp)
+    line <- get(paste("line",spp, sep="."))
+    if(transform==T) line[line<10^(-10)] <- 10^(-10)
+    if(transform==T) line <- log10(line)
+    if(max(line)> if(transform==T) ylim[1] else 100){
+      lines(seq(0,max(MAT.change), 0.01), line)
+      position <- rep(0:3, times=100)
+      if(which.max(line)>(length(line)-100)){
+        text(max(MAT.change)+position[i]*0.55, line[length(line)], spp, pos=4, cex=0.9, offset=0.1, font=2)
+        lines(c(max(MAT.change), max(MAT.change)+position[i]*0.55), rep(line[length(line)],2), lty=2, lwd=0.6)
+      } else {
+        text(seq(0,max(MAT.change), 0.01)[which(line==max(line))]+position[i]*0.2, max(line), spp, pos=3, cex=0.9, offset=0.1, font=2)
       }
     }
-    
-    spplist <- spps[-which(spps%in%spps.native)][order(suit.exotic.final)]
-    for(spp in spplist){
-      i <- which(spplist==spp)
-      line <- get(paste("line",spp, sep="."))
-      if(transform==T) line[line<1] <- 1
-      if(transform==T) line <- log10(line)
-      if(max(line)> if(transform==T) ylim[1] else 100){
-        lines(seq(0,max(MAT.change), 0.01), line)
-        position <- rep(0:3, times=100)
-        if(which.max(line)>(length(line)-100)){
-          text(max(MAT.change)+position[i]*0.55, line[length(line)], spp, pos=4, cex=0.9, offset=0.1, font=2)
-          lines(c(max(MAT.change), max(MAT.change)+position[i]*0.55), rep(line[length(line)],2), lty=2, lwd=0.6)
-        } else {
-          text(seq(0,max(MAT.change), 0.01)[which(line==max(line))]+position[i]*0.2, max(line), spp, pos=3, cex=0.9, offset=0.1, font=2)
-        }
-      }
-    }
-    rect(0,0,max(MAT.change),ylim[2]*1.1, col=NA, border=T)
-    box()
-    
-    
-    # boxplot for focal period
-    par(xpd=T)
-      proj.year.focal <- proj.years[which(edatopes==edatope)]
-    for(rcp.focal in rcps){
-      x <- c(0,MAT.change)
+  }
+  rect(0,-10,max(MAT.change),ylim[2]*1.1, col=NA, border=T)
+  box()
+  
+  
+  # boxplots
+  par(xpd=T)
+  if(edatope==edatopes[2]){
+    for(i in 1:4){
+      rcp.focal <- rcps[c(1,1,1,2)][i]
+      proj.year.focal <- proj.years[c(1,2,3,3)][i]
+      x <- MAT.change
       x.focal <- MAT.change[which(seq.rcp==rcp.focal & seq.proj.year==proj.year.focal)]
-      position <- ylim[1] - diff(ylim)/40 - diff(ylim)/60*which(rcps==rcp.focal)
+      position <- ylim[1] - diff(ylim)/40 - diff(ylim)/60*i
       boxplot(x.focal, add=T, col=c("dodgerblue", "red")[which(rcps==rcp.focal)], horizontal=TRUE, axes=FALSE, range=0, at=position, boxwex = diff(ylim)/50)
-      text(max(x.focal), position, paste(rcp.name[which(rcps==rcp.focal)], ", ", proj.year.name[which(proj.years==proj.year.focal)], sep=""), pos=if(rcp.focal=="rcp85" & proj.year.focal==2085) 2 else 4, cex=0.9)
+      text(if(rcp.focal=="rcp85" & proj.year.focal==2085) min(x.focal) else max(x.focal), position, paste(rcp.name[which(rcps==rcp.focal)], ", ", proj.year.name[which(proj.years==proj.year.focal)], sep=""), pos=if(rcp.focal=="rcp85" & proj.year.focal==2085) 2 else 4, cex=0.9)
+      
     }
-
-    mtext(paste("(", letters[which(edatopes==edatope)],") ", edatope, " sites", sep=""), side=3, line=-1.5, adj=0.325, cex=0.8, font=2)
-    mtext("Native", side=3, line=-1.5, adj=0.025, cex=0.8, font=2)
-    mtext("Non- \nnative", side=3, line=-2.65, adj=0.975, cex=0.8, font=2)
-    
-    par(xpd=F)
-    
-     # }
+  }
+  
+  mtext(paste("(", letters[which(edatopes==edatope)],") ", edatope, " edatope", sep=""), side=3, line=-1.5, adj=0.325, cex=0.8, font=2)
+  mtext("Native", side=3, line=-1.5, adj=0.025, cex=0.8, font=2)
+  mtext("Non- \nnative", side=3, line=-2.65, adj=0.975, cex=0.8, font=2)
+  
+  par(xpd=F)
+  
+  # }
   print(edatope)
   
   
-  }
-  par(mar=c(0,0,0,0))
-  plot(1, type="n", axes=F, xlab="", ylab="")  
-  text(1,1,bquote(BC~mean~temperature~change~relative~to~"1961-90"~"("*degree*C*")"), srt=0, cex=1.2)
+}
+par(mar=c(0,0,0,0))
+plot(1, type="n", axes=F, xlab="", ylab="")  
+text(1,1,bquote(BC~mean~temperature~change~relative~to~"1961-90"~"("*degree*C*")"), srt=0, cex=1.2)
 
-    dev.off() 
-  
+dev.off()
+
 
