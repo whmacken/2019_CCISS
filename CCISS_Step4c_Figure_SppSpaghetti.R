@@ -183,9 +183,6 @@ for(rcp in rcps){
     }
   }
 }
-seq.rcp <- seq.rcp[-1]
-seq.proj.year <-  seq.proj.year[-1]
-seq.GCM <-  seq.GCM[-1]
 
 
 ############################
@@ -352,8 +349,8 @@ for(edatope in edatopes){
   # for(transform in c(T, F)){
   
   par(mar=c(3.85,0,0,0.2), mgp=c(4, 0.2, 0))
-  ylim=if(transform==T) c(-3,0.1) else c(0,1)
-  plot(0, xlim=c(-2.5,9.5), ylim=ylim, yaxs="i", xaxs="i", col="white", xaxt="n", yaxt="n", 
+  ylim=if(transform==T) c(-2.65,0.01) else c(0,1)
+  plot(0, xlim=c(-3.5,8.25), ylim=ylim, yaxs="i", xaxs="i", col="white", xaxt="n", yaxt="n", 
        xlab="", 
        ylab="")
   # if(edatope==edatopes[2]){
@@ -365,7 +362,8 @@ for(edatope in edatopes){
   if(edatope==edatopes[1]){
     par(mgp=c(1, 0.2, 0))
     par(xpd=T)
-    axis(2, lty=0, at=if(transform==T) log10(c(0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5)) else seq(0,1,0.1), labels = if(transform==T) paste(c(0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.025, 0.5)*100, "%", sep="") else format(seq(0,1,0.1), scientific = FALSE, big.mark=","), tck=0, las=2)
+    y.labels <- c(0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5)
+    axis(2, lty=0, at=if(transform==T) log10(y.labels) else seq(0,1,0.1), labels = if(transform==T) paste(y.labels*100, "%", sep="") else format(seq(0,1,0.1), scientific = FALSE, big.mark=","), tck=0, las=2)
     par(xpd=F)
   }
   # rect(-9,0,0, 60000, col="lightgray", border=F)
@@ -374,7 +372,7 @@ for(edatope in edatopes){
   suit.exotic.final <- vector()
   for(spp in spps[-which(spps%in%spps.native)]){
     line <- get(paste("line",spp, sep="."))
-    if(transform==T) line[line<10^(-5)] <- 10^(-10)
+    if(transform==T) line[line<10^(-5)] <- 10^(-5)
     if(transform==T) line <- log10(line)
     suit.exotic.final[which(spps[-which(spps%in%spps.native)]==spp)] <- line[length(line)]
   }
@@ -404,22 +402,22 @@ for(edatope in edatopes){
   ColScheme[which(spplist%in%subalpine)] <- as.character(BGCcolors.BC$HEX[which(BGCcolors.BC$zone=="MS")])
   
   if(edatope==edatopes[2]){
-    text(-2.4, ylim[1]+0.02, "Boreal species", cex=1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%boreal)]))
-    text(-1.8, ylim[1]+0.02, "Temperate species", cex=1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%temperate)]))
-    text(-1.2, ylim[1]+0.02, "Mesothermal species", cex=1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%mesothermal)]))
-    text(-0.6, ylim[1]+0.02, "Subalpine species", cex=1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%subalpine)]))
+    text(-3.2, ylim[1]+0.02, "Boreal species", cex=1.1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%boreal)]))
+    text(-2.4, ylim[1]+0.02, "Temperate species", cex=1.1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%temperate)]))
+    text(-1.6, ylim[1]+0.02, "Mesothermal species", cex=1.1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%mesothermal)]))
+    text(-0.8, ylim[1]+0.02, "Subalpine species", cex=1.1, srt=90, font=2, pos=4, col=unique(ColScheme[which(spplist%in%subalpine)]))
   }
   
   for(spp in spplist){
     i <- which(spplist==spp)
     line <- get(paste("line",spp, sep="."))
-    if(transform==T) line[line<10^(-10)] <- 10^(-10)
+    if(transform==T) line[line<10^(-5)] <- 10^(-5)
     if(transform==T) line <- log10(line)
     if(line[1]> if(transform==T) ylim[1] else 100){
       lines(seq(0,max(MAT.change), 0.01), line, col=ColScheme[i], lwd=2)
       position <- rep(0:3, times=100)
-      text(0-position[i]*0.55, line[1], spp, pos=2, col=ColScheme[i], font=2, cex=0.9, offset=0.1)
-      lines(c(0-position[i]*0.55,0), rep(line[1],2), col=ColScheme[i], lty=2)
+      text(0-position[i]*0.8, line[1], spp, pos=2, col=ColScheme[i], font=2, cex=0.9, offset=0.1)
+      lines(c(0-position[i]*0.8,0), rep(line[1],2), col=ColScheme[i], lty=2)
     }
   }
   
@@ -427,11 +425,11 @@ for(edatope in edatopes){
   for(spp in spplist){
     i <- which(spplist==spp)
     line <- get(paste("line",spp, sep="."))
-    if(transform==T) line[line<10^(-10)] <- 10^(-10)
+    if(transform==T) line[line<10^(-5)] <- 10^(-5)
     if(transform==T) line <- log10(line)
     if(max(line)> if(transform==T) ylim[1] else 100){
       lines(seq(0,max(MAT.change), 0.01), line)
-      position <- rep(0:3, times=100)
+      position <- rep(0, times=100)
       if(which.max(line)>(length(line)-100)){
         text(max(MAT.change)+position[i]*0.55, line[length(line)], spp, pos=4, cex=0.9, offset=0.1, font=2)
         lines(c(max(MAT.change), max(MAT.change)+position[i]*0.55), rep(line[length(line)],2), lty=2, lwd=0.6)
@@ -459,9 +457,9 @@ for(edatope in edatopes){
     }
   }
   
-  mtext(paste("(", letters[which(edatopes==edatope)],") ", edatope, " edatope", sep=""), side=3, line=-1.5, adj=0.325, cex=0.8, font=2)
+  mtext(paste("(", letters[which(edatopes==edatope)],") ", edatope, " edatope", sep=""), side=3, line=-1.5, adj=0.5, cex=0.8, font=2)
   mtext("Native", side=3, line=-1.5, adj=0.025, cex=0.8, font=2)
-  mtext("Non- \nnative", side=3, line=-2.65, adj=0.975, cex=0.8, font=2)
+  mtext("Non-native", side=4, line=-1.5, adj=0.975, cex=0.8, font=2)
   
   par(xpd=F)
   
