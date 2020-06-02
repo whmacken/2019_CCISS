@@ -219,109 +219,6 @@ exotic.table <- exotic.table[rev(order(exotic.table$area.pct)),]
 
 
 
-############################
-## two-panel plot of species trends relative to MAT change, log and raw scaled
-############################
-
-for(edatope in edatopes){
-
-  png(filename=paste("results\\CCISS_manu_SppSpaghetti", edatope, "png",sep="."), type="cairo", units="in", width=6.5, height=5, pointsize=8, res=400)
-  
-  for(spp in spps){
-    x <- c(0,MAT.change)
-    y <- c(get(paste("SuitCells.ref", spp, edatope, sep=".")),get(paste("SuitCells", spp, edatope, sep=".")))*4 #times 4km^2 because they are 2km grid cells. 
-    l <- loess(y[order(x)]~x[order(x)])
-    assign(paste("line",spp, sep="."), predict(l, seq(0,max(MAT.change), 0.01)))
-  }
-  
-  par(mfrow=c(1,2))
-  for(transform in c(T, F)){
-    
-    par(mar=c(5,4,0,0), mgp=c(4, 0.2, 0))
-    ylim=if(transform==T) c(2,6.1) else c(0,47000)
-    plot(0, xlim=c(-2.5,9.5), ylim=ylim, yaxs="i", xaxs="i", col="white", xaxt="n", yaxt="n", 
-         xlab=bquote(BC~mean~temperature~change~relative~to~"1961-90"~"("*degree*C*")"), 
-         ylab="")
-    axis(1, at=0:7, labels = 0:7, tck=0)
-    par(mgp=c(3, 0.2, 0))
-    if(transform==T) title(ylab="Feasible area (sq. km)")
-    axis(2, at=if(transform==T) 0:7 else seq(0,50000,10000), labels = if(transform==T) format(10^(0:7), scientific = FALSE, big.mark=",") else format(seq(0,50000,10000), scientific = FALSE, big.mark=","), tck=0, las=2)
-    # rect(-9,0,0, 60000, col="lightgray", border=F)
-    # rect(max(MAT.change),0,9, ylim[2]*1.1, col="lightgray", border=F)
-    
-    suit.exotic.final <- vector()
-    for(spp in spps[-which(spps%in%spps.native)]){
-      line <- get(paste("line",spp, sep="."))
-      if(transform==T) line[line<1] <- 1
-      if(transform==T) line <- log10(line)
-      suit.exotic.final[which(spps[-which(spps%in%spps.native)]==spp)] <- line[length(line)]
-    }
-    
-    suit.native.initial <- vector()
-    for(spp in spps[which(spps%in%spps.native)]){
-      suit.native.initial[which(spps[which(spps%in%spps.native)]==spp)] <- get(paste("SuitCells.ref", spp, edatope, sep="."))
-    }
-    
-    spplist <- spps[which(spps%in%spps.native)][order(suit.native.initial)]
-    colors = grDevices::colors()[grep('gr(a|e)y', grDevices::colors(), invert = T)][-1]
-    set.seed(2)
-    ColScheme <- c(brewer.pal(n=12, "Paired"),sample(colors,length(spps)-12))
-    for(spp in spplist){
-      i <- which(spplist==spp)
-      line <- get(paste("line",spp, sep="."))
-      if(transform==T) line[line<1] <- 1
-      if(transform==T) line <- log10(line)
-      if(line[1]> if(transform==T) ylim[1] else 100){
-        lines(seq(0,max(MAT.change), 0.01), line, col=ColScheme[i], lwd=2)
-        position <- rep(0:3, times=100)
-        text(0-position[i]*0.6, line[1], spp, pos=2, col=ColScheme[i], font=2, cex=0.75, offset=0.1)
-        lines(c(0-position[i]*0.6,0), rep(line[1],2), col=ColScheme[i], lty=2)
-      }
-    }
-    
-    spplist <- spps[-which(spps%in%spps.native)][order(suit.exotic.final)]
-    for(spp in spplist){
-      i <- which(spplist==spp)
-      line <- get(paste("line",spp, sep="."))
-      if(transform==T) line[line<1] <- 1
-      if(transform==T) line <- log10(line)
-      if(max(line)> if(transform==T) ylim[1] else 100){
-        lines(seq(0,max(MAT.change), 0.01), line)
-        position <- rep(0:3, times=100)
-        if(which.max(line)>(length(line)-50)){
-          text(max(MAT.change)+position[i]*0.6, line[length(line)], spp, pos=4, cex=0.75, offset=0.1, font=2)
-          lines(c(max(MAT.change), max(MAT.change)+position[i]*0.6), rep(line[length(line)],2), lty=2, lwd=0.6)
-        } else {
-          text(seq(0,max(MAT.change), 0.01)[which(line==max(line))]+position[i]*0.2, max(line), spp, pos=3, cex=0.8, offset=0.1, font=2)
-        }
-      }
-    }
-    rect(0,0,max(MAT.change),ylim[2]*1.1, col=NA, border=T)
-    box()
-    
-    # boxplot for focal period
-    par(xpd=T)
-    rcp.focal <- "rcp45"
-    for(proj.year.focal in proj.years){
-      x <- c(0,MAT.change)
-      x.focal <- MAT.change[which(seq.rcp==rcp.focal & seq.proj.year==proj.year.focal)]
-      position <- ylim[1] - diff(ylim)/40 - diff(ylim)/37.5*which(proj.years==proj.year.focal)
-      boxplot(x.focal, add=T, horizontal=TRUE, axes=FALSE, range=0, at=position, boxwex = diff(ylim)/30)
-      text(max(x.focal), position, paste(rcp.name[which(rcps==rcp.focal)], ", ", proj.year.name[which(proj.years==proj.year.focal)], sep=""), pos=4, cex=0.8)
-    }
-    par(xpd=F)
-    
-    mtext(if(transform==T) "(a)" else "(b)", side=3, line=-1.5, adj=0.25, cex=1, font=2)
-    mtext("Native", side=3, line=-1.5, adj=0.05, cex=1, font=2)
-    mtext("Exotic", side=3, line=-1.5, adj=0.95, cex=1, font=2)
-    
-  }
-  dev.off() 
-  print(edatope)
-}
-
-
-
 
 ############################
 ## Three panel plot of species trends relative to MAT change, by edatope
@@ -449,7 +346,7 @@ for(edatope in edatopes){
       rcp.focal <- rcps[c(1,1,1,2)][i]
       proj.year.focal <- proj.years[c(1,2,3,3)][i]
       x <- MAT.change
-      x.focal <- MAT.change[which(seq.rcp==rcp.focal & seq.proj.year==proj.year.focal)]
+      x.focal <- MAT.change[which(seq.rcp[-1]==rcp.focal & seq.proj.year[-1]==proj.year.focal)]
       position <- ylim[1] - diff(ylim)/40 - diff(ylim)/60*i
       boxplot(x.focal, add=T, col=c("dodgerblue", "red")[which(rcps==rcp.focal)], horizontal=TRUE, axes=FALSE, range=0, at=position, boxwex = diff(ylim)/50)
       text(if(rcp.focal=="rcp85" & proj.year.focal==2085) min(x.focal) else max(x.focal), position, paste(rcp.name[which(rcps==rcp.focal)], ", ", proj.year.name[which(proj.years==proj.year.focal)], sep=""), pos=if(rcp.focal=="rcp85" & proj.year.focal==2085) 2 else 4, cex=0.9)
@@ -474,4 +371,107 @@ text(1,1,bquote(BC~mean~temperature~change~relative~to~"1961-90"~"("*degree*C*")
 
 dev.off()
 
+
+
+# ############################
+# ## two-panel plot of species trends relative to MAT change, log and raw scaled
+# ############################
+# 
+# for(edatope in edatopes){
+#   
+#   png(filename=paste("results\\CCISS_manu_SppSpaghetti", edatope, "png",sep="."), type="cairo", units="in", width=6.5, height=5, pointsize=8, res=400)
+#   
+#   for(spp in spps){
+#     x <- c(0,MAT.change)
+#     y <- c(get(paste("SuitCells.ref", spp, edatope, sep=".")),get(paste("SuitCells", spp, edatope, sep=".")))*4 #times 4km^2 because they are 2km grid cells. 
+#     l <- loess(y[order(x)]~x[order(x)])
+#     assign(paste("line",spp, sep="."), predict(l, seq(0,max(MAT.change), 0.01)))
+#   }
+#   
+#   par(mfrow=c(1,2))
+#   for(transform in c(T, F)){
+#     
+#     par(mar=c(5,4,0,0), mgp=c(4, 0.2, 0))
+#     ylim=if(transform==T) c(2,6.1) else c(0,47000)
+#     plot(0, xlim=c(-2.5,9.5), ylim=ylim, yaxs="i", xaxs="i", col="white", xaxt="n", yaxt="n", 
+#          xlab=bquote(BC~mean~temperature~change~relative~to~"1961-90"~"("*degree*C*")"), 
+#          ylab="")
+#     axis(1, at=0:7, labels = 0:7, tck=0)
+#     par(mgp=c(3, 0.2, 0))
+#     if(transform==T) title(ylab="Feasible area (sq. km)")
+#     axis(2, at=if(transform==T) 0:7 else seq(0,50000,10000), labels = if(transform==T) format(10^(0:7), scientific = FALSE, big.mark=",") else format(seq(0,50000,10000), scientific = FALSE, big.mark=","), tck=0, las=2)
+#     # rect(-9,0,0, 60000, col="lightgray", border=F)
+#     # rect(max(MAT.change),0,9, ylim[2]*1.1, col="lightgray", border=F)
+#     
+#     suit.exotic.final <- vector()
+#     for(spp in spps[-which(spps%in%spps.native)]){
+#       line <- get(paste("line",spp, sep="."))
+#       if(transform==T) line[line<1] <- 1
+#       if(transform==T) line <- log10(line)
+#       suit.exotic.final[which(spps[-which(spps%in%spps.native)]==spp)] <- line[length(line)]
+#     }
+#     
+#     suit.native.initial <- vector()
+#     for(spp in spps[which(spps%in%spps.native)]){
+#       suit.native.initial[which(spps[which(spps%in%spps.native)]==spp)] <- get(paste("SuitCells.ref", spp, edatope, sep="."))
+#     }
+#     
+#     spplist <- spps[which(spps%in%spps.native)][order(suit.native.initial)]
+#     colors = grDevices::colors()[grep('gr(a|e)y', grDevices::colors(), invert = T)][-1]
+#     set.seed(2)
+#     ColScheme <- c(brewer.pal(n=12, "Paired"),sample(colors,length(spps)-12))
+#     for(spp in spplist){
+#       i <- which(spplist==spp)
+#       line <- get(paste("line",spp, sep="."))
+#       if(transform==T) line[line<1] <- 1
+#       if(transform==T) line <- log10(line)
+#       if(line[1]> if(transform==T) ylim[1] else 100){
+#         lines(seq(0,max(MAT.change), 0.01), line, col=ColScheme[i], lwd=2)
+#         position <- rep(0:3, times=100)
+#         text(0-position[i]*0.6, line[1], spp, pos=2, col=ColScheme[i], font=2, cex=0.75, offset=0.1)
+#         lines(c(0-position[i]*0.6,0), rep(line[1],2), col=ColScheme[i], lty=2)
+#       }
+#     }
+#     
+#     spplist <- spps[-which(spps%in%spps.native)][order(suit.exotic.final)]
+#     for(spp in spplist){
+#       i <- which(spplist==spp)
+#       line <- get(paste("line",spp, sep="."))
+#       if(transform==T) line[line<1] <- 1
+#       if(transform==T) line <- log10(line)
+#       if(max(line)> if(transform==T) ylim[1] else 100){
+#         lines(seq(0,max(MAT.change), 0.01), line)
+#         position <- rep(0:3, times=100)
+#         if(which.max(line)>(length(line)-50)){
+#           text(max(MAT.change)+position[i]*0.6, line[length(line)], spp, pos=4, cex=0.75, offset=0.1, font=2)
+#           lines(c(max(MAT.change), max(MAT.change)+position[i]*0.6), rep(line[length(line)],2), lty=2, lwd=0.6)
+#         } else {
+#           text(seq(0,max(MAT.change), 0.01)[which(line==max(line))]+position[i]*0.2, max(line), spp, pos=3, cex=0.8, offset=0.1, font=2)
+#         }
+#       }
+#     }
+#     rect(0,0,max(MAT.change),ylim[2]*1.1, col=NA, border=T)
+#     box()
+#     
+#     # boxplot for focal period
+#     par(xpd=T)
+#     rcp.focal <- "rcp45"
+#     for(proj.year.focal in proj.years){
+#       x <- c(0,MAT.change)
+#       x.focal <- MAT.change[which(seq.rcp==rcp.focal & seq.proj.year==proj.year.focal)]
+#       position <- ylim[1] - diff(ylim)/40 - diff(ylim)/37.5*which(proj.years==proj.year.focal)
+#       boxplot(x.focal, add=T, horizontal=TRUE, axes=FALSE, range=0, at=position, boxwex = diff(ylim)/30)
+#       text(max(x.focal), position, paste(rcp.name[which(rcps==rcp.focal)], ", ", proj.year.name[which(proj.years==proj.year.focal)], sep=""), pos=4, cex=0.8)
+#     }
+#     par(xpd=F)
+#     
+#     mtext(if(transform==T) "(a)" else "(b)", side=3, line=-1.5, adj=0.25, cex=1, font=2)
+#     mtext("Native", side=3, line=-1.5, adj=0.05, cex=1, font=2)
+#     mtext("Exotic", side=3, line=-1.5, adj=0.95, cex=1, font=2)
+#     
+#   }
+#   dev.off() 
+#   print(edatope)
+# }
+# 
 
