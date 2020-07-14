@@ -118,6 +118,7 @@ BGC.pred.ref <- as.character(read.csv(paste("outputs/BGC.pred", grid, "ref", mod
 zone.pred.ref <- rep(NA, length(BGC))
 for(i in BGCcolors$classification){ zone.pred.ref[grep(i,BGC.pred.ref)] <- i }
 
+
 # Historical BGC
 for(hist.year in hist.years){
   BGC.pred <- as.character(read.csv(paste("outputs/BGC.pred", grid,hist.year, model,"csv", sep="."), header = F)[,1])
@@ -740,18 +741,20 @@ write.csv(ct.CWHinESSF, paste("OutputData//ct.CWHinESSF", rcp, proj.year, "csv",
 # climate space analysis
 #===============================================================================
 
-VarList <- row.names(importance(BGCmodel))
+# VarList <- row.names(importance(BGCmodel))
 
+#rownames(importance(BGCmodel)) ### shows the variable used in the RFmodel
+vars <- as.data.frame(BGCmodel$variable.importance)
+vars <- row.names(vars)
+# setwd('C:/GitHub/2019_CCISS')
 
-Columns = c("AHM", "bFFP",
-            "CMD07","DD5_sp","EMT","Eref_sm","EXT","FFP","MCMT","MSP",
-            "PPT07","PPT08", "PPT05","PPT06","PPT09", "SHM","TD","Tmax_sp","Tmin_at",
-            "Tmin_sm","Tmin_wt", "PPT_at","PPT_wt", "PAS","eFFP",
-            "Eref09","MAT","Tmin_sp","CMD")
+Columns <- unique(c("PPT05", "PPT06", "PPT07", "PPT08", "PPT09", "PPT_at", 
+                    "PPT_wt", "CMD07", "CMD", "MAT", "PPT_sm", "Tmin_wt", "Tmax_sm",
+                    vars[!vars %in% c("PPT_MJ", "PPT_JAS", "PPT.dormant", "CMD.def", "CMDMax", "CMD.total")]))
 
 # reference climatic means for BC units
 grid <- "BC2kmGrid"
-fplot=paste("InputData\\", grid, "_Normal_1961_1990MSY.csv", sep="")
+fplot=paste("inputs\\", grid, "_Normal_1961_1990MSY.csv", sep="")
 Y0 <- fread(fplot, select = Columns, stringsAsFactors = FALSE, data.table = FALSE) #fread is faster than read.csv
 #####generate some additional variables
 Y0$PPT_MJ <- Y0$PPT05 + Y0$PPT06 # MaY/June precip
@@ -765,7 +768,7 @@ Clim <- Y0
 Clim.BGCs <- aggregate(Clim, by=list(BGC), FUN=mean, na.rm=T)
 BGCs <- Clim.BGCs$Group.1
 Clim.BGCs <- Clim.BGCs[,-1]
-pca.BGCs <- prcomp(Clim.BGCs[,which(names(Clim.BGCs)%in%VarList)], scale=T)
+pca.BGCs <- prcomp(Clim.BGCs[,which(names(Clim.BGCs)%in%Columns)], scale=T)
 pcscores.BGCs <- predict(pca.BGCs, Clim.BGCs)
 zones <- rep(NA, length(BGCs))
 for(i in BGCcolors$zone){ zones[grep(i,BGCs)] <- i }
@@ -773,7 +776,8 @@ zones <- factor(zones, BGCcolors$zone)
 
 # reference climatic means for exotic units
 grid <- "WNA2"
-fplot=paste("InputData\\", grid, "_Normal_1961_1990MSY.csv", sep="")
+BGC.pred.ref.WNA <- as.character(read.csv(paste("outputs/BGC.pred", grid, "ref", model,"csv", sep="."), header = F)[,1])
+fplot=paste("inputs\\", grid, "_Normal_1961_1990MSY.csv", sep="")
 Y0 <- fread(fplot, select = Columns, stringsAsFactors = FALSE, data.table = FALSE) #fread is faster than read.csv
 #####generate some additional variables
 Y0$PPT_MJ <- Y0$PPT05 + Y0$PPT06 # MaY/June precip
@@ -787,18 +791,27 @@ Clim.WNA <- Y0
 Clim.BGCs.WNA <- aggregate(Clim.WNA, by=list(BGC.pred.ref.WNA), FUN=mean, na.rm=T)
 BGCs.WNA <- Clim.BGCs.WNA$Group.1
 Clim.BGCs.WNA <- Clim.BGCs.WNA[,-1]
-pca.BGCs.WNA <- prcomp(Clim.BGCs.WNA[-which(BGCs.WNA=="SASbo"),which(names(Clim.BGCs.WNA)%in%VarList)], scale=T) # SASbo has what seems to be an erroneously cold/wet climate
+pca.BGCs.WNA <- prcomp(Clim.BGCs.WNA[-which(BGCs.WNA=="SASbo"),which(names(Clim.BGCs.WNA)%in%Columns)], scale=T) # SASbo has what seems to be an erroneously cold/wet climate
 pcscores.BGCs.WNA <- predict(pca.BGCs.WNA, Clim.BGCs.WNA)
+
+zone.pred.ref.WNA <- gsub("[:a-z:]","",BGC.pred.ref.WNA) 
+zone.pred.ref.WNA <- gsub("[:1-9:]","",zone.pred.ref.WNA) 
+zone.pred.ref.WNA <- gsub("_.*","",zone.pred.ref.WNA)
+# zone.pred.ref.WNA <- factor(zone.pred.ref.WNA, levels=zones)
+
+
 zones.WNA <- rep(NA, length(BGCs.WNA))
-for(i in zone){ zones.WNA[grep(i,BGCs.WNA)] <- i }
-zones.WNA <- factor(zones.WNA, zone)
+for(i in unique(zone.pred.ref.WNA)){ zones.WNA[grep(i,BGCs.WNA)] <- i }
+# zones.WNA <- factor(zones.WNA, zone)
 
 
 # projected climatic means for bc units
 grid <- "BC2kmGrid"
+rcp=rcps[1]
+proj.year=proj.years[2]
 # for(rcp in rcps){
 for(GCM in GCMs){
-  Y1 <- fread(paste("InputData\\", grid, "_", GCM, "_", rcp, "_BioVars.csv", sep=""), select = c("GCM", Columns), stringsAsFactors = FALSE, data.table = FALSE)
+  Y1 <- fread(paste("inputs\\", grid, "_", GCM,".csv", sep=""), select = c("Year", Columns), stringsAsFactors = FALSE, data.table = FALSE)
   Y1$PPT_MJ <- Y1$PPT05 + Y1$PPT06 # MaY/June precip
   Y1$PPT_JAS <- Y1$PPT07 + Y1$PPT08 + Y1$PPT09 # July/Aug/Sept precip
   Y1$PPT.dormant <- Y1$PPT_at + Y1$PPT_wt # for calculating spring deficit
@@ -810,7 +823,9 @@ for(GCM in GCMs){
   ## assign single vectors to RCPs and proj.years
   Ystr <- strsplit(Y1[,1], "_")
   Y4 <- matrix(unlist(Ystr), ncol=3, byrow=TRUE)
-  # for(proj.year in proj.years){
+  Y4[,3] <- gsub(".gcm","",Y4[,3])
+  
+   # for(proj.year in proj.years){
   temp <- aggregate(Y1[which(Y4[,2]==rcp & Y4[,3]==proj.year),-1], by=list(BGC), FUN=mean, na.rm=T)[,-1]
   assign(paste("Clim.BGCs", GCM, rcp, proj.year, sep="."), temp)
   assign(paste("pcscores.BGCs", GCM, rcp, proj.year, sep="."), predict(pca.BGCs.WNA, temp))
@@ -821,37 +836,37 @@ for(GCM in GCMs){
 # }
 
 # #################################
-# # Plot for selected raw variables
-#   par(mar=c(3.25,3.25,0.1,0.1), mgp=c(2.25,0.25,0))
-#   var1 <- "Tmin_sm"
-# # for(var2 in VarList){
-#   var2 <- "MCMT"
-# log <- F
-# bgc1 <- "CWHds1"
-# bgc2 <- "ICHvk1"
-# p1 <- which(BGCs==bgc1)
-# p2 <- which(BGCs==bgc2)
-# x <- Clim.BGCs[,which(names(Clim.BGCs)==var1)]
-# y <- Clim.BGCs[,which(names(Clim.BGCs)==var2)]
-# if(log==T) y <- log(y)
-# 
-# png(filename=paste("results\\CCISS.BGCEDA.ClimateSpace", bgc1, bgc2, var1, var2, rcp, proj.year, "png",sep="."), type="cairo", units="in", width=6.5, height=6.5, pointsize=12, res=600)
-# par(mar=c(3.25,3.25,0.1,0.1), mgp=c(2.25,0.25,0))
-# plot(x,y, pch=21, bg=as.character(BGCcolors[match(zones,BGCcolors[,1]),5]), cex=1.3, tck=0, xlab=var1, ylab=var2)
-# points(x[p1],y[p1], cex=2, pch=21, bg=as.character(BGCcolors[match(zones,BGCcolors[,1]),5])[p1], lwd=1.2)
-# points(x[p2],y[p2], cex=2, pch=21, bg=as.character(BGCcolors[match(zones,BGCcolors[,1]),5])[p2], lwd=1.2)
-# text(x[p2],y[p2], bgc2, pos=4, font=2, cex=0.8)
-# for(GCM in GCMs){
-#   x2 <- get(paste("Clim.BGCs", GCM, rcp, proj.year, sep="."))[,which(names(Clim.BGCs)==var1)]
-#   y2 <- get(paste("Clim.BGCs", GCM, rcp, proj.year, sep="."))[,which(names(Clim.BGCs)==var2)]
-#   if(log==T) y2 <- log(y2)
-#   lines(c(x[p1],x2[p1]), c(y[p1],y2[p1]))
-#   points(x2[p1], y2[p1], pch=16, cex=0.7)
+# Plot for selected raw variables
+  par(mar=c(3.25,3.25,0.1,0.1), mgp=c(2.25,0.25,0))
+  var1 <- "DD5_sm"
+# for(var2 in Columns){
+  var2 <- "PPT_sm"
+log <- F
+bgc1 <- "CWHds1"
+bgc2 <- "ICHvk1"
+p1 <- which(BGCs.WNA==bgc1)
+p2 <- which(BGCs.WNA==bgc2)
+x <- Clim.BGCs[,which(names(Clim.BGCs)==var1)]
+y <- Clim.BGCs[,which(names(Clim.BGCs)==var2)]
+if(log==T) y <- log(y)
+
+png(filename=paste("results\\CCISS.BGCEDA.ClimateSpace", bgc1, bgc2, var1, var2, rcp, proj.year, "png",sep="."), type="cairo", units="in", width=6.5, height=6.5, pointsize=12, res=600)
+par(mar=c(3.25,3.25,0.1,0.1), mgp=c(2.25,0.25,0))
+plot(x,y, pch=21, bg=as.character(BGCcolors[match(zones,BGCcolors[,1]),5]), cex=1.3, tck=0, xlab=var1, ylab=var2)
+points(x[p1],y[p1], cex=2, pch=21, bg=as.character(BGCcolors[match(zones,BGCcolors[,1]),5])[p1], lwd=1.2)
+points(x[p2],y[p2], cex=2, pch=21, bg=as.character(BGCcolors[match(zones,BGCcolors[,1]),5])[p2], lwd=1.2)
+text(x[p2],y[p2], bgc2, pos=4, font=2, cex=0.8)
+for(GCM in GCMs){
+  x2 <- get(paste("Clim.BGCs", GCM, rcp, proj.year, sep="."))[,which(names(Clim.BGCs)==var1)]
+  y2 <- get(paste("Clim.BGCs", GCM, rcp, proj.year, sep="."))[,which(names(Clim.BGCs)==var2)]
+  if(log==T) y2 <- log(y2)
+  lines(c(x[p1],x2[p1]), c(y[p1],y2[p1]))
+  points(x2[p1], y2[p1], pch=16, cex=0.7)
+}
+points(x[p1],y[p1], cex=2, pch=21, bg=as.character(BGCcolors[match(zones,BGCcolors[,1]),5])[p1], lwd=1.2)
+text(x[p1],y[p1], bgc1, pos=2, font=2, cex=0.8)
 # }
-# points(x[p1],y[p1], cex=2, pch=21, bg=as.character(BGCcolors[match(zones,BGCcolors[,1]),5])[p1], lwd=1.2)
-# text(x[p1],y[p1], bgc1, pos=2, font=2, cex=0.8)
-# # }
-# dev.off()
+dev.off()
 
 #################################
 # Plot for PCs 1 and 2
@@ -859,9 +874,15 @@ for(GCM in GCMs){
 PCs <- T
 select <- which(BGCs.WNA%in%c("CWHds1", "ICHvk1", "IDFdk3", "SBSmc2"))
 
-bgc1="CDFmm"
-bgc2="CRFdhz"
-bgc2="CRFdhz"
+#BGC zone color scheme
+BGCcolors$colour <- as.character(BGCcolors$colour)
+BGCcolors$colour[match(BGCcolors.BC$zone, BGCcolors$classification)] <- as.character(BGCcolors.BC$HEX)
+ColScheme.zone <- factor(BGCcolors$colour, levels=BGCcolors$colour)
+zones <- factor(BGCcolors$classification, levels=BGCcolors$classification)
+
+
+bgc1="CWHdm"
+bgc2="CWHxm_WA"
 # for(bgc1 in BGCs.WNA[select]){
 
 par(mar=c(3.25,3.25,0.1,0.1), mgp=c(2.25,0.25,0))
@@ -886,12 +907,12 @@ y.bgc2 <- pcscores.bgc2[,var2]
 
 png(filename=paste("results\\CCISS.BGCEDA.ClimateSpace.SpatialVar", varset, bgc1, var1,"X", var2, "png",sep="."), type="cairo", units="in", width=24, height=12, pointsize=10, res=300)
 par(mar=c(3.25,3.25,0.1,0.1), mgp=c(2.25,0.25,0))
-eqscplot(x[-which(BGCs.WNA=="SASbo")],y[-which(BGCs.WNA=="SASbo")], col="white", cex=2, tck=0, 
+eqscplot(x[-which(BGCs.WNA=="CWHwh1")],y[-which(BGCs.WNA=="CWHwh1")], col="white", cex=2, tck=0, 
          xlab=if(PCs==T) paste("Climate PC", var1, sep="") else var1, 
          ylab=if(PCs==T) paste("Climate PC", var2, sep="") else var2)
 
 points(x.bgc1, y.bgc1, pch=16, col=alpha(as.character(ColScheme.zone[match(zones.WNA,zone)])[p1],0.8))
-points(x.bgc2, y.bgc2, pch=16, col=alpha(as.character(ColScheme.zone[match(zones.WNA,zone)])[p2],0.8))
+points(x.bgc2, y.bgc2, pch=16, col=alpha(as.character(ColScheme.zone[match(zones.WNA,zones)])[p2],0.8))
 
 # #spatial variation in bgc1
 # z.ref <- kde2d(x.bgc1, y.bgc1, n=200, h=1)
@@ -903,7 +924,7 @@ points(x.bgc2, y.bgc2, pch=16, col=alpha(as.character(ColScheme.zone[match(zones
 # z.con <- contourLines(z.ref, levels=c(0.01))
 # for(k in 1:length(z.con)) polygon(z.con[[k]]$x,z.con[[k]]$y, col=alpha(as.character(ColScheme.zone[match(zones.WNA,zone)])[p2],0.8), border=NA)
 
-points(x,y, pch=21, bg=as.character(ColScheme.zone[match(zones.WNA,zone)]), cex=2)
+points(x,y, pch=21, bg=as.character(ColScheme.zone[match(zones.WNA,zones)]), cex=2)
 
 text(x[-which(BGCs.WNA==bgc1)],y[-which(BGCs.WNA==bgc1)], BGCs.WNA[-which(BGCs.WNA==bgc1)], pos=4, font=2, cex=0.6)
 # points(x[p2],y[p2], cex=2, pch=21, bg=as.character(ColScheme.zone[match(zones.WNA,zone)])[p2], lwd=1.2)
