@@ -21,6 +21,11 @@ source("./_CCISS_Parameters.R") ## settings used through all scripts
 rcp.focal="rcp45"
 proj.year.focal=2025
 
+#BGC zone color scheme
+BGCcolors$colour <- as.character(BGCcolors$colour)
+BGCcolors$colour[match(BGCcolors.BC$zone, BGCcolors$classification)] <- as.character(BGCcolors.BC$HEX)
+ColScheme <- factor(BGCcolors$colour, levels=BGCcolors$colour)
+zones <- factor(BGCcolors$classification, levels=BGCcolors$classification)
 
 #===============================================================================
 # calculate mean MAT change for each model prediction
@@ -95,8 +100,7 @@ for(hist.year in hist.years){
   
   #did the zone change? 
   zone.pred <- rep(NA, length(BGC.pred))
-  for(i in BGCcolors.BC$zone){ zone.pred[grep(i,BGC.pred)] <- i }
-  zone.pred[-which(BGC.pred%in%unique(BGC))] <- "Exotic"
+  for(i in zones){ zone.pred[grep(i,BGC.pred)] <- i }
   assign(paste("zone.change", hist.year, sep="."), zone.pred!=zone) #did the BGC zone change (mapped baseline)
   assign(paste("zone.change.pred", hist.year, sep="."), zone.pred!=zone.pred.ref) #did the BGC zone change (predicted baseline)
   
@@ -118,8 +122,7 @@ for(rcp in rcps){
       
       #did the zone change? 
       zone.pred <- rep(NA, length(BGC.pred))
-      for(i in BGCcolors.BC$zone){ zone.pred[grep(i,BGC.pred)] <- i }
-      zone.pred[-which(BGC.pred%in%unique(BGC))] <- "Exotic"
+      for(i in zones){ zone.pred[grep(i,BGC.pred)] <- i }
       assign(paste("zone.change", GCM, rcp, proj.year, sep="."), zone.pred!=zone) #did the BGC zone change (mapped baseline)
       assign(paste("zone.change.pred", GCM, rcp, proj.year, sep="."), zone.pred!=zone.pred.ref) #did the BGC zone change (predicted baseline)
       
@@ -130,27 +133,27 @@ for(rcp in rcps){
   print(rcp)
 }
 
-# # determine vote winner BGC and ensemble agreement (WARNING: takes about 2 minutes per rcp/proj.year, so i just did RCP45, 2055)
-# rcp=rcp.focal
-# # for(rcp in rcps){
-#   proj.year=proj.year.focal
-#   # for(proj.year in proj.years){
-#     temp <- as.data.frame(matrix(rep(NA, length(BGC.pred)*length(GCMs)), nrow=length(BGC.pred), ncol=length(GCMs)))
-#     for(GCM in GCMs){
-#       BGC.pred <- get(paste("BGC.pred", GCM, rcp, proj.year, sep="."))
-#       #add votes to votes matrix
-#       temp[,which(GCMs==GCM)] <- BGC.pred
-#       print(GCM)
-#     }
-#     vote.winner <- function(x){return(names(which(table(x)==max(table(x))))[1])}
-#     agreement <- function(x){return(max(table(x)))}
-#     assign(paste("BGC.pred.ensemble", rcp, proj.year, sep="."), apply(temp, 1, vote.winner))
-#     # assign(paste("BGC.pred.agreement", rcp, proj.year, sep="."), apply(temp, 1, agreement))
-#     
-# #     print(proj.year)
-# #   }
-# #   print(rcp)
-# # }
+# determine vote winner BGC and ensemble agreement (WARNING: takes about 2 minutes per rcp/proj.year, so i just did RCP45, 2055)
+rcp=rcp.focal
+# for(rcp in rcps){
+  proj.year=proj.year.focal
+  # for(proj.year in proj.years){
+    temp <- as.data.frame(matrix(rep(NA, length(BGC.pred)*length(GCMs)), nrow=length(BGC.pred), ncol=length(GCMs)))
+    for(GCM in GCMs){
+      BGC.pred <- get(paste("BGC.pred", GCM, rcp, proj.year, sep="."))
+      #add votes to votes matrix
+      temp[,which(GCMs==GCM)] <- BGC.pred
+      print(GCM)
+    }
+    vote.winner <- function(x){return(names(which(table(x)==max(table(x))))[1])}
+    agreement <- function(x){return(max(table(x)))}
+    assign(paste("BGC.pred.ensemble", rcp, proj.year, sep="."), apply(temp, 1, vote.winner))
+    # assign(paste("BGC.pred.agreement", rcp, proj.year, sep="."), apply(temp, 1, agreement))
+
+#     print(proj.year)
+#   }
+#   print(rcp)
+# }
 
 # calculate percentage of ensemble projecting an exotic unit
     rcp=rcp.focal
@@ -544,7 +547,7 @@ dev.off()
 #===============================================================================
 
 # x11(width=6.5, height=6.5, pointsize=10)
-png(filename=paste("Results\\CCISS.manu.BGCprojections.ALT",proj.year.focal,"png",sep="."), type="cairo", units="in", width=6.5, height=6.5, pointsize=10, res=600)
+png(filename=paste("results\\CCISS.manu.BGCprojections.ALT",proj.year.focal,"png",sep="."), type="cairo", units="in", width=6.5, height=6.5, pointsize=10, res=600)
 # mat <- matrix(c(1,2,3,6,6,4,6,6,5),3, byrow=T)   #define the plotting order
 # layout(mat, widths=c(1,1,1), heights=c(1,1,1))   #set up the multipanel plot
 par(mar=c(0.1,0.1,3,0.1), mgp=c(2,0.25,0))
@@ -734,12 +737,63 @@ for(hist.year in hist.years[c(2,4)]){
   text(x,y2, hist.year.name[which(hist.years==hist.year)], pos=4, cex=0.7, font=2)
 }
 
-if(proj.year.focal==proj.years[1]){ legend(3.2, 0.42, cex=0.8, legend=c("BGC subzone-variant displacement", "BGC zone displacement", "Observed climates", ""), y.intersp = 1, pch=c(16,16,2, 1), col=c(1,"gray",1,"white"), pt.cex=c(1.2,1.2,1.5, 1), bty="n")
+if(proj.year.focal==proj.years[1]){ legend(3.2, 0.37, cex=0.8, legend=c("BGC subzone-variant displacement", "BGC zone displacement", "Observed climates", ""), y.intersp = 1, pch=c(16,16,2, 1), col=c(1,"gray",1,"white"), pt.cex=c(1.2,1.2,1.5, 1), bty="n")
 } else legend("right", cex=0.8, legend=c("BGC subzone-variant displacement", "BGC zone displacement", "Observed climates", ""), y.intersp = 1, pch=c(16,16,2, 1), col=c(1,"gray",1,"white"), pt.cex=c(1.2,1.2,1.5, 1), bty="n")
 
 
 dev.off()
 
-
-
-
+# 
+# 
+# #===============================================================================
+# # check that the displacement plot is calculated correctly
+# #===============================================================================
+# 
+# GCM=GCMs[2]
+# proj.year=proj.year.focal
+# rcp=rcp.focal
+# 
+# par(mar=c(0,0,0,0))
+# 
+# values(X) <- NA
+# values(X) <- get(paste("zone.change.pred", GCM, rcp, proj.year, sep="."))[plotOrder]
+# table(values(X))
+# 
+# plot(X)
+# 
+# ColScheme <- factor(BGCcolors$colour, levels=BGCcolors$colour)
+# 
+# pred <- zone.pred.ref
+# values(X) <- NA
+# values(X) <- factor(pred, levels=zones)[plotOrder]
+# values(X)[1:length(zones)] <- 1:length(zones) # this is a patch that is necessary to get the color scheme right.
+# plot(X, xaxt="n", yaxt="n", col=alpha(ColScheme, 1), legend=FALSE, legend.mar=0, maxpixels=ncell(X), bty="n", box=FALSE)
+# values(X)[-(1:length(zones))] <- NA # cover up the color bar
+# image(X, add=T, col="white")
+# plot(bdy.bc, add=T, lwd=0.4)
+# 
+# BGC.pred <- get(paste("BGC.pred", GCM, rcp, proj.year, sep="."))
+# zone.pred <- rep(NA, length(BGC.pred))
+# for(j in zones){ zone.pred[grep(j,BGC.pred)] <- j }
+# exotic <- table(zone.pred[-which(zone.pred%in%BGCcolors.BC$zone)])
+# exotic <- exotic[exotic>150]
+# exotic <- exotic[rev(order(exotic))]
+# # as.numeric(formatC(signif(exotic/length(zone.pred)*100,digits=3), digits=3,format="fg", flag="#"))
+# pred <- zone.pred
+# pred[grep("IMA|CMA|BAFA", pred)] <- NA
+# values(X) <- NA
+# values(X) <- factor(pred, levels=zones)[plotOrder]
+# values(X)[1:length(zones)] <- 1:length(zones) # this is a patch that is necessary to get the color scheme right.
+# plot(X, xaxt="n", yaxt="n", col=alpha(ColScheme, 1), legend=FALSE, legend.mar=0, maxpixels=ncell(X), bty="n", box=FALSE)
+# values(X)[-(1:length(zones))] <- NA # cover up the color bar
+# image(X, add=T, col="white")
+# plot(bdy.bc, add=T, lwd=0.4)
+# 
+# #did the zone change? 
+# zone.pred <- rep(NA, length(BGC.pred))
+# for(i in BGCcolors.BC$zone){ zone.pred[grep(i,BGC.pred)] <- i }
+# zone.pred[-which(BGC.pred%in%unique(BGC))] <- "Exotic"
+# assign(paste("zone.change", GCM, rcp, proj.year, sep="."), zone.pred!=zone) #did the BGC zone change (mapped baseline)
+# assign(paste("zone.change.pred", GCM, rcp, proj.year, sep="."), zone.pred!=zone.pred.ref) #did the BGC zone change (predicted baseline)
+# 
+# table(zone.pred)
