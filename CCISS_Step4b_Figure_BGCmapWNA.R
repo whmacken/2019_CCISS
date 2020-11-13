@@ -9,7 +9,7 @@
 # spatial data
 #==================================================
 
-setwd("C:\\Colin\\SpatialData\\Boundaries")
+setwd("C:\\Users\\CMAHONY\\OneDrive - Government of BC\\SpatialData\\Boundaries")
 
 # ###country boundaries
 # # ORIGIONAL SOURCE: http://www.diva-gis.org/gdata
@@ -100,14 +100,18 @@ grid.data <- read.csv(paste("inputs\\", grid, ".csv", sep = ""))
 dem <- raster(paste("inputs\\", grid.dem,".tif", sep=""))
 land.fine <- which(!is.na(values(dem)))  # raster cells with no dem value
 P4S.latlon <- CRS("+proj=longlat +datum=WGS84")
+
 X <- dem
-values(X) <- NA
+par(mar=c(0,0,0,0))
+plot(X)
+
 
 values(X) <- NA
 values(X)[land.fine] <- zone.pred.ref
 # values(X)[1:length(levels(zone.pred.ref))] <- 1:length(levels(zone.pred.ref)) # this is a patch that is necessary to get the color scheme right. 
 
 png(filename=paste("results\\CCISS.manu.BGCmap", "png",sep="."), type="cairo", units="in", width=6.5, height=8, pointsize=9, res=600)
+# pdf(file=paste("Results\\CCISS.Fig1.BGCmap","pdf",sep="."), width=6.5, height=8, pointsize=9)
 
 par(mar=c(0.1,0.1,0.1,0.1))
 # image(hill, xlim=c(-135, -108), ylim=c(39, 60), col=alpha(grey(0:100/100), 1), xaxt="n", yaxt="n", maxpixels= ncell(hill))

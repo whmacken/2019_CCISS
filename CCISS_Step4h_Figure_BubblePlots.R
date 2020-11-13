@@ -253,13 +253,14 @@ library(plotrix)
   }
 
   spp.focal <- "Ss"
-  for(spp.focal in spps){
+  # for(spp.focal in spps){
  
     rcp="rcp45"
   proj.year=proj.years[2]
   # for(rcp in rcps){
   # for(proj.year in proj.years){
   png(filename=paste("results\\Manu_BubblePlots\\CCISS.manu.ExpansionVsPersistence.THLB",spp.focal, proj.year, rcp,"png",sep="."), type="cairo", units="in", width=6.5, height=6.75, pointsize=13, res=400)
+  # pdf(file=paste("Results\\CCISS.Fig6.BubblePlot",spp.focal, proj.year, rcp,"pdf",sep="."), width=6.5, height=6.75, pointsize=13)
   mat <- matrix(c(1,2,3,4,4,4,5,5,6,5,5,7,9,9,9,8,8,8),6, byrow=T)   #define the plotting order
   layout(mat, widths=c(1,1,1), heights=c(0.8,0.15,1,1,0.07,0.1))   #set up the multipanel plot
   
@@ -394,7 +395,8 @@ library(plotrix)
   # }
   print(rcp)
   # }
-}
+  print(spp.focal)
+  # }
   
   
   

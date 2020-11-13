@@ -219,6 +219,19 @@ values(X) <- NA
 values(X) <- factor(pred, levels=zones)[plotOrder]
 values(X)[1:length(zones)] <- 1:length(zones) # this is a patch that is necessary to get the color scheme right.
 plot(X, xaxt="n", yaxt="n", col=alpha(ColScheme, 1), legend=FALSE, legend.mar=0, maxpixels=ncell(X), bty="n", box=FALSE) 
+
+plot(bdy.bc, lwd=0.4)
+values(X) <- NA
+values(X)[which(BGC[plotOrder]=="CWHvm1")] <- 1
+plot(X, add=T, col="blue")
+
+
+
+
+
+
+
+
 values(X)[-(1:length(zones))] <- NA # cover up the color bar
 image(X, add=T, col="white") # cover up the color bar
 values(X) <- factor(pred, levels=zones)[plotOrder] # restore the raster values
@@ -886,8 +899,8 @@ bgc2="CWHxm_WA"
 # for(bgc1 in BGCs.WNA[select]){
 
 par(mar=c(3.25,3.25,0.1,0.1), mgp=c(2.25,0.25,0))
-var1 <- if(PCs==T) 2 else "Tmin_sm"
-var2 <- if(PCs==T) 3 else "MCMT"
+var1 <- if(PCs==T) 1 else "Tmin_sm"
+var2 <- if(PCs==T) 2 else "MCMT"
 log <- F
 p1 <- which(BGCs.WNA==bgc1)
 p2 <- which(BGCs.WNA==bgc2)
@@ -911,7 +924,7 @@ eqscplot(x[-which(BGCs.WNA=="CWHwh1")],y[-which(BGCs.WNA=="CWHwh1")], col="white
          xlab=if(PCs==T) paste("Climate PC", var1, sep="") else var1, 
          ylab=if(PCs==T) paste("Climate PC", var2, sep="") else var2)
 
-points(x.bgc1, y.bgc1, pch=16, col=alpha(as.character(ColScheme.zone[match(zones.WNA,zone)])[p1],0.8))
+points(x.bgc1, y.bgc1, pch=16, col=alpha(as.character(ColScheme.zone[match(zones.WNA,zones)])[p1],0.8))
 points(x.bgc2, y.bgc2, pch=16, col=alpha(as.character(ColScheme.zone[match(zones.WNA,zones)])[p2],0.8))
 
 # #spatial variation in bgc1

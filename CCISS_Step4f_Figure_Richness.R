@@ -246,8 +246,8 @@ for(proj.year in proj.years){
  
  # x11(width=6.5, height=5, pointsize=8)
  png(filename=paste("results\\Manu_Richness\\CCISS_manu_", metric, edatope, rcp, proj.year,"png",sep="."), type="cairo", units="in", width=6.5, height=5, pointsize=8, res=400)
- # pdf(file=paste("results\\CCISS_SummaryByBGC_", metric,".pdf",sep=""),  width=7.5, height=5.625, pointsize=15)
-
+ # pdf(file=paste("Results\\CCISS.Fig8", metric, edatope, rcp, proj.year,"pdf",sep="."), width=6.5, height=5, pointsize=8)
+ 
  par(mar=c(0,0,0,0))
  plot(0, xlim=c(0,1), ylim=c(0,1), col="white", xlab="", ylab="", xaxt="n", yaxt="n", bty="n")
  # box()

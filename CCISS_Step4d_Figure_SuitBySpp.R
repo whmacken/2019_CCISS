@@ -98,11 +98,12 @@ spps.matrix <- matrix(c("Pl", "Fd", "Cw","Ba", "Bl", "Bg", "Yc", "Ss", "Hm", "Lw
 
 # x11(width=6.5, height=8.5, pointsize=12)
 
-
+matrow=1
 for(matrow in 1:dim(spps.matrix)){
  spps <- spps.matrix[matrow,]
 
-png(filename=paste("results\\Manu_Suitability_Groups\\CCISS.manu.Suitability",spps[1],spps[2],spps[3], edatope, rcp, proj.year,"png",sep="."), type="cairo", units="in", width=6.5, height=8.5, pointsize=12, res=600)
+# png(filename=paste("results\\Manu_Suitability_Groups\\CCISS.manu.Suitability",spps[1],spps[2],spps[3], edatope, rcp, proj.year,"png",sep="."), type="cairo", units="in", width=6.5, height=8.5, pointsize=12, res=600)
+pdf(file=paste("results\\CCISS.Fig3.Suitability",spps[1],spps[2],spps[3], edatope, rcp, proj.year,"pdf",sep="."), width=6.5, height=8.5, pointsize=12)
 par(mar=c(0,0,0,0), mfrow=c(3,1), bg="white")
 
 for(spp in spps){
@@ -177,7 +178,7 @@ for(spp in spps){
   rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
   text(rep(xr+10000,length(labels)),seq(yb,yt,(yt-yb)/(length(GCMs)-1))[c(3,9)],labels,pos=4,cex=0.9,font=0.8, srt=90)
   text(rep(xr-20000,length(labels)),seq(yb,yt,(yt-yb)/(length(GCMs)-1))[c(1,8,15)],c("100%", "0%", "100%"),pos=4,cex=0.8,font=1)
-  text(xl-30000, mean(c(yb,yt))-30000, paste("Change in presence/absence\n(", proj.year.name[which(proj.years==proj.year)], "), % of GCMs", sep=""), srt=90, pos=3, cex=0.9, font=2)
+  text(xl-30000, mean(c(yb,yt))-30000, paste("Change to feasible/unfeasible\n(", proj.year.name[which(proj.years==proj.year)], "), % of GCMs", sep=""), srt=90, pos=3, cex=0.85, font=2)
   mtext(paste("(", letters[c(2,6,10)][which(spps==spp)],")", sep=""), side=3, line=-2.5, adj=0.22, cex=0.8, font=2)
   # legend("bottomleft", legend=c(spp, paste("Edatope:", edatope), proj.year, rcp, " "), cex=1.4, bty="n", inset=-0.05)
   # }
@@ -279,11 +280,13 @@ spps <- spps[-which(spps=="X")]
 spps.candidate <- spps.lookup$TreeCode[-which(spps.lookup$Exclude=="x")]
 spps <- spps[which(spps%in%spps.candidate)] 
 
-spp="Pa"
+spp="Sx"
 
-for(spp in spps){
-
-  png(filename=paste("results\\Manu_Suitability_Indiv\\CCISS.manu.Suitability.edatopes",spp, rcp, proj.year,"png",sep="."), type="cairo", units="in", width=6.5, height=8.5, pointsize=12, res=600)
+for(proj.year in proj.years){
+  for(spp in spps){
+    
+  # png(filename=paste("results\\Manu_Suitability_Indiv\\CCISS.manu.Suitability.edatopes",spp, rcp, proj.year,"png",sep="."), type="cairo", units="in", width=6.5, height=8.5, pointsize=12, res=600)
+  pdf(file=paste("results\\Manu_Suitability_Indiv\\CCISS.Suitability_Indiv",spp, rcp, proj.year,"pdf",sep="."), width=6.5, height=8.5, pointsize=12)
   par(mar=c(0,0,0,0), mfrow=c(3,1), bg="white")
   
   for(edatope in edatopes){
@@ -327,7 +330,7 @@ for(spp in spps){
     Common <- as.character(spps.lookup$EnglishName[which(spps.lookup$TreeCode==spp)])
     Latin <- as.character(spps.lookup$ScientificName[which(spps.lookup$TreeCode==spp)])
     panel <- paste("(", letters[which(spps==spp)],")", sep="")
-    mtext(paste("Site type: ", edatope, " (", edatope.name[which(edatopes==edatope)], ")", sep=""), side=3, line=-1.55, adj=0.01, cex=0.8, font=2)
+    mtext(paste("Site type: ", edatope, " (", edatope.name[which(edatopes==edatope)], ")", sep=""), side=3, line=-1.55, adj=0.01, cex=0.75, font=2)
     mtext(if(spp%in%spps.lookup$TreeCode) bquote(bold(.(spp))~"-"~.(Common)) else bquote(bold(.(spp))), side=3, line=-2.75, adj=0.01, cex=0.7, font=1)
     box()
     
@@ -354,7 +357,7 @@ for(spp in spps){
     rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
     text(rep(xr+10000,length(labels)),seq(yb,yt,(yt-yb)/(length(GCMs)-1))[c(3,9)],labels,pos=4,cex=0.9,font=0.8, srt=90)
     text(rep(xr-20000,length(labels)),seq(yb,yt,(yt-yb)/(length(GCMs)-1))[c(1,8,15)],c("100%", "0%", "100%"),pos=4,cex=0.8,font=1)
-    text(xl-30000, mean(c(yb,yt))-30000, paste("Change in presence/absence\n(", proj.year.name[which(proj.years==proj.year)], ") % of GCMs", sep=""), srt=90, pos=3, cex=0.9, font=2)
+    text(xl-30000, mean(c(yb,yt))-30000, paste("Change to feasible/unfeasible\n(", proj.year.name[which(proj.years==proj.year)], ") % of GCMs", sep=""), srt=90, pos=3, cex=0.9, font=2)
     mtext(paste("(", letters[c(2,6,10)][which(edatopes==edatope)],")", sep=""), side=3, line=-2.75, adj=0.22, cex=0.8, font=2)
     # legend("bottomleft", legend=c(spp, paste("Edatope:", edatope), proj.year, rcp, " "), cex=1.4, bty="n", inset=-0.05)
     # }
@@ -448,155 +451,155 @@ print(proj.year)
 }
   
   
-# #===============================================================================
-# # Basic plot for a single species
-# #===============================================================================
-# # spps.name <- c("Yellow cedar", "Interior spruce", "Ponderosa pine", "Lodgepole pine", "Western larch", "Western hemlock", "Mountain hemlock", "Douglas-fir", "Red alder", "Western redcedar", "Subalpine fir", "Grand fir")
-# edatope.name <- c("Subxeric-poor", "Mesic-medium", "Hygric-rich")
-# proj.year.name=c("2020s", "2050s", "2080s")
-# rcp=rcps[1]
-# proj.year=proj.years[1]
-# 
-# edatope="C4"
-# for(proj.year in proj.years){
-#   for(edatope in edatopes){
-#     
-#     for(spp in spps){
-#       
-#       png(filename=paste("results\\SI_Suitability_Basic\\CCISS.manu.Suitability.basic",spp, edatope, rcp, proj.year,"png",sep="."), type="cairo", units="in", width=6.5, height=6, pointsize=10, res=600)
-#       par(mar=c(0,0,0,0), mfrow=c(2,2), bg="white")
-#       
-#       RefSuit <- read.csv(paste("outputs\\Suit.ref", grid, spp, edatope, "csv", sep="."))[,1]
-#       outRange.base <- RefSuit==5
-#       RefSuit[RefSuit==5] <- 4
-#       RefSuit[is.na(RefSuit)] <- 4
-#       
-#       # compile the GCM projections into a data frame
-#       ProjSuit <- data.frame(temp=rep(NA, length(RefSuit))) #initiate the data frame with a dummy column
-#       ChangeSuit <- data.frame(temp=rep(NA, length(RefSuit))) #initiate the data frame with a dummy column
-#       for(GCM in GCMs){
-#         temp <- read.csv(paste("outputs\\Suit", grid, GCM, rcp, proj.year, spp, edatope, "csv", sep="."))
-#         temp[temp==5] <- 4
-#         temp[is.na(temp)] <- 4
-#         ProjSuit <- cbind(ProjSuit,temp)
-#         ChangeSuit <- cbind(ChangeSuit,RefSuit-temp)
-#       }
-#       ProjSuit <- ProjSuit[,-1] #remove the dummy column
-#       ChangeSuit <- ChangeSuit[,-1] #remove the dummy column
-#       names(ProjSuit) <- GCMs
-#       names(ChangeSuit) <- GCMs
-#       
-#       # calculate ensemble mean suitability. this isn't biased by missing suitabilties for exotic BGCs
-#       ChangeSuit.mean <- apply(ChangeSuit, 1, mean, na.rm=T)
-#       
-#       outRange <- outRange.base
-#       outRange[which(ChangeSuit.mean!=0)] <- FALSE
-#       ChangeSuit.mean[outRange==T] <- NA
-#       
-#       
-#       # map of historical suitability
-#       breakseq <- c(0.5,1.5,2.5,3.5,5)
-#       ColScheme <- c(brewer.pal(9,"Greys")[9], brewer.pal(9,"Greens")[7], brewer.pal(9,"Greens")[4], "white")
-#       ColScheme <- c("darkgreen", "dodgerblue1", "gold2", "white")
-#       length(ColScheme)
-#       
-#       values(X) <- RefSuit[plotOrder]
-#       plot(bdy.bc, border="black", lwd=0.4)
-#       image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, breaks=breakseq, maxpixels= ncell(X))
-#       plot(bdy.bc, add=T, border="black", lwd=0.4)
-#       # if(spp==spps[1]){
-#       legend("topright", legend=c("1 (primary)", "2 (secondary)", "3 (tertiary)"),
-#              fill=ColScheme, bty="n", cex=0.9, title="Historical feasibility", inset=0.015)
-#       # }
-#       # box()
-#       Common <- as.character(spps.lookup$EnglishName[which(spps.lookup$TreeCode==spp)])
-#       Latin <- as.character(spps.lookup$ScientificName[which(spps.lookup$TreeCode==spp)])
-#       panel <- paste("(", letters[which(spps==spp)],")", sep="")
-#       mtext(if(spp%in%spps.lookup$TreeCode) bquote(bold(.(spp))~"-"~.(Common)) else bquote(.(panel)~bold(.(spp))),
-#             side=1, line=-1.75, adj=0.01, cex=0.8, font=2)
-#       # mtext(if(spp%in%spps.lookup$TreeCode) bquote(.(panel)~bold(.(spp))~"-"~.(Common)~"("*italic(.(Latin)*")")) else bquote(.(panel)~bold(.(spp))),
-#       #       side=3, line=-1.75, adj=0.01, cex=0.8, font=2)
-#       mtext(paste("Site type: ", edatope, " (", edatope.name[which(edatopes==edatope)], ")", sep=""), side=1, line=-2.75, adj=0.01, cex=0.7, font=1)
-#       
-#       # map of suitability change
-#       breakpoints <- seq(-3,3,0.5); length(breakpoints)
-#       labels <- c("-3","-2", "-1", "no change", "+1","+2","+3")
-#       ColScheme <- c(brewer.pal(11,"RdBu")[c(1,2,3,4,4)], "grey80", brewer.pal(11,"RdBu")[c(7,8,8,9,10,11)]); length(ColScheme)
-#       
-#       values(X) <- ChangeSuit.mean[plotOrder]
-#       plot(bdy.bc, border="black", lwd=0.4)
-#       image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, breaks=breakpoints, maxpixels= ncell(X))
-#       plot(bdy.bc, add=T, border="black", lwd=0.4)
-#       # if(spp==spps[1]){
-#       par(xpd=T)
-#       xl <- 1600000; yb <- 1000000; xr <- 1700000; yt <- 1700000
-#       rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
-#       text(rep(xr-10000,length(labels)),seq(yb,yt,(yt-yb)/(length(labels)-1)),labels,pos=4,cex=0.8,font=1)
-#       text(xl-30000, mean(c(yb,yt))-30000, paste("Mean change\nin feasibility (", proj.year.name[which(proj.years==proj.year)], ")", sep=""), srt=90, pos=3, cex=0.9, font=2)
-#       # }
-#       par(xpd=F)
-#       
-#       
-#       # map of ensemble agreement on trend
-#       increasing <- which(ChangeSuit.mean>0)
-#       decreasing <- which(ChangeSuit.mean<0)
-#       bifurc <- rep(NA, length(ChangeSuit.mean))
-#       bifurc[outRange==F] <- 0
-#       bifurc[increasing] <- apply(ChangeSuit[increasing,], 1, function(x){return(sum(x< 0, na.rm=T)/length(x))})
-#       bifurc[decreasing] <- apply(ChangeSuit[decreasing,], 1, function(x){return(sum(x> 0, na.rm=T)/length(x))})
-#       values(X) <- bifurc[plotOrder]
-#       
-#       breakpoints <- seq(0,0.5,0.1); length(breakpoints)
-#       labels <- c("High", "Medium", "Low")
-#       # ColScheme <- c(brewer.pal(11,"RdBu")[c(4,2,1)], "black", brewer.pal(11,"RdBu")[c(8,10,11)]); length(ColScheme)
-#       # ColScheme <- brewer.pal(11,"RdBu")[-c(2,5,7,10)]; length(ColScheme)
-#       ColScheme <- c("grey80", brewer.pal(9,"YlOrRd")[c(3,5,7,9)]); length(ColScheme)
-#       
-#       plot(bdy.bc, border="black", lwd=0.4)
-#       image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, breaks=breakpoints, maxpixels= ncell(X))
-#       # mtext(paste("Edatope:", edatope), side=1, line=-1.5, adj=0.02, cex=1.1, font=2)
-#       # if(spp==spps[1]){
-#       xl <- 1600000; yb <- 1000000; xr <- 1700000; yt <- 1700000
-#       rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
-#       text(rep(xr,length(labels)),seq(yb,yt,(yt-yb)/(length(labels)*5-1))[c(3,13)],labels[c(1,3)],pos=4,cex=0.9,font=1)
-#       text(rep(xr,length(labels)),seq(yb,yt,(yt-yb)/(length(labels)*5-1))[c(1,15)],paste(round(breakpoints*100), "%", sep="")[c(1, length(breakpoints))],pos=4,cex=0.9,font=1)
-#       text(xl-30000, mean(c(yb,yt))-30000, paste("Ensemble agreement\non trend"), srt=90, pos=3, cex=1, font=2)
-#       # legend("bottomleft", legend=c(spp, paste("Edatope:", edatope), proj.year, rcp, " "), cex=1.4, bty="n", inset=-0.05)
-#       # }
-#       # box()
-#       
-#       # map of binary appearance/disappearance
-#       Suit.ensemble <- as.matrix(ProjSuit)
-#       Suit.ensemble[Suit.ensemble==5] <- 4
-#       binary <- rep(0, length(ProjSuit))
-#       binary[outRange.base==T] <- NA
-#       binary[outRange.base] <- apply(Suit.ensemble[outRange.base,], 1, function(x){return(if((sum(x<4, na.rm=T)/sum(!is.na(x)))>0) sum(x<4, na.rm=T)/sum(!is.na(x)) else NA)})
-#       binary[outRange.base==F] <- apply(Suit.ensemble[outRange.base==F,], 1, function(x){return(0-sum(x==4, na.rm=T)/sum(!is.na(x)))})
-#       values(X) <- binary[plotOrder]
-#       
-#       breakpoints <- seq(-1,1,0.2); length(breakpoints)
-#       labels <- c("Retreat", "Expansion")
-#       ColScheme <- c(brewer.pal(11,"RdBu")[c(1:4)], "grey90", brewer.pal(11,"RdBu")[c(7:11)]); length(ColScheme)
-#       
-#       plot(bdy.bc, border="black", lwd=0.4)
-#       image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, breaks=breakpoints, maxpixels= ncell(X))
-#       # mtext(paste("Edatope:", edatope), side=1, line=-1.5, adj=0.02, cex=1.1, font=2)
-#       # if(spp==spps[1]){
-#       xl <- 1600000; yb <- 900000; xr <- 1700000; yt <- 1700000
-#       rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
-#       text(rep(xr+10000,length(labels)),seq(yb,yt,(yt-yb)/(length(GCMs)-1))[c(3,9)],labels,pos=4,cex=0.9,font=0.8, srt=90)
-#       text(rep(xr-20000,length(labels)),seq(yb,yt,(yt-yb)/(length(GCMs)-1))[c(1,8,15)],c("100%", "0%", "100%"),pos=4,cex=0.8,font=1)
-#       text(xl-30000, mean(c(yb,yt))-30000, paste("Change in presence/absence\n(% of models)"), srt=90, pos=3, cex=0.9, font=2)
-#       # legend("bottomleft", legend=c(spp, paste("Edatope:", edatope), proj.year, rcp, " "), cex=1.4, bty="n", inset=-0.05)
-#       # }
-#       # box()
-#       
-#       print(spp)
-#       dev.off()
-#       
-#     }
-#     print(edatope)
-#   }
-#   print(proj.year)
-# }
-# 
+#===============================================================================
+# Basic plot for a single species
+#===============================================================================
+# spps.name <- c("Yellow cedar", "Interior spruce", "Ponderosa pine", "Lodgepole pine", "Western larch", "Western hemlock", "Mountain hemlock", "Douglas-fir", "Red alder", "Western redcedar", "Subalpine fir", "Grand fir")
+edatope.name <- c("Subxeric-poor", "Mesic-medium", "Hygric-rich")
+proj.year.name=c("2020s", "2050s", "2080s")
+rcp=rcps[1]
+proj.year=proj.years[1]
+
+edatope="C4"
+for(proj.year in proj.years[-3]){
+  for(edatope in edatopes){
+
+    for(spp in spps[c(2,3,6,7,12,14,24)]){
+
+      png(filename=paste("results\\SI_Suitability_Basic\\CCISS.manu.Suitability.basic",spp, edatope, rcp, proj.year,"png",sep="."), type="cairo", units="in", width=6.5, height=6, pointsize=10, res=600)
+      par(mar=c(0,0,0,0), mfrow=c(2,2), bg="white")
+
+      RefSuit <- read.csv(paste("outputs\\Suit.ref", grid, spp, edatope, "csv", sep="."))[,1]
+      outRange.base <- RefSuit==5
+      RefSuit[RefSuit==5] <- 4
+      RefSuit[is.na(RefSuit)] <- 4
+
+      # compile the GCM projections into a data frame
+      ProjSuit <- data.frame(temp=rep(NA, length(RefSuit))) #initiate the data frame with a dummy column
+      ChangeSuit <- data.frame(temp=rep(NA, length(RefSuit))) #initiate the data frame with a dummy column
+      for(GCM in GCMs){
+        temp <- read.csv(paste("outputs\\Suit", grid, GCM, rcp, proj.year, spp, edatope, "csv", sep="."))
+        temp[temp==5] <- 4
+        temp[is.na(temp)] <- 4
+        ProjSuit <- cbind(ProjSuit,temp)
+        ChangeSuit <- cbind(ChangeSuit,RefSuit-temp)
+      }
+      ProjSuit <- ProjSuit[,-1] #remove the dummy column
+      ChangeSuit <- ChangeSuit[,-1] #remove the dummy column
+      names(ProjSuit) <- GCMs
+      names(ChangeSuit) <- GCMs
+
+      # calculate ensemble mean suitability. this isn't biased by missing suitabilties for exotic BGCs
+      ChangeSuit.mean <- apply(ChangeSuit, 1, mean, na.rm=T)
+
+      outRange <- outRange.base
+      outRange[which(ChangeSuit.mean!=0)] <- FALSE
+      ChangeSuit.mean[outRange==T] <- NA
+
+
+      # map of historical suitability
+      breakseq <- c(0.5,1.5,2.5,3.5,5)
+      ColScheme <- c(brewer.pal(9,"Greys")[9], brewer.pal(9,"Greens")[7], brewer.pal(9,"Greens")[4], "white")
+      ColScheme <- c("darkgreen", "dodgerblue1", "gold2", "white")
+      length(ColScheme)
+
+      values(X) <- RefSuit[plotOrder]
+      plot(bdy.bc, border="black", lwd=0.4)
+      image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, breaks=breakseq, maxpixels= ncell(X))
+      plot(bdy.bc, add=T, border="black", lwd=0.4)
+      # if(spp==spps[1]){
+      legend("topright", legend=c("1 (primary)", "2 (secondary)", "3 (tertiary)"),
+             fill=ColScheme, bty="n", cex=0.9, title="Historical feasibility", inset=0.015)
+      # }
+      # box()
+      Common <- as.character(spps.lookup$EnglishName[which(spps.lookup$TreeCode==spp)])
+      Latin <- as.character(spps.lookup$ScientificName[which(spps.lookup$TreeCode==spp)])
+      panel <- paste("(", letters[which(spps==spp)],")", sep="")
+      mtext(if(spp%in%spps.lookup$TreeCode) bquote(bold(.(spp))~"-"~.(Common)) else bquote(.(panel)~bold(.(spp))),
+            side=1, line=-1.75, adj=0.01, cex=0.8, font=2)
+      # mtext(if(spp%in%spps.lookup$TreeCode) bquote(.(panel)~bold(.(spp))~"-"~.(Common)~"("*italic(.(Latin)*")")) else bquote(.(panel)~bold(.(spp))),
+      #       side=3, line=-1.75, adj=0.01, cex=0.8, font=2)
+      mtext(paste("Site type: ", edatope, " (", edatope.name[which(edatopes==edatope)], ")", sep=""), side=1, line=-2.75, adj=0.01, cex=0.7, font=1)
+
+      # map of suitability change
+      breakpoints <- seq(-3,3,0.5); length(breakpoints)
+      labels <- c("-3","-2", "-1", "no\nchange", "+1","+2","+3")
+      ColScheme <- c(brewer.pal(11,"RdBu")[c(1,2,3,4,4)], "grey80", brewer.pal(11,"RdBu")[c(7,8,8,9,10,11)]); length(ColScheme)
+
+      values(X) <- ChangeSuit.mean[plotOrder]
+      plot(bdy.bc, border="black", lwd=0.4)
+      image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, breaks=breakpoints, maxpixels= ncell(X))
+      plot(bdy.bc, add=T, border="black", lwd=0.4)
+      # if(spp==spps[1]){
+      par(xpd=T)
+      xl <- 1600000; yb <- 1000000; xr <- 1700000; yt <- 1700000
+      rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
+      text(rep(xr-10000,length(labels)),seq(yb,yt,(yt-yb)/(length(labels)-1)),labels,pos=4,cex=0.8,font=1)
+      text(xl-30000, mean(c(yb,yt))-30000, paste("Mean change\nin feasibility (", proj.year.name[which(proj.years==proj.year)], ")", sep=""), srt=90, pos=3, cex=0.9, font=2)
+      # }
+      par(xpd=F)
+
+
+      # map of ensemble agreement on trend
+      increasing <- which(ChangeSuit.mean>0)
+      decreasing <- which(ChangeSuit.mean<0)
+      bifurc <- rep(NA, length(ChangeSuit.mean))
+      bifurc[outRange==F] <- 0
+      bifurc[increasing] <- apply(ChangeSuit[increasing,], 1, function(x){return(sum(x< 0, na.rm=T)/length(x))})
+      bifurc[decreasing] <- apply(ChangeSuit[decreasing,], 1, function(x){return(sum(x> 0, na.rm=T)/length(x))})
+      values(X) <- bifurc[plotOrder]
+
+      breakpoints <- seq(0,0.5,0.1); length(breakpoints)
+      labels <- c("Low", "Medium", "High")
+      # ColScheme <- c(brewer.pal(11,"RdBu")[c(4,2,1)], "black", brewer.pal(11,"RdBu")[c(8,10,11)]); length(ColScheme)
+      # ColScheme <- brewer.pal(11,"RdBu")[-c(2,5,7,10)]; length(ColScheme)
+      ColScheme <- c("grey80", brewer.pal(9,"YlOrRd")[c(3,5,7,9)]); length(ColScheme)
+
+      plot(bdy.bc, border="black", lwd=0.4)
+      image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, breaks=breakpoints, maxpixels= ncell(X))
+      # mtext(paste("Edatope:", edatope), side=1, line=-1.5, adj=0.02, cex=1.1, font=2)
+      # if(spp==spps[1]){
+      xl <- 1600000; yb <- 1000000; xr <- 1700000; yt <- 1700000
+      rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
+      text(rep(xr,length(labels)),seq(yb,yt,(yt-yb)/(length(labels)*5-1))[c(3,13)],labels[c(1,3)],pos=4,cex=0.9,font=1)
+      text(rep(xr,length(labels)),seq(yb,yt,(yt-yb)/(length(labels)*5-1))[c(1,15)],paste(round(breakpoints*100), "%", sep="")[c(1, length(breakpoints))],pos=4,cex=0.9,font=1)
+      text(xl-30000, mean(c(yb,yt))-30000, paste("Ensemble disagreement\non trend"), srt=90, pos=3, cex=1, font=2)
+      # legend("bottomleft", legend=c(spp, paste("Edatope:", edatope), proj.year, rcp, " "), cex=1.4, bty="n", inset=-0.05)
+      # }
+      # box()
+
+      # map of binary appearance/disappearance
+      Suit.ensemble <- as.matrix(ProjSuit)
+      Suit.ensemble[Suit.ensemble==5] <- 4
+      binary <- rep(0, length(ProjSuit))
+      binary[outRange.base==T] <- NA
+      binary[outRange.base] <- apply(Suit.ensemble[outRange.base,], 1, function(x){return(if((sum(x<4, na.rm=T)/sum(!is.na(x)))>0) sum(x<4, na.rm=T)/sum(!is.na(x)) else NA)})
+      binary[outRange.base==F] <- apply(Suit.ensemble[outRange.base==F,], 1, function(x){return(0-sum(x==4, na.rm=T)/sum(!is.na(x)))})
+      values(X) <- binary[plotOrder]
+
+      breakpoints <- seq(-1,1,0.2); length(breakpoints)
+      labels <- c("Retreat", "Expansion")
+      ColScheme <- c(brewer.pal(11,"RdBu")[c(1:4)], "grey90", brewer.pal(11,"RdBu")[c(7:11)]); length(ColScheme)
+
+      plot(bdy.bc, border="black", lwd=0.4)
+      image(X, add=T, xaxt="n", yaxt="n", col=ColScheme, breaks=breakpoints, maxpixels= ncell(X))
+      # mtext(paste("Edatope:", edatope), side=1, line=-1.5, adj=0.02, cex=1.1, font=2)
+      # if(spp==spps[1]){
+      xl <- 1600000; yb <- 900000; xr <- 1700000; yt <- 1700000
+      rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  col=ColScheme)
+      text(rep(xr+10000,length(labels)),seq(yb,yt,(yt-yb)/(length(GCMs)-1))[c(3,9)],labels,pos=4,cex=0.9,font=0.8, srt=90)
+      text(rep(xr-20000,length(labels)),seq(yb,yt,(yt-yb)/(length(GCMs)-1))[c(1,8,15)],c("100%", "0%", "100%"),pos=4,cex=0.8,font=1)
+      text(xl-30000, mean(c(yb,yt))-30000, paste("Change in presence/absence\n(% of models)"), srt=90, pos=3, cex=0.9, font=2)
+      # legend("bottomleft", legend=c(spp, paste("Edatope:", edatope), proj.year, rcp, " "), cex=1.4, bty="n", inset=-0.05)
+      # }
+      # box()
+
+      print(spp)
+      dev.off()
+
+    }
+    print(edatope)
+  }
+  print(proj.year)
+}
+

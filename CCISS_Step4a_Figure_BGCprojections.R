@@ -19,7 +19,7 @@ source("./_CCISS_Functions.R") ## common functions
 source("./_CCISS_Parameters.R") ## settings used through all scripts
 
 rcp.focal="rcp45"
-proj.year.focal=2025
+proj.year.focal=2055
 
 #BGC zone color scheme
 BGCcolors$colour <- as.character(BGCcolors$colour)
@@ -251,6 +251,7 @@ bdy.us <- readOGR("inputs\\shapes\\USA_States.shp")
 
 # x11(width=6.5, height=7, pointsize=10)
 png(filename=paste("Results\\CCISS.manu.BGCprojections",proj.year.focal,"png",sep="."), type="cairo", units="in", width=6.5, height=7, pointsize=10, res=600)
+# pdf(file=paste("Results\\CCISS.manu.BGCprojections",proj.year.focal,sep=""), width=6.5, height=7, pointsize=10)
 # mat <- matrix(c(1,1,2,3),2, byrow=T)   #define the plotting order
 # layout(mat, widths=c(1,1), heights=c(1,1))   #set up the multipanel plot
 par(mar=c(0.1,0.1,0.1,0.1), mgp=c(2,0.25,0))
@@ -548,6 +549,7 @@ dev.off()
 
 # x11(width=6.5, height=6.5, pointsize=10)
 png(filename=paste("results\\CCISS.manu.BGCprojections.ALT",proj.year.focal,"png",sep="."), type="cairo", units="in", width=6.5, height=6.5, pointsize=10, res=600)
+# pdf(file=paste("Results\\CCISS.Fig2.BGCprojections",proj.year.focal,"pdf",sep="."), width=6.5, height=6.5, pointsize=10)
 # mat <- matrix(c(1,2,3,6,6,4,6,6,5),3, byrow=T)   #define the plotting order
 # layout(mat, widths=c(1,1,1), heights=c(1,1,1))   #set up the multipanel plot
 par(mar=c(0.1,0.1,3,0.1), mgp=c(2,0.25,0))
@@ -738,7 +740,7 @@ for(hist.year in hist.years[c(2,4)]){
 }
 
 if(proj.year.focal==proj.years[1]){ legend(3.2, 0.37, cex=0.8, legend=c("BGC subzone-variant displacement", "BGC zone displacement", "Observed climates", ""), y.intersp = 1, pch=c(16,16,2, 1), col=c(1,"gray",1,"white"), pt.cex=c(1.2,1.2,1.5, 1), bty="n")
-} else legend("right", cex=0.8, legend=c("BGC subzone-variant displacement", "BGC zone displacement", "Observed climates", ""), y.intersp = 1, pch=c(16,16,2, 1), col=c(1,"gray",1,"white"), pt.cex=c(1.2,1.2,1.5, 1), bty="n")
+} else legend(3.2, 0.37, cex=0.8, legend=c("BGC subzone-variant displacement", "BGC zone displacement", "Observed climates", ""), y.intersp = 1, pch=c(16,16,2, 1), col=c(1,"gray",1,"white"), pt.cex=c(1.2,1.2,1.5, 1), bty="n")
 
 
 dev.off()

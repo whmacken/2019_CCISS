@@ -226,6 +226,7 @@ exotic.table <- exotic.table[rev(order(exotic.table$area.pct)),]
 
 
 png(filename=paste("results\\Manu_Spaghetti\\CCISS_manu_SppSpaghetti.png",sep="."), type="cairo", units="in", width=6.5, height=5, pointsize=10, res=400)
+# pdf(file=paste("results\\CCISS.Fig5.SppSpaghetti","pdf",sep="."), width=6.5, height=5, pointsize=10)
 mat <- matrix(c(1,2,3,4, 6, 5,5,5),2, byrow=T)   #define the plotting order
 layout(mat, widths=c(0.225,1,1,1), heights=c(1, 0.04))   #set up the multipanel plot
 

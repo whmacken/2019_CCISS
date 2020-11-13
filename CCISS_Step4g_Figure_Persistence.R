@@ -61,6 +61,13 @@ plot(X)
 
 BGC <- as.character(read.csv(paste("outputs\\BGC.pred", grid, "ref", model, "csv", sep="."), header=F)[,1])
 
+values(X) <- BGC[plotOrder]
+values(X)[which(BGC=="CWHms2")] <- 1
+plot(X, add=T, col="blue")
+
+
+
+
 #BGC zones
 zone <- rep(NA, length(BGC))
 for(i in BGCcolors$classification){ zone[grep(i,BGC)] <- i }
@@ -279,9 +286,9 @@ for(rcp in rcps){
 ## Manuscript figure
 ###################################
 
-edatope=edatopes[1]
+edatope=edatopes[2]
 rcp=rcps[1]
-proj.year=proj.years[1]
+proj.year=proj.years[2]
 
 for(proj.year in proj.years){
   for(edatope in edatopes){
@@ -306,7 +313,7 @@ for(proj.year in proj.years){
     
     # x11(width=6.5, height=5, pointsize=8)
     png(filename=paste("results\\Manu_Persistence\\CCISS_manu_", metric, edatope, rcp, proj.year,"png",sep="."), type="cairo", units="in", width=6.5, height=4.55, pointsize=8, res=400)
-    # pdf(file=paste("results\\CCISS_SummaryByBGC_", metric,".pdf",sep=""),  width=7.5, height=5.625, pointsize=15)
+    # pdf(file=paste("Results\\CCISS.Fig7", metric, edatope, rcp, proj.year,"pdf",sep="."), width=6.5, height=4.55, pointsize=8)
     
     ylim <- c(0,1.4)
     y <- get(metric)
